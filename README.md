@@ -1,41 +1,98 @@
-# SAP-samples/repository-template
-This default template for SAP Samples repositories includes files for README, LICENSE, and .reuse/dep5. All repositories on github.com/SAP-samples will be created based on this template.
+# SAP Automation Pilot Examples
 
-# Containing Files
-
-1. The LICENSE file:
-In most cases, the license for SAP sample projects is `Apache 2.0`.
-
-2. The .reuse/dep5 file: 
-The [Reuse Tool](https://reuse.software/) must be used for your samples project. You can find the .reuse/dep5 in the project initial. Please replace the parts inside the single angle quotation marks < > by the specific information for your repository.
-
-3. The README.md file (this file):
-Please edit this file as it is the primary description file for your project. You can find some placeholder titles for sections below.
-
-# [Title]
-<!-- Please include descriptive title -->
+![Logo](assets/automation-pilot.png)
 
 <!--- Register repository https://api.reuse.software/register, then add REUSE badge:
-[![REUSE status](https://api.reuse.software/badge/github.com/SAP-samples/REPO-NAME)](https://api.reuse.software/info/github.com/SAP-samples/REPO-NAME)
+[![REUSE status](https://api.reuse.software/badge/github.com/SAP-samples/automation-pilot-examples)](https://api.reuse.software/info/github.com/SAP-samples/automation-pilot-examples)
 -->
 
+Table of Contents
+
+* [Description](#description)
+* [Requirements](#requirements)
+* [How to use](#how-to-use)
+* [Examples](#examples)
+* [Resources](#resources)
+* [Known Issues](#known-issues)
+* [How to obtain support](#how-to-obtain-support)
+* [Contributing](#contributing)
+* [License](#license)
+
 ## Description
-<!-- Please include SEO-friendly description -->
+
+SAP Automation Pilot is a low-code/no-code automation engine that's part of the SAP Business Technology Platform. It's goal is to simplify and automate complex manual processes in order to minimize the operational effort behind any cloud solution in the SAP BTP.
+
+This repository contains example Automation Pilot commands which demonstrate the automation of various scenarios such as:
+
+* Remediation & maintenance procedures
+* Health checking
+* Root cause analysis
+* Mass operations
+* And many more...
+
+These examples can be used with little to no changes or they can be modified to better fit the user's scenarios.
+
+:clapper: SAP Automation Pilot - Introduction
+
+[![Introduction Video](https://img.youtube.com/vi/BIS_OK1ZNXI/hqdefault.jpg)](https://www.youtube.com/watch?v=BIS_OK1ZNXI)
 
 ## Requirements
 
-## Download and Installation
+To use the examples in this repository, you'll need SAP Automation Pilot tenant. The easiest way to get one is with SAP BTP trial:
+
+* [SAP BTP Trial Overview](https://www.sap.com/products/technology-platform/trial.html)
+* [Tutorial: Get a Free Account on SAP BTP Trial](https://developers.sap.com/tutorials/hcp-create-trial-account.html)
+* [Tutorial: Setup Automation Pilot in SAP BTP](https://blogs.sap.com/2023/01/09/setup-configuration-of-automation-pilot-in-btp-cockpit/)
+* [Automation Pilot Initial Setup Documentation](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/76e77c4563d042b2b46f6c622be3a091.html)
+
+:information_source: Each example might have additional requirements. They will described in details in the example's README.
+
+## How to use
+
+Each example consists of a `catalog.json` file. To get started, you'll need to import the contents of this file in your SAP Automation Pilot tenant by performing the following steps:
+
+* Copy the content of the `catalog.json` file for the example that you want to use
+* Go to your SAP Automation Pilot tenant and navigate to `My Catalogs`
+* Click on `Import` in the upper right corner
+* Paste the catalog's content and import it
+
+More information on how to import a catalog can be found in the [documentation](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/48ee09640e094bcb9601d845f316f773.html).
+
+After importing, you'll see a new catalog tile - **Automation Pilot Examples**. From there, you can navigate to all commands and inputs which are part of the catalog.
+
+:information_source: All examples in this repository are part of the **Automation Pilot Examples** catalog.
+
+## Examples
+
+| Example | Description |
+|---------|-------------|
+|    [My Example](my-example)     | Short description of the example |
+|         |             |
+
+## Resources
+
+Check out the following resources if you want to get familiar with Automation Pilot:
+
+* [Discovery Center](https://discovery-center.cloud.sap/serviceCatalog/automation-pilot)
+* [Official Documentation](https://help.sap.com/docs/AUTOMATION_PILOT)
+* [API Business Hub](https://api.sap.com/package/SAPCloudPlatformAutomationPilot/overview)
+* [Blog Posts](https://blogs.sap.com/tags/73554900100800002433/)
+* [Tutorials](https://developers.sap.com/tutorial-navigator.html?search=automation+pilot)
 
 ## Known Issues
-<!-- You may simply state "No known issues. -->
+
+No known issues.
 
 ## How to obtain support
-[Create an issue](https://github.com/SAP-samples/<repository-name>/issues) in this repository if you find a bug or have questions about the content.
- 
+
+[Create an issue](https://github.com/SAP-samples/automation-pilot-examples/issues) in this repository if you find a bug or have questions about the content.
+
 For additional support, [ask a question in SAP Community](https://answers.sap.com/questions/ask.html).
 
 ## Contributing
+
 If you wish to contribute code, offer fixes or improvements, please send a pull request. Due to legal reasons, contributors will be asked to accept a DCO when they create the first pull request to this project. This happens in an automated fashion during the submission process. SAP uses [the standard DCO text of the Linux Foundation](https://developercertificate.org/).
 
 ## License
+
 Copyright (c) 2023 SAP SE or an SAP affiliate company. All rights reserved. This project is licensed under the Apache Software License, version 2.0 except as noted otherwise in the [LICENSE](LICENSE) file.
