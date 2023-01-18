@@ -12,6 +12,8 @@ Table of Contents
 * [Requirements](#requirements)
 * [How to use](#how-to-use)
 * [Examples](#examples)
+  * [Cloud Foundry](#cloud-foundry)
+  * [Neo](#neo)
 * [Resources](#resources)
 * [Known Issues](#known-issues)
 * [How to obtain support](#how-to-obtain-support)
@@ -64,10 +66,17 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 
 ## Examples
 
+### Cloud Foundry
+
 | Example | Description |
 |---------|-------------|
-|    [My Example](my-example)     | Short description of the example |
-|         |             |
+| [Mass Restart CF Apps](mass-restart-cf-apps) | Find and restart all applications in a given Cloud Foundry space |
+
+### Neo
+
+| Example | Description |
+|---------|-------------|
+| [Auto Scale Neo App](auto-scale-neo-app) | Automatically scales up a Neo application and monitors it over time, potentially scaling it back down |
 
 ## Resources
 

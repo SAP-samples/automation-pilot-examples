@@ -1,0 +1,310 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "upscaled": "$(.ScaleUp.executed)",
+          "downscaled": "$(.ScaleDown.executed)"
+        },
+        "executors": [
+          {
+            "execute": "monitoring-sapcp:GetJavaAppMetrics:1",
+            "input": {
+              "clientId": "$(.execution.input.clientId)",
+              "resourceName": "$(.execution.input.resourceName)",
+              "clientSecret": "$(.execution.input.clientSecret)",
+              "region": "$(.execution.input.region)",
+              "subAccount": "$(.execution.input.subAccount)"
+            },
+            "alias": "GetMetrics",
+            "progressMessage": null,
+            "initialDelay": {
+              "interval": "15s",
+              "when": null
+            },
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "applm-sapcp:AddNeoAppInstances:1",
+            "input": {
+              "clientId": "$(.execution.input.clientId)",
+              "instances": "1",
+              "clientSecret": "$(.execution.input.clientSecret)",
+              "resourceName": "$(.execution.input.resourceName)",
+              "region": "$(.execution.input.region)",
+              "subAccount": "$(.execution.input.subAccount)"
+            },
+            "alias": "ScaleUp",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.GetMetrics.output.processesMetrics | map(.metrics[] | select(.name == \"CPU Load\").value) | all(. > $.execution.input.scaleUpThreshold))",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "monitoring-sapcp:GetJavaAppMetrics:1",
+            "input": {
+              "clientId": "$(.execution.input.clientId)",
+              "resourceName": "$(.execution.input.resourceName)",
+              "clientSecret": "$(.execution.input.clientSecret)",
+              "region": "$(.execution.input.region)",
+              "subAccount": "$(.execution.input.subAccount)"
+            },
+            "alias": "MonitorOverTime",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.ScaleUp.executed)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": {
+              "maxCount": 60,
+              "until": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.MonitorOverTime.output.processesMetrics | map(.metrics[] | select(.name == \"CPU Load\").value) | all(. < $.execution.input.scaleDownThreshold))",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "delay": "30s",
+              "failOnMaxCount": true
+            },
+            "errorMessages": []
+          },
+          {
+            "execute": "applm-sapcp:RemoveNeoAppInstances:1",
+            "input": {
+              "clientId": "$(.execution.input.clientId)",
+              "instances": "1",
+              "clientSecret": "$(.execution.input.clientSecret)",
+              "resourceName": "$(.execution.input.resourceName)",
+              "region": "$(.execution.input.region)",
+              "subAccount": "$(.execution.input.subAccount)"
+            },
+            "alias": "ScaleDown",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "AND",
+                  "cases": [
+                    {
+                      "expression": "$(.MonitorOverTime.executed)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:AutoScaleNeoApp:1",
+      "name": "AutoScaleNeoApp",
+      "description": "Automatically scales up a Neo application and monitors it over time, potentially scaling it back down",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "clientId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Neo Platform API oAuth 2.0 client ID with manage applications scopes, e.g. e4bbc653-abef-375f-a681-c1dac12341234"
+        },
+        "scaleDownThreshold": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "30",
+          "defaultValueFromInput": null,
+          "description": "CPU load threshold in percentage for scaling down an instance"
+        },
+        "clientSecret": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Neo Platform API oAuth 2.0 client secret for the specified client ID, e.g. abcdc1dac12341234"
+        },
+        "resourceName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Neo application, e.g. espm"
+        },
+        "scaleUpThreshold": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "70",
+          "defaultValueFromInput": null,
+          "description": "CPU load threshold in percentage for scaling up an instance"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Neo region (as defined in NeoRegionData), e.g. neo-eu1, neo-us1, etc."
+        },
+        "subAccount": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Neo subaccount, e.g.: abc123456"
+        }
+      },
+      "outputKeys": {
+        "upscaled": {
+          "type": "boolean",
+          "sensitive": false,
+          "description": "Whether an up scale was performed"
+        },
+        "downscaled": {
+          "type": "boolean",
+          "sensitive": false,
+          "description": "Whether a down scaled was performed"
+        }
+      },
+      "tags": {
+        "env": "neo"
+      }
+    }
+  ]
+}
