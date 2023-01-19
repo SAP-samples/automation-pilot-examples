@@ -14,6 +14,7 @@ Table of Contents
 * [Requirements](#requirements)
 * [How to use](#how-to-use)
 * [Examples](#examples)
+  * [HANA Cloud](#hana-cloud)
   * [Cloud Foundry](#cloud-foundry)
   * [Neo](#neo)
 * [Resources](#resources)
@@ -67,6 +68,12 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 :information_source: All examples in this repository are part of the **Automation Pilot Examples** catalog.
 
 ## Examples
+
+### HANA Cloud
+
+| Example | Description |
+|---------|-------------|
+| [Check HANA Cloud Backup](check-hana-cloud-backup) | Check regularly whether there was a recent backup of a SAP HANA Cloud database instance |
 
 ### Cloud Foundry
 
