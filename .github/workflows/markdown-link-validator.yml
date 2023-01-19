@@ -1,0 +1,36 @@
+# This workflow uses the lychee-action to check the links 
+# in your markdown files for validity. 
+# You can exclude links via a .lycheeignore file in your repository root.
+# You find further information about lychee-action in the documentation at:
+# https://github.com/lycheeverse/lychee-action
+
+name: Readme Links Watcher
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  cron:
+    schedule: '35 14 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  links-watcher:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout source code"
+        uses: actions/checkout@v2
+
+      - name: Check links in markdown files
+        id: lychee
+        uses: lycheeverse/lychee-action@v1.2.0
+        with:
+          fail: true
+          args: --verbose --no-progress --exclude-file .lycheeignore --exclude-mail --exclude-all-private **/*.md
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
