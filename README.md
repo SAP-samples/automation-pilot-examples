@@ -5,6 +5,8 @@
 <!--- Register repository https://api.reuse.software/register, then add REUSE badge:
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP-samples/automation-pilot-examples)](https://api.reuse.software/info/github.com/SAP-samples/automation-pilot-examples)
 -->
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
+[![Activity](https://img.shields.io/github/commit-activity/m/SAP-samples/automation-pilot-examples)](https://github.com/SAP-samples/automation-pilot-examples/pulse)
 
 Table of Contents
 
