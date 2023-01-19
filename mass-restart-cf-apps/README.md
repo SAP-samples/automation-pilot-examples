@@ -8,7 +8,7 @@ Table of Contents
 
 ## Description
 
-The command detects all Cloud Foundry applications in a given space and restarts them one by one. For simplicity the command performs stop-start restart which might cause downtime for your applications. However, this could be easily changed to a rolling restart.
+This example command detects all Cloud Foundry applications in a given space and restarts them one by one. For simplicity the command performs stop-start restart which might cause downtime for your applications. However, this could be easily changed to a rolling restart.
 
 ## Requirements
 

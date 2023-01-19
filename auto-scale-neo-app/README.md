@@ -12,7 +12,7 @@ BTP Neo this does not provide a full-fledged and flexible autoscaling option. Th
 
 Furthermore, with the help of SAP Alert Notification this command can be automatically triggered whenever the CPU load metric of your application instance reaches a critical level.
 
-This example is described in details by this blog post: [Application autoscaling with Automation Pilot and Alert Notification](https://blogs.sap.com/2021/06/04/application-autoscaling-with-automation-pilot-and-alert-notification-in-sap-btp-neo-environment/)
+This example is described in further details by this blog post: [Application autoscaling with Automation Pilot and Alert Notification](https://blogs.sap.com/2021/06/04/application-autoscaling-with-automation-pilot-and-alert-notification-in-sap-btp-neo-environment/)
 
 ## Requirements
 
