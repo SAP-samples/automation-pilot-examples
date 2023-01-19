@@ -1,0 +1,26 @@
+name: Links PR Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  linkChecker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Restore lychee cache
+        uses: actions/cache@v3
+        with:
+          path: .lycheecache
+          key: cache-lychee-${{ github.sha }}
+          restore-keys: cache-lychee-
+
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v1.5.4
+        with:
+          args: --cache --max-cache-age 1d --verbose --no-progress './**/*.md'
+          fail: true
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
