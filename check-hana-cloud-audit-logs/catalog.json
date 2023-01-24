@@ -32,7 +32,7 @@
                   "semantic": "OR",
                   "cases": [
                     {
-                      "expression": "$(.ReadAuditLogs.output.result | toArray | length)",
+                      "expression": "$(.ReadAuditLogs.output.result | toArray[] | length)",
                       "operator": "EQUALS",
                       "semantic": "OR",
                       "values": [
@@ -47,7 +47,7 @@
             "repeat": null,
             "errorMessages": [
               {
-                "message": "Detected $(.ReadAuditLogs.output.result | toArray | length) suspicious audit log entries. Please check if these activities are justified.",
+                "message": "Detected suspicious audit log entries in the policies listed below. Please check if these activities are justified:$(\"\\n\\n\")$(.ReadAuditLogs.output.result | toArray[] | map(\"\\(.[0]) by \\(.[1]) (\\(.[4]) entries)\") | join(\"\\n\"))",
                 "when": {
                   "semantic": "OR",
                   "conditions": [
@@ -55,7 +55,7 @@
                       "semantic": "AND",
                       "cases": [
                         {
-                          "expression": "$(.ReadAuditLogs.output.result | toArray | length)",
+                          "expression": "$(.ReadAuditLogs.output.result | toArray[] | length)",
                           "operator": "GREATER_THAN",
                           "semantic": "OR",
                           "values": [
