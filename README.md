@@ -73,6 +73,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | Example | Description |
 |---------|-------------|
 | [Check HANA Cloud Backup](check-hana-cloud-backup) | Check regularly whether there was a recent backup of a SAP HANA Cloud database instance |
+| [Check HANA Cloud Audit Logs](check-hana-cloud-audit-logs) | Check regularly for any suspicious audit log entries in a SAP HANA Cloud database instance |
 
 ### Cloud Foundry
 

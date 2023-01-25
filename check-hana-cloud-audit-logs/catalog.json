@@ -1,0 +1,134 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {},
+        "executors": [
+          {
+            "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "statement": "SELECT\n    AUDIT_POLICY_NAME,\n    USER_NAME,\n    APPLICATION_NAME,\n    APPLICATION_USER_NAME,\n    COUNT(*)\nFROM\n    AUDIT_LOG\nWHERE\n    TIMESTAMP > (ADD_SECONDS(CURRENT_TIMESTAMP, -86400))\n    AND NOT (\n        (\n            AUDIT_POLICY_NAME = 'All successful logins'\n            AND USER_NAME NOT IN ('DBADMIN')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'All unsuccessful logins'\n            AND USER_NAME = NULL\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'Authorizations changes'\n            AND USER_NAME IN ('SYSTEM', '_SYS_DI_TO')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'User administration'\n            AND USER_NAME IN ('SYSTEM', '_SYS_DI_TO')\n        )\n        OR (\n            AUDIT_POLICY_NAME = 'HDI administration'\n            AND USER_NAME IN ('SYSTEM', '_SYS_DI_TO')\n        )\n    )\nGROUP BY\n    AUDIT_POLICY_NAME,\n    USER_NAME,\n    APPLICATION_NAME,\n    APPLICATION_USER_NAME;",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.user)",
+              "timeout": "10"
+            },
+            "alias": "ReadAuditLogs",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$( [.ReadAuditLogs.output.result | toArray[][] ] | length)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "Detected suspicious audit log entries in the policies listed below. Please check if these activities are justified:$(\"\\n\\n\")$(.ReadAuditLogs.output.result | toArray[] | map(\"\\(.[0]) by \\(.[1] // \"UNKNOWN\") (\\(.[4]) entries)\") | join(\"\\n\"))",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "AND",
+                      "cases": [
+                        {
+                          "expression": "$( [.ReadAuditLogs.output.result | toArray[][] ] | length)",
+                          "operator": "GREATER_THAN",
+                          "semantic": "OR",
+                          "values": [
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:CheckHanaCloudAuditLogs:1",
+      "name": "CheckHanaCloudAuditLogs",
+      "description": "Checks HANA Cloud database for any suspicious audit logs in the last day.",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the specified database user."
+        },
+        "connectionUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "JDBC connection URL for the database."
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of a database user."
+        }
+      },
+      "outputKeys": {},
+      "tags": {}
+    }
+  ]
+}
