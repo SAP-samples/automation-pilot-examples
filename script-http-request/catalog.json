@@ -10,11 +10,11 @@
       "configuration": {
         "values": [],
         "output": {
-          "headers": "$(.CurlScript.output.output[1] | fromBase64 | fromProperties)",
-          "size": "$(.CurlScript.output.output[2])",
-          "time": "$(.CurlScript.output.output[4])",
-          "body": "$(.CurlScript.output.output[0] | fromBase64)",
-          "status": "$(.CurlScript.output.output[3])"
+          "headers": "$(.Script.output.output[1] | fromBase64 | fromProperties)",
+          "size": "$(.Script.output.output[2])",
+          "time": "$(.Script.output.output[4])",
+          "body": "$(.Script.output.output[0] | fromBase64)",
+          "status": "$(.Script.output.output[3])"
         },
         "executors": [
           {
@@ -24,7 +24,7 @@
               "script": "#!/usr/bin/env bash\n\nfunction unescape() {\n    echo \"${1//\\\\\\\"/\\\"}\"\n}\n\nflags=()\n\n# Transform each request header to a cURL flag\nwhile read -r HEADER; do\n    flags+=( --header \"$HEADER\" )\ndone < <(echo \"$HTTP_HEADERS\" | jq -r 'to_entries | map(\"\\(.key): \\(.value)\")[]')\n\n# Build a cURL flag depending on the authentication mechanism\nif [[ -n \"$HTTP_AUTHORIZATION_HEADER\" ]]; then\n    flags+=( --header \"$(unescape \"Authorization: $HTTP_AUTHORIZATION_HEADER\")\" )\nelif [[ -n \"$HTTP_USER\" ]]; then\n    flags+=( --user \"$(unescape \"$HTTP_USER:$HTTP_PASSWORD\")\" )\nfi\n\n# Perform the actual HTTP request\ncurl --silent \"$(unescape \"$HTTP_URL\")\" \\\n    --request \"$HTTP_METHOD\" \\\n    --data \"$(unescape \"$HTTP_BODY\")\" \\\n    --max-time \"$HTTP_TIMEOUT\" \\\n    --user-agent \"SAP-Automation-Pilot\"\\\n    --output body.txt \\\n    --dump-header headers.txt \\\n    --write-out \"%{json}\" \\\n    \"${flags[@]}\" > stats.txt\n\n# Output response body\nif ! test -f body.txt; then\n    echo\nelif jq type body.txt &>/dev/null; then\n    jq -r \"${HTTP_RESPONSE_BODY_TRANSFORMER:-.}\" body.txt 2>/dev/null | base64 --wrap=0 && echo\nelse\n    base64 --wrap=0 body.txt && echo\nfi\n\n# Output response headers\nsed -e '1d' -e '$d' -e 's|: |=|' headers.txt | base64 --wrap=0 && echo\n# Output download size\njq -r '.size_download' stats.txt\n# Output http code\njq -r '.http_code' stats.txt\n# Output total time\njq -r '.time_total * 1000 | floor' stats.txt\n",
               "timeout": "$(.execution.input.timeout + 15)"
             },
-            "alias": "CurlScript",
+            "alias": "Script",
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -37,8 +37,8 @@
         ],
         "listeners": []
       },
-      "id": "examples-<<<TENANT_ID>>>:ScriptHttpRequest:1",
-      "name": "ScriptHttpRequest",
+      "id": "examples-<<<TENANT_ID>>>:HttpRequestViaScript:1",
+      "name": "HttpRequestViaScript",
       "description": "Execute HTTP request by using the ExecuteScript and utilizing cURL",
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,

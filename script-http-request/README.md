@@ -5,6 +5,7 @@ Table of Contents
 * [Description](#description)
 * [Requirements](#requirements)
 * [How to use](#how-to-use)
+* [Expected result](#expected-result)
 
 ## Description
 
@@ -28,7 +29,7 @@ There are no mandatory requirements. This command can perform HTTP requests to a
 
 ## How to use
 
-Import the content of [examples catalog](catalog.json) in your Automation Pilot tenant. Navigate to the *ScriptHttpRequest* command and trigger it.
+Import the content of [examples catalog](catalog.json) in your Automation Pilot tenant. Navigate to the *HttpRequestViaScript* command and trigger it.
 
 You'll need to provide values for the following input keys:
 
@@ -40,4 +41,20 @@ You'll need to provide values for the following input keys:
 * *user* - Optional: User name to use for server authentication
 * *password* - Optional: Password to use for server authentication
 * *authorizationHeader* - Optional: Explicit value for the HTTP authorization header. Overwrites all other forms of authentication
-* *responseBodyTransformer* - Optional: JQ expression to transform the response body with. The format must follow the one described in https://github.com/stedolan/jq
+* *responseBodyTransformer* - Optional: JQ expression to transform the response body with. The format must follow the one described in <https://github.com/stedolan/jq>
+
+## Expected result
+
+Let's execute the *HttpRequestViaScript* command with the following input:
+
+* *method* - GET
+* *url* - https://eu10.autopilot.ondemand.com/health
+* *timeout* - 30
+
+After a few seconds, the execution should finish successfully:
+
+![Finished Execution](assets/finished-execution.png)
+
+The execution's output should be similar to this one:
+
+![Execution Output](assets/execution-output.png)
