@@ -15,6 +15,7 @@ Table of Contents
   * [HANA Cloud](#hana-cloud)
   * [Cloud Foundry](#cloud-foundry)
   * [Neo](#neo)
+  * [Scripting](#scripting)
 * [Resources](#resources)
 * [Known Issues](#known-issues)
 * [How to obtain support](#how-to-obtain-support)
@@ -85,6 +86,12 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | Example | Description |
 |---------|-------------|
 | [Auto Scale Neo App](auto-scale-neo-app) | Automatically scales up a Neo application and monitors it over time, potentially scaling it back down |
+
+### Scripting
+
+| Example | Description |
+|---------|-------------|
+| [HTTP Request via Script](script-http-request) | Perform HTTP requests with large timeouts by utilizing the ExecuteScript command |
 
 ## Resources
 
