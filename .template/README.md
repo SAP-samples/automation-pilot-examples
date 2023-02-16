@@ -7,6 +7,7 @@ Table of Contents
 * [Description](#description)
 * [Requirements](#requirements)
 * [How to use](#how-to-use)
+* [Expected result](#expected-result)
 
 ## Description
 
@@ -21,3 +22,7 @@ To use this example you'll need the following:
 ## How to use
 
 <!-- Detailed description on how to use the example -->
+
+## Expected result
+
+<!-- Detailed description on the expected result -->
