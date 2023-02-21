@@ -1,0 +1,381 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "fileUrl": "$(.BackupToGitHub.output.fileUrl)"
+        },
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"content-type\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.execution.metadata.autoPiUrl)/api/v1/catalogs/$(.execution.input.catalog | toUrlEncoded)-$(.execution.metadata.tenantId)",
+              "timeout": "10"
+            },
+            "alias": "GetCatalog",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.GetCatalog.output.status)",
+                        "operator": "DOES_NOT_START_WITH",
+                        "semantic": "OR",
+                        "values": [
+                          "4"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "$(.GetCatalog.output.body | toObject.message)",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "$(.GetCatalog.output.status)",
+                          "operator": "STARTS_WITH",
+                          "semantic": "OR",
+                          "values": [
+                            "4"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"content-type\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.execution.metadata.autoPiUrl)/api/v1/commands?catalog=$(.execution.input.catalog)-$(.execution.metadata.tenantId)",
+              "timeout": "10"
+            },
+            "alias": "GetCommands",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.GetCommands.output.status)",
+                        "operator": "DOES_NOT_START_WITH",
+                        "semantic": "OR",
+                        "values": [
+                          "4"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "$(.GetCommands.output.body | toObject.message)",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "$(.GetCommands.output.status)",
+                          "operator": "STARTS_WITH",
+                          "semantic": "OR",
+                          "values": [
+                            "4"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"content-type\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.execution.metadata.autoPiUrl)/api/v1/inputs?catalog=$(.execution.input.catalog)-$(.execution.metadata.tenantId)",
+              "timeout": "10"
+            },
+            "alias": "GetInputs",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.GetInputs.output.status)",
+                        "operator": "DOES_NOT_START_WITH",
+                        "semantic": "OR",
+                        "values": [
+                          "4"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "$(.GetInputs.output.body | toObject.message)",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "$(.GetInputs.output.status)",
+                          "operator": "STARTS_WITH",
+                          "semantic": "OR",
+                          "values": [
+                            "4"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "execute": "github-sapcp:CreateOrUpdateGitHubFile:1",
+            "input": {
+              "owner": "$(.execution.input.owner)",
+              "path": "catalogs/$(.execution.input.catalog).json",
+              "githubServer": "$(.execution.input.githubServer)",
+              "repository": "$(.execution.input.repository)",
+              "message": "backup $(.execution.input.catalog) catalog: $(nowMillis | toDate(\"yyyy-MM-dd HH:mm:ss\"))",
+              "branch": "$(.execution.input.branch)",
+              "content": "$((.GetCatalog.output.body | toObject) + { inputs: .GetInputs.output.body | toArray, commands: .GetCommands.output.body | toArray })",
+              "token": "$(.execution.input.token)"
+            },
+            "alias": "BackupToGitHub",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:BackupCatalog:1",
+      "name": "BackupCatalog",
+      "description": "Exports commands and inputs which are part of the specified catalog and saves them in a GitHub repository",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "owner": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The account owner of the GitHub repository. This could be the name of a personal account or organization."
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password of an Automation Pilot service account with 'Read' permissions"
+        },
+        "catalog": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of the Automation Pilot catalog. Example value - welcome"
+        },
+        "githubServer": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "GitHub's base API URL. Supports GitHub Enterprise only. Example value - github.acme.com"
+        },
+        "repository": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name of the GitHub repository."
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of an Automation Pilot service account with 'Read' permissions"
+        },
+        "branch": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "main",
+          "defaultValueFromInput": null,
+          "description": "The branch name."
+        },
+        "token": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "GitHub personal access token. To manage files in private repositories, the repo scope is required."
+        }
+      },
+      "outputKeys": {
+        "fileUrl": {
+          "type": "string",
+          "sensitive": false,
+          "description": "URL to the GitHub file that contains the catalog's content"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}
