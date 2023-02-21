@@ -97,7 +97,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 
 | Example | Description |
 |---------|-------------|
-| [Backup Catalog to GitHub](backup-automation-pilot-catalog) | Backup catalog's content to GitHub |
+| [Backup Catalog to GitHub](backup-catalog) | Backup catalog's content to GitHub |
 
 ## Resources
 
