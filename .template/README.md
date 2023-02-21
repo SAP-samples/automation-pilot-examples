@@ -25,4 +25,4 @@ To use this example you'll need the following:
 
 ## Expected result
 
-<!-- Detailed description on the expected result -->
+<!-- Detailed description on the expected result after executing the example -->
