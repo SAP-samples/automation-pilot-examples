@@ -16,6 +16,7 @@ Table of Contents
   * [Cloud Foundry](#cloud-foundry)
   * [Neo](#neo)
   * [Scripting](#scripting)
+  * [Automation Pilot](#automation-pilot)
 * [Resources](#resources)
 * [Known Issues](#known-issues)
 * [How to obtain support](#how-to-obtain-support)
