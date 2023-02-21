@@ -93,6 +93,12 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 |---------|-------------|
 | [HTTP Request via Script](script-http-request) | Perform HTTP requests with large timeouts by utilizing the ExecuteScript command |
 
+### Automation Pilot
+
+| Example | Description |
+|---------|-------------|
+| [Backup Catalog to GitHub](backup-catalog) | Backup catalog's content to GitHub |
+
 ## Resources
 
 Check out the following resources if you want to get familiar with Automation Pilot:
