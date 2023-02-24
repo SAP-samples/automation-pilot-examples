@@ -9,9 +9,9 @@ Table of Contents
 
 ## Description
 
-Every version of the SAP HANA Cloud database offers patches for up to seven months after its initial release. They contain bug fixes, security updates, and other important improvements.
+Each version of the SAP HANA Cloud database offers patches for up to seven months after its initial release. They contain bug fixes, security updates, and other important improvements.
 
-Keeping your HANA Cloud database up to date is one of the most important things that you can do to maintain its security and reliability. However, patch updates aren't applied automatically by default - customers are expected to perform these updates manually.
+Keeping your HANA Cloud database up to date is one of the most important tasks that you can do to maintain its security and reliability. However, patch updates aren't applied automatically by default - customers are expected to perform these updates manually.
 
 SAP Automation Pilot can be used to fully automate the whole patching process. The command provided in this example performs the following steps:
 
@@ -20,7 +20,7 @@ SAP Automation Pilot can be used to fully automate the whole patching process. T
 * Performs an update to the available patch version.
 * If no new patch version is available, the execution finishes without doing any more work.
 
-By default, applying a patch requires the database to be restarted, which causes downtime. Because of this, the command pauses before the actual update until an explicit confirmation. If downtime isn't a concern or the database is configured to perform updates without a restart, the confirmation can be disabled. More information can be found on this page: [Upgrading Without Restart](https://help.sap.com/docs/HANA_CLOUD/9ae9104a46f74a6583ce5182e7fb20cb/c26e42e6a7a4411191441c8d48fd9b11.html)
+By default, applying a patch requires the database to be restarted, which causes downtime. Because of this, the command pauses before the actual update until an explicit confirmation from your DevOps has been granted. If downtime isn't a concern or the database is configured to perform updates without a restart, the confirmation can be disabled. More information can be found on this page: [Upgrading Without Restart](https://help.sap.com/docs/HANA_CLOUD/9ae9104a46f74a6583ce5182e7fb20cb/c26e42e6a7a4411191441c8d48fd9b11.html)
 
 ## Requirements
 
@@ -50,6 +50,10 @@ You'll need to provide values for the following input keys:
 * *password* - Password of your technical user
 * *identityProvider* - Optional: origin key of your identity provider. Defaults to sap.ids
 * *shouldConfirmBeforeUpdate* - Optional: whether to require confirmation before starting the update, if there's one available. Defaults to true
+
+:warning: Make sure that you using the correct *region* value by verifying it in the BTP Cockpit Overview page. For example, the region shown below is *cf-eu10-004*:
+
+![BTP Cockpit Overview](assets/btp-cloud-foundry-env.png)
 
 This command is most useful if executed regularly. Automation Pilot allows executions to be automatically triggered on regular intervals - hourly, daily, weekly, monthly or yearly. You can find more details in the [documentation](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/96863a2380d24ba4bab0145bbd78e411.html).
 
