@@ -19,13 +19,12 @@ To collect all databases, we utilize the *ListServiceInstances* command which is
 ![List Parameters](assets/list-parameters.png)
 
 :warning: The commands in this example might cause downtime for a large amount of databases. Please make sure that you are not using them on productive systems.
-
 ## Requirements
 
 To use this example you'll need the following:
 
 * One or more HANA Cloud databases in the Cloud Foundry environment
-* Instance of [SAP Service Manager](https://help.sap.com/docs/service-manager/sap-service-manager/sap-service-manager) with plan *subaccount-admin* and a service key/binding
+* Instance of [SAP Service Manager](https://help.sap.com/docs/service-manager/sap-service-manager/sap-service-manager) with plan *subaccount-admin* and a service key/bindin with default configurations.
 * Platform user with *Space Developer* role in the spaces where the databases reside
 
 :warning: If you are planning to use SAP Universal ID, please keep [SAP Note 3085908](https://launchpad.support.sap.com/#/notes/3085908) in mind
