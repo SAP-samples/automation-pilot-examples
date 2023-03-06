@@ -1,0 +1,269 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "spaceId": "$(.CreateSpace.output.spaceId)",
+          "region": "$(.EnableCloudFoundry.output.region)",
+          "xsuaaServiceKey": "$(.CreateXsuaaKey.output.serviceBinding)",
+          "orgId": "$(.EnableCloudFoundry.output.orgId)"
+        },
+        "executors": [
+          {
+            "execute": "cis-sapcp:EnableCloudFoundry:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.org)",
+              "displayName": "$(.execution.input.org)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "user": "$(.execution.input.user)",
+              "plan": "standard"
+            },
+            "alias": "EnableCloudFoundry",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.execution.input.admins | map({targetUser: .}))",
+              "defaultValues": "{\"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"region\": \"$(.EnableCloudFoundry.output.region)\", \"org\": \"$(.EnableCloudFoundry.output.orgId)\", \"role\": \"OrgManager\"}",
+              "command": "cf-sapcp:AssignCfOrgRole:1"
+            },
+            "alias": "AssignOrgManagers",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "cf-sapcp:CreateCfSpace:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.org)",
+              "displayName": "$(.execution.input.space)",
+              "region": "$(.EnableCloudFoundry.output.region)",
+              "user": "$(.execution.input.user)"
+            },
+            "alias": "CreateSpace",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.execution.input.admins | map({targetUser: .}))",
+              "defaultValues": "{\"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"region\": \"$(.EnableCloudFoundry.output.region)\", \"org\": \"$(.EnableCloudFoundry.output.orgId)\", \"space\": \"$(.CreateSpace.output.spaceId)\", \"role\": \"SpaceManager\"}",
+              "command": "cf-sapcp:AssignCfSpaceRole:1"
+            },
+            "alias": "AssignSpaceManagers",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "cf-sapcp:CreateCfServiceInstance:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "instanceName": "XsuaaAccessInstance",
+              "org": "$(.execution.input.org)",
+              "service": "xsuaa",
+              "region": "$(.EnableCloudFoundry.output.region)",
+              "user": "$(.execution.input.user)",
+              "plan": "apiaccess",
+              "space": "$(.CreateSpace.output.spaceId)"
+            },
+            "alias": "CreateXsuaaInstance",
+            "progressMessage": null,
+            "initialDelay": {
+              "interval": "15s",
+              "when": null
+            },
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "cf-sapcp:CreateCfServiceBinding:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.org)",
+              "serviceInstance": "$(.CreateXsuaaInstance.output.serviceInstance)",
+              "region": "$(.EnableCloudFoundry.output.region)",
+              "bindingName": "XsuaaAccessKey",
+              "user": "$(.execution.input.user)",
+              "space": "$(.execution.input.space)"
+            },
+            "alias": "CreateXsuaaKey",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:PrepareCloudFoundryEnvironment:1",
+      "name": "PrepareCloudFoundryEnvironment",
+      "description": "Enable Cloud Foundry environment in a subaccount, create a Cloud Foundry space and configure user access",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for SAP BTP user account used for authentication"
+        },
+        "org": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Display name of the Cloud Foundry organization"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The original JSON, presented by SAP Cloud Management service for local plan"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email for SAP BTP user account used for authentication."
+        },
+        "space": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Display name of the Cloud Foundry space"
+        },
+        "admins": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Additional users that will receive the OrgManager and SpaceManager roles"
+        }
+      },
+      "outputKeys": {
+        "spaceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "GUID of the Cloud Foundry space"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Technical name of the SAP BTP region in which the environment was enabled, e.g., cf-us30, cf-eu10, cf-eu10-004"
+        },
+        "xsuaaServiceKey": {
+          "type": "object",
+          "sensitive": true,
+          "description": "Service Key for SAP Authorization and Trust Management Service (plan apiaccess)"
+        },
+        "orgId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "GUID of the Cloud Foundry organization"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}

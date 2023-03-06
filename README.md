@@ -78,6 +78,15 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [Check HANA Cloud Backup](check-hana-cloud-backup) | Check regularly whether there was a recent backup of a SAP HANA Cloud database instance |
 | [Check HANA Cloud Audit Logs](check-hana-cloud-audit-logs) | Check regularly for any suspicious audit log entries in a SAP HANA Cloud database instance |
 
+### BTP Provisioning
+
+| Example | Description |
+|---------|-------------|
+| [Create and Configure BTP Subaccount](prepare-btp-subaccount) | Create a new BTP subaccount, configure entitlements and setup essential service instances |
+| [Setup Cloud Foundry BTP Environment](prepare-btp-environment) | Enable the Cloud Foundry environment, create a space and setup a service instance |
+| [Grant Privileges](grant-privileges) | Grant privileges to users on subaccount, organization and space level |
+| [Reassign Identity Provider](reassign-identity-provider) | Migrate all users on BTP subaccount level from one identity provider to another |
+
 ### Cloud Foundry
 
 | Example | Description |
