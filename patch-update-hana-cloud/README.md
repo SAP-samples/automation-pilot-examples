@@ -22,6 +22,8 @@ SAP Automation Pilot can be used to fully automate the whole patching process. T
 
 By default, applying a patch requires the database to be restarted, which causes downtime. Because of this, the command pauses before the actual update until an explicit confirmation from your DevOps has been granted. If downtime isn't a concern or the database is configured to perform updates without a restart, the confirmation can be disabled. More information can be found on this page: [Upgrading Without Restart](https://help.sap.com/docs/HANA_CLOUD/9ae9104a46f74a6583ce5182e7fb20cb/c26e42e6a7a4411191441c8d48fd9b11.html)
 
+:warning: You cannot revert to the previous version after the upgrade was performed. Make sure to verify that everything works as expected on a test system before applying it in production.
+
 ## Requirements
 
 To use this example you'll need the following:
