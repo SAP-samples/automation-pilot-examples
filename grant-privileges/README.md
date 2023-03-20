@@ -43,7 +43,7 @@ To use this example you'll need the following:
 
 Check out the following resources for more information:
 
-* [Example: Create and Configure BTP Subaccount](../prepare-subaccount/)
+* [Example: Create and Configure BTP Subaccount](../prepare-btp-subaccount/)
 * [Example: Setup Cloud Foundry BTP Environment](../prepare-btp-environment/)
 * [Getting Started in the Cloud Foundry Environment](https://help.sap.com/docs/btp/sap-business-technology-platform/getting-started-in-cloud-foundry-environment)
 * [SAP Authorization and Trust Management Service](https://help.sap.com/docs/CP_AUTHORIZ_TRUST_MNG)

@@ -35,7 +35,7 @@ To use this example you'll need the following:
 
 Check out the following resources for more information:
 
-* [Example: Create and Configure BTP Subaccount](../prepare-subaccount/)
+* [Example: Create and Configure BTP Subaccount](../prepare-btp-subaccount/)
 * [Getting Started in the Cloud Foundry Environment](https://help.sap.com/docs/btp/sap-business-technology-platform/getting-started-in-cloud-foundry-environment)
 * [Getting Access to SAP Cloud Management Service](https://help.sap.com/docs/BTP/65de2977205c403bbc107264b8eccf4b/3670474a58c24ac2b082e76cbbd9dc19.html)
 * [SAP Cloud Management Service - Service Plans](https://help.sap.com/docs/btp/sap-business-technology-platform/sap-cloud-management-service-service-plans)
