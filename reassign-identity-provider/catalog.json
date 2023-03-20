@@ -1,0 +1,256 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {},
+        "executors": [
+          {
+            "execute": "xsuaa-sapcp:GetSubAccountUser:1",
+            "input": {
+              "targetIdentityProvider": "$(.execution.input.currentIdentityProvider)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "targetUser": "$(.execution.input.targetUser)"
+            },
+            "alias": "GetUserCurrentIDP",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "xsuaa-sapcp:AssignRoleCollections:1",
+            "input": {
+              "targetIdentityProvider": "$(.execution.input.newIdentityProvider)",
+              "roleCollections": "$(.GetUserCurrentIDP.output.roleCollections)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "targetUser": "$(.execution.input.targetUser)"
+            },
+            "alias": "CreateUserNewIDP",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "xsuaa-sapcp:RemoveSubAccountUser:1",
+            "input": {
+              "targetIdentityProvider": "$(.execution.input.currentIdentityProvider)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "targetUser": "$(.execution.input.targetUser)"
+            },
+            "alias": "RemoveUserCurrentIDP",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:ReassignIdentityProvider:1",
+      "name": "ReassignIdentityProvider",
+      "description": "Reassign the identity provider of the given user in a BTP subaccount",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "newIdentityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "New Identity provider that must be assigned to the target user"
+        },
+        "currentIdentityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Identity provider that is currently assigned to the target user"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The original JSON, presented by SAP Authorization and Trust Management Service for apiaccess plan"
+        },
+        "targetUser": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Email address of the target user"
+        }
+      },
+      "outputKeys": {},
+      "tags": {
+        "demo": ""
+      }
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "reassignedUsers": "$(.ListUsers.output.users)"
+        },
+        "executors": [
+          {
+            "execute": "xsuaa-sapcp:ListSubAccountUsers:1",
+            "input": {
+              "targetIdentityProvider": "$(.execution.input.currentIdentityProvider)",
+              "pageSize": "500",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "ListUsers",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.ListUsers.output.users | map({ targetUser: .user }))",
+              "defaultValues": "{\"serviceKey\": \"$(.execution.input.serviceKey | toEscapedJson)\", \"currentIdentityProvider\": \"$(.execution.input.currentIdentityProvider)\", \"newIdentityProvider\": \"$(.execution.input.newIdentityProvider)\"}",
+              "command": "examples-<<<TENANT_ID>>>:ReassignIdentityProvider:1"
+            },
+            "alias": "ReassignIdentityProvider",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:MassReassignIdentityProvider:1",
+      "name": "MassReassignIdentityProvider",
+      "description": "Reassign the identity provider of all users in a given BTP subaccount",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "newIdentityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "New Identity provider that must be assigned to the target users"
+        },
+        "currentIdentityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Identity provider that is currently assigned to the target users"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The original JSON, presented by SAP Authorization and Trust Management Service for apiaccess plan"
+        }
+      },
+      "outputKeys": {
+        "reassignedUsers": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Users which identity provider was reassigned"
+        }
+      },
+      "tags": {
+        "demo": ""
+      }
+    }
+  ]
+}

@@ -229,11 +229,11 @@
             "execute": "xsuaa-sapcp:AssignRoleCollections:1",
             "input": {
               "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
-              "roleCollections": "[\"Subaccount Administrator\"]",
+              "roleCollections": "[\"Subaccount Viewer\"]",
               "serviceKey": "$(.execution.input.serviceKey)",
               "targetUser": "$(.execution.input.targetUser)"
             },
-            "alias": "AssignSubaccountAdmin",
+            "alias": "AssignSubaccountViewer",
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -247,7 +247,7 @@
             "execute": "cf-sapcp:AssignCfOrgRole:1",
             "input": {
               "password": "$(.execution.input.password)",
-              "role": "OrgManager",
+              "role": "OrgAuditor",
               "org": "$(.execution.input.org)",
               "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
               "region": "$(.execution.input.region)",
@@ -255,7 +255,7 @@
               "targetUser": "$(.execution.input.targetUser)",
               "identityProvider": "$(.execution.input.identityProvider)"
             },
-            "alias": "AssignOrgManager",
+            "alias": "AssignOrgAuditor",
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -269,7 +269,7 @@
             "execute": "cf-sapcp:AssignCfSpaceRole:1",
             "input": {
               "password": "$(.execution.input.password)",
-              "role": "SpaceManager",
+              "role": "SpaceDeveloper",
               "org": "$(.execution.input.org)",
               "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
               "region": "$(.execution.input.region)",
@@ -278,7 +278,7 @@
               "identityProvider": "$(.execution.input.identityProvider)",
               "space": "$(.execution.input.space)"
             },
-            "alias": "AssignSpaceManager",
+            "alias": "AssignSpaceDeveloper",
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -291,9 +291,9 @@
         ],
         "listeners": []
       },
-      "id": "examples-<<<TENANT_ID>>>:GrantAdministratorPrivileges:1",
-      "name": "GrantAdministratorPrivileges",
-      "description": "Grant administrator privileges to the target user on BTP subaccount and Cloud Foundry level",
+      "id": "examples-<<<TENANT_ID>>>:GrantDeveloperPrivileges:1",
+      "name": "GrantDeveloperPrivileges",
+      "description": "Grant developer privileges to the target user on BTP subaccount and Cloud Foundry level",
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
@@ -456,11 +456,11 @@
             "execute": "xsuaa-sapcp:AssignRoleCollections:1",
             "input": {
               "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
-              "roleCollections": "[\"Subaccount Viewer\"]",
+              "roleCollections": "[\"Subaccount Administrator\"]",
               "serviceKey": "$(.execution.input.serviceKey)",
               "targetUser": "$(.execution.input.targetUser)"
             },
-            "alias": "AssignSubaccountViewer",
+            "alias": "AssignSubaccountAdmin",
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -474,7 +474,7 @@
             "execute": "cf-sapcp:AssignCfOrgRole:1",
             "input": {
               "password": "$(.execution.input.password)",
-              "role": "OrgAuditor",
+              "role": "OrgManager",
               "org": "$(.execution.input.org)",
               "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
               "region": "$(.execution.input.region)",
@@ -482,7 +482,7 @@
               "targetUser": "$(.execution.input.targetUser)",
               "identityProvider": "$(.execution.input.identityProvider)"
             },
-            "alias": "AssignOrgAuditor",
+            "alias": "AssignOrgManager",
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -496,7 +496,7 @@
             "execute": "cf-sapcp:AssignCfSpaceRole:1",
             "input": {
               "password": "$(.execution.input.password)",
-              "role": "SpaceDeveloper",
+              "role": "SpaceManager",
               "org": "$(.execution.input.org)",
               "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
               "region": "$(.execution.input.region)",
@@ -505,7 +505,7 @@
               "identityProvider": "$(.execution.input.identityProvider)",
               "space": "$(.execution.input.space)"
             },
-            "alias": "AssignSpaceDeveloper",
+            "alias": "AssignSpaceManager",
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -518,9 +518,9 @@
         ],
         "listeners": []
       },
-      "id": "examples-<<<TENANT_ID>>>:GrantDeveloperPrivileges:1",
-      "name": "GrantDeveloperPrivileges",
-      "description": "Grant developer privileges to the target user on BTP subaccount and Cloud Foundry level",
+      "id": "examples-<<<TENANT_ID>>>:GrantAdministratorPrivileges:1",
+      "name": "GrantAdministratorPrivileges",
+      "description": "Grant administrator privileges to the target user on BTP subaccount and Cloud Foundry level",
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
