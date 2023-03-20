@@ -34,7 +34,7 @@
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
-              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.region, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
+              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
               "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
               "command": "dblm-sapcp:TriggerStopHanaCloudInstance:1"
             },
@@ -51,7 +51,7 @@
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
-              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.region, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
+              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
               "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
               "command": "dblm-sapcp:WaitHanaCloudInstanceOperation:1"
             },
@@ -178,7 +178,7 @@
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
-              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.region, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
+              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
               "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
               "command": "dblm-sapcp:TriggerStartHanaCloudInstance:1"
             },
@@ -195,7 +195,7 @@
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
-              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.region, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
+              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
               "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
               "command": "dblm-sapcp:WaitHanaCloudInstanceOperation:1"
             },
