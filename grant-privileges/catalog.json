@@ -33,7 +33,7 @@
             "input": {
               "inputs": "$(.execution.input.developers | map({ targetUser: . }))",
               "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"org\": \"$(.execution.input.org)\", \"space\": \"$(.execution.input.space)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\", \"targetIdentityProvider\": \"$(.execution.input.targetIdentityProvider)\", \"serviceKey\": \"$(.execution.input.serviceKey | toEscapedJson)\"}",
-              "command": "examples-<<<TENANT_ID>>>:GrantDeveloperPermissions:1"
+              "command": "examples-<<<TENANT_ID>>>:GrantDeveloperPrivileges:1"
             },
             "alias": "GrantDeveloperPrivileges",
             "progressMessage": null,
