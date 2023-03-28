@@ -9,7 +9,7 @@ Table of Contents
 
 ## Description
 
-As a continuation of the [Create and Configure BTP Subaccount](../prepare-btp-environment) example, we can use SAP Automation Pilot to fully setup the Cloud Foundry environment in an already existing BTP subaccount.
+As a continuation of the [Create and Configure BTP Subaccount](../prepare-btp-subaccount) example, we can use SAP Automation Pilot to fully setup the Cloud Foundry environment in an already existing BTP subaccount.
 
 The example command utilizes the **SAP Cloud Management Service (cis-sapcp)** and **Cloud Foundry (cf-sapcp)** provided catalogs to:
 
@@ -17,7 +17,7 @@ The example command utilizes the **SAP Cloud Management Service (cis-sapcp)** an
 * Assign the *OrgManager* to the specified users
 * Create a Cloud Foundry space
 * Assign the *SpaceManager* role to the specified users.
-* Create service instance and key of *SAP Authorization and Trust Management Service (plan apiacces)*, which can be used to manage users on subaccount level.
+* Create service instance and key of *SAP Authorization and Trust Management Service (plan apiacces)*, which can be used to manage users on subaccount level. To learn how to manage users and their privileges on subaccount level, please check for [Grant Privileges Example](../grant-privileges/).
 
 ![Pipeline](assets/pipeline.png)
 
@@ -82,6 +82,10 @@ Execution is started and we can monitor its progress:
 After a few seconds, the execution should finish successfully:
 
 ![Finished Execution](assets/finished-execution.png)
+
+![Output Result](assets/output-results.png)
+
+:information_source: The value of *xsuaaServiceKey* is not displayed because it's marked as sensitive.
 
 We can verify that the command was successful by checking the BTP subaccount overview:
 

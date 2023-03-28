@@ -30,7 +30,9 @@ To use this example you'll need the following:
 
 * BTP global account
 * Platform user with access to the BTP global account
-* Instance of [SAP Cloud Management Service](https://discovery-center.cloud.sap/serviceCatalog/8ffcd3a4-2d85-4a04-a762-be3e31f78a7c) with plan *central* and a service key/binding with default configurations. They must be created in a separate BTP subaccount in the same global account.
+* Instance of [SAP Cloud Management Service](https://discovery-center.cloud.sap/serviceCatalog/8ffcd3a4-2d85-4a04-a762-be3e31f78a7c) with plan *central* and a service key/binding with default configurations. They must be created in a separate BTP subaccount in the same global account. When creating the service instance you must choose Password as the Authorization Type:
+
+![Cloud Management Authorization](./assets/cloud-management-authorization.png)
 
 :warning: If you are planning to use SAP Universal ID, please keep [SAP Note 3085908](https://launchpad.support.sap.com/#/notes/3085908) in mind
 

@@ -53,6 +53,23 @@ Import the content of [examples catalog](catalog.json) in your Automation Pilot 
 
 You'll need to provide values for the following input keys:
 
-* *currentIdentityProvider* - Origin key of the identity provider that is currently assigned to the users
-* *newIdentityProvider* - Origin key of the identity provider that must be assigned to the users
+* *currentIdentityProvider* - Origin key of the identity provider that is currently assigned to the users. For example: sap.ids
+* *newIdentityProvider* - Origin key of the identity provider that must be assigned to the users. For example: a1rwcluzy-platform
 * *serviceKey* - The original JSON, presented by *SAP Authorization and Trust Management Service (plan apiaccess)*
+
+After the successful execution of the command, you can check which users were reassigned to another identity provider:
+
+![Finished Execution](./assets/finished-execution.png)
+
+![Execution Output](./assets/output-results.png)
+
+To reassign the identity provider of a single user, navigate to the *ReassignIdentityProvider* command and trigger it.
+
+You'll need to provide values for the following input keys:
+
+* *targetUser* - Email address of the target user which identity provider must be reassigned.
+* *currentIdentityProvider* - Origin key of the identity provider that is currently assigned to the user. For example: sap.ids
+* *newIdentityProvider* - Origin key of the identity provider that must be assigned to the user. For example: a1rwcluzy-platform
+* *serviceKey* - The original JSON, presented by *SAP Authorization and Trust Management Service (plan apiaccess)*
+
+:information_source: You can verify the result of your executions by navigating to your BTP subaccount and choosing **Security -> Users**.

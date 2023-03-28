@@ -8,7 +8,7 @@ Table of Contents
 
 ## Description
 
-We'll explore the capabilities of SAP Automation Pilot manage users and their permissions on subacount, organization and space level.
+As a continuation of the [Setup Cloud Foundry BTP Environment](../prepare-btp-environment/) example, we'll explore the capabilities of SAP Automation Pilot manage users and their permissions on subacount, organization and space level.
 
 This example provides two commands which utilize the **SAP Authorization and Trust Management Service (xsuaa-sapcp)** and **Cloud Foundry (cf-sapcp)** provides catalogs.
 
@@ -27,6 +27,10 @@ This example provides two commands which utilize the **SAP Authorization and Tru
 * Assigns *Space Developer* role
 
 ![Administrator Pipeline](./assets/developer-pipeline.png)
+
+**MassGrantPrivileges** builds upon the above commands and executes them on multiple users at once.
+
+![Mass Pipeline](./assets/mass-pipeline.png)
 
 :information_source: Make sure to check the other examples in the [BTP Provisioning](../README.md#btp-provisioning) section.
 
@@ -52,7 +56,28 @@ Check out the following resources for more information:
 
 ## How to use
 
-Import the content of [examples catalog](catalog.json) in your Automation Pilot tenant. Navigate to the *GrantAdministratorPrivileges* or *GrantAdministratorPrivileges* commands and trigger them.
+Import the content of [examples catalog](catalog.json) in your Automation Pilot tenant. Navigate to the *MassGrantPrivileges* command and trigger it.
+
+You'll need to provide values for the following input keys:
+
+* *region* - Technical name of your SAP BTP region, e.g. cf-eu10, cf-us20
+* *org* - Name of your Cloud Foundry organization
+* *space* - Name of your Cloud Foundry space
+* *user* - Email or ID of your technical user
+* *password* - Password of your technical user
+* *identityProvider* - Optional: origin key of your identity provider. Defaults to sap.ids
+* *serviceKey* - Service key for *SAP Authorization and Trust Management Service* for *apiaccess* plan
+* *developers* - Email address of the target users which should be granted developer privileges
+* *administrators* - Email address of the target users which should be granted administrator privileges
+* *targetIdentityProvider* - Optional: origin key of the target user's identity provider. Defaults to sap.ids
+
+After the successful execution of the command, you can check which users were reassigned to another identity provider:
+
+![Finished Execution](./assets/finished-execution.png)
+
+![Execution Output](./assets/output-results.png)
+
+To grant privielges to a single user, navigate to the *GrantAdministratorPrivileges* or *GrantDeveloperPrivileges* commands and trigger them.
 
 You'll need to provide values for the following input keys:
 
@@ -64,4 +89,6 @@ You'll need to provide values for the following input keys:
 * *identityProvider* - Optional: origin key of your identity provider. Defaults to sap.ids
 * *serviceKey* - Service key for *SAP Authorization and Trust Management Service* for *apiaccess* plan
 * *targetUser* - user to whom the privileges will be granted
-* *targetUser* - Optional: origin key of the target user's identity provider. Defaults to sap.ids
+* *targetIdentityProvider* - Optional: origin key of the target user's identity provider. Defaults to sap.ids
+
+:information_source: You can verify the result of your executions by navigating to your BTP subaccount and choosing **Security -> Users**.

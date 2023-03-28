@@ -9,7 +9,9 @@
     {
       "configuration": {
         "values": [],
-        "output": {},
+        "output": {
+          "assignedUsers": "$(.GrantAdministratorPrivileges.output.outputs + .GrantDeveloperPrivileges.output.outputs)"
+        },
         "executors": [
           {
             "execute": "utils-sapcp:ForEach:1",
@@ -100,7 +102,7 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": "[]",
           "defaultValueFromInput": null,
-          "description": "Email address of the target users which should be granted administrator privileges"
+          "description": "Email address of the target users which should be granted developer privileges"
         },
         "targetIdentityProvider": {
           "type": "string",
@@ -215,7 +217,13 @@
           "description": "Email address of the target users which should be granted administrator privileges"
         }
       },
-      "outputKeys": {},
+      "outputKeys": {
+        "assignedUsers": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Users which were granted administrator or developer privileges"
+        }
+      },
       "tags": {
         "demo": ""
       }
@@ -223,7 +231,11 @@
     {
       "configuration": {
         "values": [],
-        "output": {},
+        "output": {
+          "privileges": "[\"Subaccount Viewer\", \"Org Auditor\", \"Space Developer\"]",
+          "user": "$(.execution.input.targetUser)",
+          "identityProvider": "$(.execution.input.targetIdentityProvider)"
+        },
         "executors": [
           {
             "execute": "xsuaa-sapcp:AssignRoleCollections:1",
@@ -442,15 +454,33 @@
           "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
         }
       },
-      "outputKeys": {},
-      "tags": {
-        "demo": ""
-      }
+      "outputKeys": {
+        "privileges": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Privileges which were granted to the user"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "description": "User which was granted developer privileges"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Identity provider of the user which was granted developer privileges"
+        }
+      },
+      "tags": {}
     },
     {
       "configuration": {
         "values": [],
-        "output": {},
+        "output": {
+          "privileges": "[\"Subaccount Administrator\", \"Org Manager\", \"Space Manager\"]",
+          "user": "$(.execution.input.targetUser)",
+          "identityProvider": "$(.execution.input.targetIdentityProvider)"
+        },
         "executors": [
           {
             "execute": "xsuaa-sapcp:AssignRoleCollections:1",
@@ -669,10 +699,24 @@
           "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
         }
       },
-      "outputKeys": {},
-      "tags": {
-        "demo": ""
-      }
+      "outputKeys": {
+        "privileges": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Privileges which were granted to the user"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "description": "User which was granted administrator privileges"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Identity provider of the user which was granted administrator privileges"
+        }
+      },
+      "tags": {}
     }
   ]
 }
