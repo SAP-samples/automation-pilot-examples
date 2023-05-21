@@ -1,0 +1,676 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "summary": "$(.StartApps.output.outputs | map(.summary) | join(\"\\n\"))"
+        },
+        "executors": [
+          {
+            "execute": "cf-sapcp:ListCfSpaces:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.subAccount)",
+              "pageSize": "500",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "ListSpaces",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$((.ListSpaces.output.spacesData.resources | map(.name)) - .execution.input.excludedSpaces)"
+            },
+            "alias": "FilteredSpaces",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.FilteredSpaces.output.message | toArray | map({ resourceGroup: . }))",
+              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\"}",
+              "command": "examples-<<<TENANT_ID>>>:MassStartCfAppsInSpace:1"
+            },
+            "alias": "StartApps",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:MassStartCfAppsInOrg:1",
+      "name": "MassStartCfAppsInOrg",
+      "description": "Start all Cloud Found applications across every space in an organization",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry user's password"
+        },
+        "excludedSpaces": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[]",
+          "defaultValueFromInput": null,
+          "description": "Technical names of the Cloud Foundry spaces in which the applications should not be started"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry region. Example: cf-eu10, cf-br10"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
+        },
+        "subAccount": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry organization. Example: my-org-name-1"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
+        }
+      },
+      "outputKeys": {
+        "summary": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Applications which were started"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "summary": "Space $(.execution.input.resourceGroup):$(\"\\n\\t\")$(.StartApps.output.outputs | map(.summary) | if length != 0 then join(\"\\n\\t\") else \"No applications were started\" end)"
+        },
+        "executors": [
+          {
+            "execute": "applm-sapcp:ListCfApps:1",
+            "input": {
+              "resourceGroup": "$(.execution.input.resourceGroup)",
+              "password": "$(.execution.input.password)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "subAccount": "$(.execution.input.subAccount)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "ListApps",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.ListApps.output.appData.resources | filter(.state == \"STOPPED\") | map({ resourceName: .guid }))",
+              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"resourceGroup\": \"$(.execution.input.resourceGroup)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\"}",
+              "command": "applm-sapcp:StartCfApp:1"
+            },
+            "alias": "StartApps",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:MassStartCfAppsInSpace:1",
+      "name": "MassStartCfAppsInSpace",
+      "description": "Start all Cloud Foundry applications in a space",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "resourceGroup": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry space. Example: my-space-demo-1"
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry user's password"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry region. Example: cf-eu10, cf-br10"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
+        },
+        "subAccount": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry organization. Example: my-org-name-1"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
+        }
+      },
+      "outputKeys": {
+        "summary": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Summary of the Cloud Foundry applications which were started"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "summary": "$(.StopApps.output.outputs | map(.summary) | join(\"\\n\"))"
+        },
+        "executors": [
+          {
+            "execute": "cf-sapcp:ListCfSpaces:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.subAccount)",
+              "pageSize": "500",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "ListSpaces",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$((.ListSpaces.output.spacesData.resources | map(.name)) - .execution.input.excludedSpaces)"
+            },
+            "alias": "FilteredSpaces",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.FilteredSpaces.output.message | toArray | map({ resourceGroup: . }))",
+              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\"}",
+              "command": "examples-<<<TENANT_ID>>>:MassStopCfAppsInSpace:1"
+            },
+            "alias": "StopApps",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:MassStopCfAppsInOrg:1",
+      "name": "MassStopCfAppsInOrg",
+      "description": "Stop all Cloud Found applications across every space in an organization",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry user's password"
+        },
+        "excludedSpaces": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[]",
+          "defaultValueFromInput": null,
+          "description": "Technical names of the Cloud Foundry spaces in which the applications should not be stopped"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry region. Example: cf-eu10, cf-br10"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
+        },
+        "subAccount": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry organization. Example: my-org-name-1"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
+        }
+      },
+      "outputKeys": {
+        "summary": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Applications which were stopped"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "summary": "Space $(.execution.input.resourceGroup):$(\"\\n\\t\")$(.StopApps.output.outputs | map(.summary) | if length != 0 then join(\"\\n\\t\") else \"No applications were stopped\" end)"
+        },
+        "executors": [
+          {
+            "execute": "applm-sapcp:ListCfApps:1",
+            "input": {
+              "resourceGroup": "$(.execution.input.resourceGroup)",
+              "password": "$(.execution.input.password)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "subAccount": "$(.execution.input.subAccount)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "ListApps",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.ListApps.output.appData.resources | filter(.state != \"STOPPED\") | map({ resourceName: .guid }))",
+              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"resourceGroup\": \"$(.execution.input.resourceGroup)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\"}",
+              "command": "applm-sapcp:StopCfApp:1"
+            },
+            "alias": "StopApps",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:MassStopCfAppsInSpace:1",
+      "name": "MassStopCfAppsInSpace",
+      "description": "Stop all Cloud Foundry applications in a space",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "resourceGroup": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry space. Example: my-space-demo-1"
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry user's password"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry region. Example: cf-eu10, cf-br10"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
+        },
+        "subAccount": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry organization. Example: my-org-name-1"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
+        }
+      },
+      "outputKeys": {
+        "summary": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Summary of the Cloud Foundry applications which were stopped"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}
