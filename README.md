@@ -106,6 +106,8 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | Example | Description |
 |---------|-------------|
 | [HTTP Request via Script](script-http-request) | Perform HTTP requests with large timeouts by utilizing the ExecuteScript command |
+| [Use Custom Python Package](use-custom-python-package) | Install and use custom Python package in a script |
+| [Use Custom NPM Package](use-custom-npm-package) | Install and use custom NPM package in a NodeJS script |
 
 ### Automation Pilot
 
