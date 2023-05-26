@@ -8,14 +8,18 @@ Table of Contents
 
 ## Description
 
-If your BTP global account uses the consumption-based commercial model, Cloud Foundry applications are billed based on their usage. Therefore, you can reduce the monthly cost by stopping applications which are used only for testing and development purposes. With the help of SAP Automation Pilot, such resources can be automatically stopped outside of working hours and started again the next day. To find out more about the Cloud Foundry's billng costs, please feel free to consult [SAP BTP, Cloud Foundry Runtime](https://discovery-center.cloud.sap/serviceCatalog/cloud-foundry-runtime?tab=service_plan&region=all&commercialModel=cpea).
+If your BTP global account uses the consumption-based commercial model (such as CPEA or Pay-As-You-Go), Cloud Foundry applications are billed based on their usage. Therefore, you can reduce the monthly cost by stopping applications which are used only for testing and development purposes. With the help of SAP Automation Pilot, such resources can be automatically stopped outside of working hours and started again the next day. To find out more about the Cloud Foundry's billng costs, please feel free to consult [SAP BTP, Cloud Foundry Runtime](https://discovery-center.cloud.sap/serviceCatalog/cloud-foundry-runtime?tab=service_plan&region=all&commercialModel=cpea).
 
 SAP Automation Pilot has the capabilities to perform mass operations on tens or even hundreds of Cloud Foundry applications, including stop, start or restart. In addition to this, these operations can be performed regularly with the [Scheduled Executions functionality](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/96863a2380d24ba4bab0145bbd78e411.html).
 
-This example includes a total of four commands. *MassStopCfAppsInSpace* and *MassStartCfAppsInSpace* dynamically find and stop/start all applications in the given space. Similarly, *MassStopCfAppsInOrg* and *MassStartCfAppsInOrg* do the same thing but on organization level - the applications across all spaces are collected and then started/stopped. In addition, it's possible to ignore certain spaces and not perform any operations on them.
+This example includes a total of four commands. *MassStopCfAppsInSpace* and *MassStartCfAppsInSpace* dynamically find and stop/start all applications in the given space. Similarly, *MassStopCfAppsInOrg* and *MassStartCfAppsInOrg* do the same thing but on organization level - the applications across all spaces are collected and then started/stopped. In addition, it's possible to ignore certain spaces and do not perform any operations on them.
 
 ![Mass Stop Apps in Org](./assets/mass-stop-org.png)
 ![Mass Start Apps in Org](./assets/mass-start-org.png)
+
+After a successful execution, each command outputs a short summary which is useful for transparency and traceability:
+
+![Mass Stop Summary](./assets/mass-stop-summary.png)
 
 :warning: The commands within this example might cause downtime for a large amount of applications. Please make sure that you are not using them on productive systems.
 
@@ -43,7 +47,9 @@ You'll need to provide values for the following input keys:
 * *user* - Email or ID of your technical user
 * *password* - Password of your technical user
 * *identityProvider* - Optional: origin key of your identity provider. Defaults to sap.ids
-* *excludedSpaces* - Technical names of the Cloud Foundry spaces in which the applications should not be started/stopped
+* *excludedSpaces* - Technical names of the Cloud Foundry spaces in which the applications should not be started/stopped. Example value: `["prod-1", "prod-2"]`
+
+:information_source: Most of the needed information is available in your subaccount's *Overview* page under *Cloud Foundry Environment*.
 
 As mentioned before, Automation Pilot allows executions to be automatically triggered on regular intervals - hourly, daily, weekly, monthly or yearly. We can create two [Scheduled Executions](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/96863a2380d24ba4bab0145bbd78e411.html) - one to stop all applications after working hours and another to start them up again on the next morning.
 
