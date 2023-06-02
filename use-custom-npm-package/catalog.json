@@ -1,0 +1,50 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "result": "$(.NodeJsScript.output.output | join(\"\\n\"))"
+        },
+        "executors": [
+          {
+            "execute": "scripts-sapcp:ExecuteScript:2",
+            "input": {
+              "script": "#!/usr/bin/env bash\n\n# Install custom NPM package\nnpm install uuid &> /dev/null\n\n# Run the actual NodeJS script\nnode << EOF\n\nconst { v4: uuidv4 } = require('uuid');\n\nfor (let i = 0; i < 10; i++) {\n    console.log(uuidv4());\n}\n\nEOF"
+            },
+            "alias": "NodeJsScript",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:UseCustomNpmPackage:1",
+      "name": "UseCustomNpmPackage",
+      "description": "Install and use custom NPM package in a script which generates UUIDs",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {},
+      "outputKeys": {
+        "result": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Result of the NodeJS script"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}
