@@ -36,11 +36,11 @@
             "errorMessages": []
           },
           {
-            "execute": "cis-sapcp:SetEntitlement:1",
+            "execute": "cis-sapcp:SetEntitlement:2",
             "input": {
               "password": "$(.execution.input.password)",
               "subAccountId": "$(.CreateSubAccount.output.subAccountId)",
-              "service": "Cloud Management Service",
+              "service": "cis",
               "serviceKey": "$(.execution.input.serviceKey)",
               "plan": "local",
               "user": "$(.execution.input.user)"
