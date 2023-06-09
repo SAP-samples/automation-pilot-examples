@@ -22,6 +22,10 @@ The example command utilizes the **SAP Cloud Management Service (cis-sapcp)** pr
 
 Customers can easily modify the example command to fit their scenarios. For example, adding additional entitlements or creating additional service instances.
 
+:information_source: Both the *Service Manager* and *Cloud Management Service* catalogs work with the technical names of the services and their plans. You can find their values in your BTP subaccount, under *Entitlements*:
+
+![BTP Entitlements](./assets/btp-entitlements.png)
+
 :information_source: Make sure to check the other examples in the [BTP Provisioning](../README.md#btp-provisioning) section.
 
 ## Requirements
