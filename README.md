@@ -13,8 +13,11 @@ Table of Contents
 * [How to use](#how-to-use)
 * [Examples](#examples)
   * [HANA Cloud](#hana-cloud)
+  * [BTP Provisioning](#btp-provisioning)
   * [Cloud Foundry](#cloud-foundry)
   * [Neo](#neo)
+  * [Scripting](#scripting)
+  * [Automation Pilot](#automation-pilot)
 * [Resources](#resources)
 * [Known Issues](#known-issues)
 * [How to obtain support](#how-to-obtain-support)
@@ -71,19 +74,46 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 
 | Example | Description |
 |---------|-------------|
+| [Patch Update HANA Cloud](patch-update-hana-cloud) | Update HANA Cloud database to the latest patch version automatically or after confirmation |
+| [Mass Stop/Start HANA Cloud](mass-stop-start-hana-cloud) | Stop or start all HANA Cloud databases across your entire BTP account |
 | [Check HANA Cloud Backup](check-hana-cloud-backup) | Check regularly whether there was a recent backup of a SAP HANA Cloud database instance |
+| [Check HANA Cloud Audit Logs](check-hana-cloud-audit-logs) | Check regularly for any suspicious audit log entries in a SAP HANA Cloud database instance |
+
+### BTP Provisioning
+
+| Example | Description |
+|---------|-------------|
+| [Create and Configure BTP Subaccount](prepare-btp-subaccount) | Create a new BTP subaccount, configure entitlements and setup essential service instances |
+| [Setup Cloud Foundry BTP Environment](prepare-btp-environment) | Enable the Cloud Foundry environment, create a space and setup a service instance |
+| [Grant Privileges](grant-privileges) | Grant privileges to users on subaccount, organization and space level |
+| [Reassign Identity Provider](reassign-identity-provider) | Migrate all users on BTP subaccount level from one identity provider to another |
 
 ### Cloud Foundry
 
 | Example | Description |
 |---------|-------------|
-| [Mass Restart CF Apps](mass-restart-cf-apps) | Find and restart all applications in a given Cloud Foundry space |
+| [Mass Restart CF Apps](mass-restart-cf-apps) | Restart all applications in a given Cloud Foundry space |
+| [Mass Stop/Start CF Apps](mass-stop-start-cf-apps) | Stop or start all Cloud Foundry applications across your entire BTP account |
 
 ### Neo
 
 | Example | Description |
 |---------|-------------|
 | [Auto Scale Neo App](auto-scale-neo-app) | Automatically scales up a Neo application and monitors it over time, potentially scaling it back down |
+
+### Scripting
+
+| Example | Description |
+|---------|-------------|
+| [HTTP Request via Script](script-http-request) | Perform HTTP requests with large timeouts by utilizing the ExecuteScript command |
+| [Use Custom Python Package](use-custom-python-package) | Install and use custom Python package in a script |
+| [Use Custom NPM Package](use-custom-npm-package) | Install and use custom NPM package in a NodeJS script |
+
+### Automation Pilot
+
+| Example | Description |
+|---------|-------------|
+| [Backup Catalog to GitHub](backup-catalog) | Backup catalog's content to GitHub |
 
 ## Resources
 

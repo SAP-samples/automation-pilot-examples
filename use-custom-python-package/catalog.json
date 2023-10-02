@@ -1,0 +1,50 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "result": "$(.PythonScript.output.output | join(\"\\n\"))"
+        },
+        "executors": [
+          {
+            "execute": "scripts-sapcp:ExecuteScript:2",
+            "input": {
+              "script": "#!/usr/bin/env bash\n\n# Install custom Python package\npip install requests -qq --no-warn-script-location\n\n# Run the actual Python script\npython3 <<EOF\n\nimport requests\nresponse = requests.get('https://catfact.ninja/fact').json()\n\nprint(response[\"fact\"])\n\nEOF\n"
+            },
+            "alias": "PythonScript",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:UseCustomPythonPackage:1",
+      "name": "UseCustomPythonPackage",
+      "description": "Install and use custom Python package in a script which sends a call to a public API",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {},
+      "outputKeys": {
+        "result": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Result of the Python script"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}

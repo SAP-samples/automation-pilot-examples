@@ -1,0 +1,298 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "stoppedInstancesCount": "$(.StopHanaCloudInstances.output.outputs | length)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:ListServiceInstances:1",
+            "input": {
+              "labelSelector": "service eq 'hana-cloud'",
+              "pageSize": "500",
+              "fieldSelector": "context/origin eq 'cloudfoundry' and ready eq true",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "ListHanaCloudInstances",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
+              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
+              "command": "dblm-sapcp:TriggerStopHanaCloudInstance:1"
+            },
+            "alias": "StopHanaCloudInstances",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
+              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
+              "command": "dblm-sapcp:WaitHanaCloudInstanceOperation:1"
+            },
+            "alias": "WaitHanaCloudInstances",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:MassStopHanaCloudInstances:1",
+      "name": "MassStopHanaCloudInstances",
+      "description": "Stop all HANA Cloud instances across every Cloud Foundry space in a subaccount",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry user's password"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Key for SAP Service Manager"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
+        }
+      },
+      "outputKeys": {
+        "stoppedInstancesCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Total number of stopped HANA Cloud instances"
+        }
+      },
+      "tags": {
+        "env": "cf"
+      }
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "startedInstancesCount": "$(.StartHanaCloudInstances.output.outputs | length)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:ListServiceInstances:1",
+            "input": {
+              "labelSelector": "service eq 'hana-cloud'",
+              "pageSize": "500",
+              "fieldSelector": "context/origin eq 'cloudfoundry' and ready eq true",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "ListHanaCloudInstances",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
+              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
+              "command": "dblm-sapcp:TriggerStartHanaCloudInstance:1"
+            },
+            "alias": "StartHanaCloudInstances",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
+              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
+              "command": "dblm-sapcp:WaitHanaCloudInstanceOperation:1"
+            },
+            "alias": "WaitHanaCloudInstances",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:MassStartHanaCloudInstances:1",
+      "name": "MassStartHanaCloudInstances",
+      "description": "Start all HANA Cloud instances across every Cloud Foundry space in a subaccount",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry user's password"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Key for SAP Service Manager"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
+        }
+      },
+      "outputKeys": {
+        "startedInstancesCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Total number of started HANA Cloud instances"
+        }
+      },
+      "tags": {
+        "env": "cf"
+      }
+    }
+  ]
+}

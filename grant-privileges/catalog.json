@@ -1,0 +1,722 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "assignedUsers": "$(.GrantAdministratorPrivileges.output.outputs + .GrantDeveloperPrivileges.output.outputs)"
+        },
+        "executors": [
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.execution.input.administrators | map({ targetUser: . }))",
+              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"org\": \"$(.execution.input.org)\", \"space\": \"$(.execution.input.space)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\", \"targetIdentityProvider\": \"$(.execution.input.targetIdentityProvider)\", \"serviceKey\": \"$(.execution.input.serviceKey | toEscapedJson)\"}",
+              "command": "examples-<<<TENANT_ID>>>:GrantAdministratorPrivileges:1"
+            },
+            "alias": "GrantAdministratorPrivileges",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.execution.input.developers | map({ targetUser: . }))",
+              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"org\": \"$(.execution.input.org)\", \"space\": \"$(.execution.input.space)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\", \"targetIdentityProvider\": \"$(.execution.input.targetIdentityProvider)\", \"serviceKey\": \"$(.execution.input.serviceKey | toEscapedJson)\"}",
+              "command": "examples-<<<TENANT_ID>>>:GrantDeveloperPrivileges:1"
+            },
+            "alias": "GrantDeveloperPrivileges",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:MassGrantPrivileges:1",
+      "name": "MassGrantPrivileges",
+      "description": "Grant administrator and developer privileges to the target users on BTP subaccount and Cloud Foundry level",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry user's password"
+        },
+        "org": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ID or name of the Cloud Foundry organization"
+        },
+        "developers": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[]",
+          "defaultValueFromInput": null,
+          "description": "Email address of the target users which should be granted developer privileges"
+        },
+        "targetIdentityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider of the target user"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": " original JSON, presented by SAP Authorization and Trust Management Service for apiaccess plan"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of the BTP region, e.g., cf-eu10, cf-us20, cf-eu10-004"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
+        },
+        "space": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ID or name of the Cloud Foundry space"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
+        },
+        "administrators": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[]",
+          "defaultValueFromInput": null,
+          "description": "Email address of the target users which should be granted administrator privileges"
+        }
+      },
+      "outputKeys": {
+        "assignedUsers": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Users which were granted administrator or developer privileges"
+        }
+      },
+      "tags": {
+        "demo": ""
+      }
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "privileges": "[\"Subaccount Viewer\", \"Org Auditor\", \"Space Developer\"]",
+          "user": "$(.execution.input.targetUser)",
+          "identityProvider": "$(.execution.input.targetIdentityProvider)"
+        },
+        "executors": [
+          {
+            "execute": "xsuaa-sapcp:AssignRoleCollections:1",
+            "input": {
+              "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
+              "roleCollections": "[\"Subaccount Viewer\"]",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "targetUser": "$(.execution.input.targetUser)"
+            },
+            "alias": "AssignSubaccountViewer",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "cf-sapcp:AssignCfOrgRole:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "role": "OrgAuditor",
+              "org": "$(.execution.input.org)",
+              "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "targetUser": "$(.execution.input.targetUser)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "AssignOrgAuditor",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "cf-sapcp:AssignCfSpaceRole:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "role": "SpaceDeveloper",
+              "org": "$(.execution.input.org)",
+              "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "targetUser": "$(.execution.input.targetUser)",
+              "identityProvider": "$(.execution.input.identityProvider)",
+              "space": "$(.execution.input.space)"
+            },
+            "alias": "AssignSpaceDeveloper",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:GrantDeveloperPrivileges:1",
+      "name": "GrantDeveloperPrivileges",
+      "description": "Grant developer privileges to the target user on BTP subaccount and Cloud Foundry level",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry user's password"
+        },
+        "org": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ID or name of the Cloud Foundry organization"
+        },
+        "targetIdentityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider of the target user"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": " original JSON, presented by SAP Authorization and Trust Management Service for apiaccess plan"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of the BTP region, e.g., cf-eu10, cf-us20, cf-eu10-004"
+        },
+        "targetUser": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Email address of the target user"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
+        },
+        "space": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ID or name of the Cloud Foundry space"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
+        }
+      },
+      "outputKeys": {
+        "privileges": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Privileges which were granted to the user"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "description": "User which was granted developer privileges"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Identity provider of the user which was granted developer privileges"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "privileges": "[\"Subaccount Administrator\", \"Org Manager\", \"Space Manager\"]",
+          "user": "$(.execution.input.targetUser)",
+          "identityProvider": "$(.execution.input.targetIdentityProvider)"
+        },
+        "executors": [
+          {
+            "execute": "xsuaa-sapcp:AssignRoleCollections:1",
+            "input": {
+              "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
+              "roleCollections": "[\"Subaccount Administrator\"]",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "targetUser": "$(.execution.input.targetUser)"
+            },
+            "alias": "AssignSubaccountAdmin",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "cf-sapcp:AssignCfOrgRole:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "role": "OrgManager",
+              "org": "$(.execution.input.org)",
+              "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "targetUser": "$(.execution.input.targetUser)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "AssignOrgManager",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "cf-sapcp:AssignCfSpaceRole:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "role": "SpaceManager",
+              "org": "$(.execution.input.org)",
+              "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "targetUser": "$(.execution.input.targetUser)",
+              "identityProvider": "$(.execution.input.identityProvider)",
+              "space": "$(.execution.input.space)"
+            },
+            "alias": "AssignSpaceManager",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:GrantAdministratorPrivileges:1",
+      "name": "GrantAdministratorPrivileges",
+      "description": "Grant administrator privileges to the target user on BTP subaccount and Cloud Foundry level",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry user's password"
+        },
+        "org": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ID or name of the Cloud Foundry organization"
+        },
+        "targetIdentityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider of the target user"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": " original JSON, presented by SAP Authorization and Trust Management Service for apiaccess plan"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of the BTP region, e.g., cf-eu10, cf-us20, cf-eu10-004"
+        },
+        "targetUser": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Email address of the target user"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
+        },
+        "space": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ID or name of the Cloud Foundry space"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
+        }
+      },
+      "outputKeys": {
+        "privileges": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Privileges which were granted to the user"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "description": "User which was granted administrator privileges"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Identity provider of the user which was granted administrator privileges"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}

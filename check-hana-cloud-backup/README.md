@@ -19,12 +19,15 @@ This example command performs an SQL query to find the most recent backup by pul
 To use this example you'll need the following:
 
 * SAP HANA Cloud database
-* User with database access
+* Database user
+* JDBC URL of the following format: `jdbc:sap://<endpoint>:<port>`
+* Allowed connections from Automation Pilot to your HANA Cloud database. Use [this procedure](https://help.sap.com/docs/HANA_SERVICE_CF/cc53ad464a57404b8d453bbadbc81ceb/71eb651f84274a0cb2f2b4380df91724.html) to add the NAT IPs of the [relevant Automation Pilot region](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/4536e41c57aa442095ccbac977965f26.html#regions).
 
 Check out the following resources for more information:
 
 * [Deploy SAP HANA Cloud](https://developers.sap.com/tutorials/hana-cloud-deploying.html)
 * [Create Users and Manage Roles and Privileges](https://developers.sap.com/tutorials/hana-cloud-mission-trial-4.html)
+* [Connect to the SAP HANA Database in SAP HANA Cloud via JDBC](https://help.sap.com/docs/HANA_CLOUD/db19c7071e5f4101837e23f06e576495/030a162d380b4ec0bc6a284954c8256d.html)
 
 ## How to use
 

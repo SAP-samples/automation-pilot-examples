@@ -1,0 +1,228 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "headers": "$(.Script.output.output[1] | fromBase64 | fromProperties)",
+          "size": "$(.Script.output.output[2])",
+          "time": "$(.Script.output.output[4])",
+          "body": "$(.Script.output.output[0] | fromBase64)",
+          "status": "$(.Script.output.output[3])"
+        },
+        "executors": [
+          {
+            "execute": "scripts-sapcp:ExecuteScript:2",
+            "input": {
+              "environment": "{\"HTTP_METHOD\":\"$(.execution.input.method)\",\"HTTP_URL\":\"$(.execution.input.url | toEscapedJson)\",\"HTTP_HEADERS\":\"$(.execution.input.headers | toEscapedJson)\",\"HTTP_BODY\":\"$(.execution.input.body | toEscapedJson)\",\"HTTP_TIMEOUT\":\"$(.execution.input.timeout)\",\"HTTP_USER\":\"$(.execution.input.user | toEscapedJson)\",\"HTTP_PASSWORD\":\"$(.execution.input.password | toEscapedJson)\",\"HTTP_AUTHORIZATION_HEADER\":\"$(.execution.input.authorizationHeader | toEscapedJson)\",\"HTTP_RESPONSE_BODY_TRANSFORMER\":\"$(.execution.input.responseBodyTransformer | toEscapedJson)\"}",
+              "script": "#!/usr/bin/env bash\n\nfunction unescape() {\n    echo \"${1//\\\\\\\"/\\\"}\"\n}\n\nflags=()\n\n# Transform each request header to a cURL flag\nwhile read -r HEADER; do\n    flags+=( --header \"$HEADER\" )\ndone < <(echo \"$HTTP_HEADERS\" | jq -r 'to_entries | map(\"\\(.key): \\(.value)\")[]')\n\n# Build a cURL flag depending on the authentication mechanism\nif [[ -n \"$HTTP_AUTHORIZATION_HEADER\" ]]; then\n    flags+=( --header \"$(unescape \"Authorization: $HTTP_AUTHORIZATION_HEADER\")\" )\nelif [[ -n \"$HTTP_USER\" ]]; then\n    flags+=( --user \"$(unescape \"$HTTP_USER:$HTTP_PASSWORD\")\" )\nfi\n\n# Perform the actual HTTP request\ncurl --silent \"$(unescape \"$HTTP_URL\")\" \\\n    --request \"$HTTP_METHOD\" \\\n    --data \"$(unescape \"$HTTP_BODY\")\" \\\n    --max-time \"$HTTP_TIMEOUT\" \\\n    --user-agent \"SAP-Automation-Pilot\"\\\n    --output body.txt \\\n    --dump-header headers.txt \\\n    --write-out \"%{json}\" \\\n    \"${flags[@]}\" > stats.txt\n\n# Output response body\nif ! test -f body.txt; then\n    echo\nelif jq type body.txt &>/dev/null; then\n    jq -r \"${HTTP_RESPONSE_BODY_TRANSFORMER:-.}\" body.txt 2>/dev/null | base64 --wrap=0 && echo\nelse\n    base64 --wrap=0 body.txt && echo\nfi\n\n# Output response headers\nsed -e '1d' -e '$d' -e 's|: |=|' headers.txt | base64 --wrap=0 && echo\n# Output download size\njq -r '.size_download' stats.txt\n# Output http code\njq -r '.http_code' stats.txt\n# Output total time\njq -r '.time_total * 1000 | floor' stats.txt\n",
+              "timeout": "$(.execution.input.timeout + 15)"
+            },
+            "alias": "Script",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:HttpRequestViaScript:1",
+      "name": "HttpRequestViaScript",
+      "description": "Execute HTTP request by using the ExecuteScript and utilizing cURL",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "headers": {
+          "type": "object",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Request headers (values are not sensitive), e.g. Content-Type, Accept, etc. IMPORTANT: If 'Authorization' header is presented, it will overwrite the 'username' & 'password' values."
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the specified technical user or clientSecret for the specified oAuth 2.0 clientId used for authentication. See 'user' & 'tokenUrl' keys as well"
+        },
+        "responseBodyTransformer": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "A JQ expression to transform the response body with. The format must follow the one described in https://github.com/stedolan/jq"
+        },
+        "method": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": [
+            "GET",
+            "POST",
+            "HEAD",
+            "PUT",
+            "DELETE",
+            "PATCH"
+          ],
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Http method used for the request. Examples: GET, POST, PUT, DELETE, PATCH, etc."
+        },
+        "authorizationHeader": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Explicit value for the http authorization header. Note: this overwrites all other authentication mechanisms"
+        },
+        "body": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Request's payload as string"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of a technical user or an oAuth 2.0 clientId used for authentication. See 'password' & 'tokenUrl' keys as well"
+        },
+        "url": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Http url used for the request"
+        },
+        "timeout": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 240,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "60",
+          "defaultValueFromInput": null,
+          "description": "Optional HTTP execution timeout in seconds. Default value is 3 seconds. Max value is 10 seconds"
+        }
+      },
+      "outputKeys": {
+        "headers": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Response's headers"
+        },
+        "size": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Response's body size in bytes, e.g.:  1048576"
+        },
+        "time": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Request's execution time in milliseconds, e.g. 321"
+        },
+        "body": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Response's payload as string"
+        },
+        "status": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Response's status code, e.g.: 200, 301, 404, 503, etc. Note: in case of no response or timeout status codes may be 0 and -1"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}

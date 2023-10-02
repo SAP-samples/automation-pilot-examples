@@ -1,0 +1,248 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "smServiceKey": "$(.CreateServiceManagerKey.output.serviceKey)",
+          "cisServiceKey": "$(.CreateCisKey.output.serviceKey)"
+        },
+        "executors": [
+          {
+            "execute": "cis-sapcp:CreateSubAccount:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "displayName": "$(.execution.input.displayName)",
+              "subdomain": "$(.execution.input.subdomain)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "admins": "$(.execution.input.admins)"
+            },
+            "alias": "CreateSubAccount",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "cis-sapcp:SetEntitlement:2",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "subAccountId": "$(.CreateSubAccount.output.subAccountId)",
+              "service": "cis",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "plan": "local",
+              "user": "$(.execution.input.user)"
+            },
+            "alias": "SetCisEntitlement",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "cis-sapcp:ObtainServiceManagerBinding:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "subAccountId": "$(.CreateSubAccount.output.subAccountId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "user": "$(.execution.input.user)"
+            },
+            "alias": "CreateServiceManagerKey",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "sm-sapcp:CreateServiceInstance:1",
+            "input": {
+              "service": "cis",
+              "displayName": "CloudManagementAccessInstance",
+              "serviceKey": "$(.CreateServiceManagerKey.output.serviceKey)",
+              "plan": "local"
+            },
+            "alias": "CreateCisInstance",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "sm-sapcp:CreateServiceBinding:1",
+            "input": {
+              "instanceId": "$(.CreateCisInstance.output.instanceId)",
+              "displayName": "CloudManagementAccessKey",
+              "serviceKey": "$(.CreateServiceManagerKey.output.serviceKey)"
+            },
+            "alias": "CreateCisKey",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:PrepareSubAccount:1",
+      "name": "PrepareSubAccount",
+      "description": "Create a new subaccount, configure entitlements and setup essential service instances",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for SAP BTP user account used for authentication"
+        },
+        "displayName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Display name of the SAP BTP subaccount"
+        },
+        "subdomain": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Subdomain of the SAP BTP subaccount"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The original JSON, presented by SAP Cloud Management service for central plan"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of the SAP BTP region, e.g. cf-eu10, cf-eu10-004"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email for SAP BTP user account used for authentication"
+        },
+        "admins": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Users with subaccount administrator role collection"
+        }
+      },
+      "outputKeys": {
+        "smServiceKey": {
+          "type": "object",
+          "sensitive": true,
+          "description": "Service key for SAP Service Manager (plan subaccount-admin)"
+        },
+        "cisServiceKey": {
+          "type": "string",
+          "sensitive": true,
+          "description": "Service Key for SAP Cloud Management Service (plan local)"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}

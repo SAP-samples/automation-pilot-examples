@@ -21,7 +21,8 @@
               "pageSize": "100",
               "region": "$(.execution.input.region)",
               "user": "$(.execution.input.user)",
-              "subAccount": "$(.execution.input.subAccount)"
+              "subAccount": "$(.execution.input.subAccount)",
+              "identityProvider": "$(.execution.input.identityProvider)"
             },
             "alias": "ListApps",
             "progressMessage": null,
