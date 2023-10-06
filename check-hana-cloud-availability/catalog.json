@@ -126,10 +126,10 @@
         ],
         "listeners": []
       },
-      "id": "hc-<<<TENANT_ID>>>:CheckHanaCloudAvailabilitySample:1",
+      "id": "examples-<<<TENANT_ID>>>:CheckHanaCloudAvailabilitySample:1",
       "name": "CheckHanaCloudAvailabilitySample",
       "description": "check availability for HANA Cloud",
-      "catalog": "hc-<<<TENANT_ID>>>",
+      "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
         "AnsPassword": {
