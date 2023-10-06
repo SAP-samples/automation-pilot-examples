@@ -43,7 +43,7 @@ To use this example you'll need the following:
 
 Check out the following resources for more information:
 
-[* Provision an Instance of SAP HANA Cloud, SAP HANA Database](https://developers.sap.com/tutorials/hana-cloud-mission-trial-3.html) on a runtime environment set to Cloud Foundry;
+* [Provision an Instance of SAP HANA Cloud, SAP HANA Database](https://developers.sap.com/tutorials/hana-cloud-mission-trial-3.html) on a runtime environment set to Cloud Foundry;
 * [Deploy SAP HANA Cloud](https://developers.sap.com/tutorials/hana-cloud-deploying.html);
 * [Create Users and Manage Roles and Privileges](https://developers.sap.com/tutorials/hana-cloud-mission-trial-4.html);
 * [Managing technical users for BTP platform access](https://blogs.sap.com/2022/09/20/managing-technical-users-for-btp-platform-access/);
