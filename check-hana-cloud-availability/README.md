@@ -37,15 +37,20 @@ A use case diagram is available below:
 
 To use this example you'll need the following:
 
-* SAP HANA Cloud database
-* User with database access
+* SAP HANA Cloud database provisioned on CloudFoundry Space level;
+* SAP BTP Technical User;
+* Alert Notification service in place , integrated to SAP Automation Pilot;
 
 Check out the following resources for more information:
 
-* [Deploy SAP HANA Cloud](https://developers.sap.com/tutorials/hana-cloud-deploying.html)
-* [Create Users and Manage Roles and Privileges](https://developers.sap.com/tutorials/hana-cloud-mission-trial-4.html)
-* [Overview of Available Metrics](https://help.sap.com/docs/HANA_CLOUD_DATABASE/f9c5015e72e04fffa14d7d4f7267d897/46e370ced3ef4d2bbd0ec2337df5f565.html)
-* [Integrate your Automaton Pilot instance to the Alert Notification service](https://help.sap.com/docs/automation-pilot/automation-pilot/integrate-with-sap-alert-notification-service-for-sap-btp)
+[* Provision an Instance of SAP HANA Cloud, SAP HANA Database](https://developers.sap.com/tutorials/hana-cloud-mission-trial-3.html) on a runtime environment set to Cloud Foundry;
+* [Deploy SAP HANA Cloud](https://developers.sap.com/tutorials/hana-cloud-deploying.html);
+* [Create Users and Manage Roles and Privileges](https://developers.sap.com/tutorials/hana-cloud-mission-trial-4.html);
+* [Managing technical users for BTP platform access](https://blogs.sap.com/2022/09/20/managing-technical-users-for-btp-platform-access/);
+* [Overview of Available Metrics](https://help.sap.com/docs/HANA_CLOUD_DATABASE/f9c5015e72e04fffa14d7d4f7267d897/46e370ced3ef4d2bbd0ec2337df5f565.html);
+* [Alert Notification service initial setup](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/initial-setup) ;
+* [Integrate your Automaton Pilot instance to the Alert Notification service](https://help.sap.com/docs/automation-pilot/automation-pilot/integrate-with-sap-alert-notification-service-for-sap-btp);
+  
 
 ## How to use
 
