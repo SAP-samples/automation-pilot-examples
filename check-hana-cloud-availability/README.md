@@ -88,7 +88,7 @@ After triggering the command there will be two possible options:
 **Option B:** HANA Cloud is NOT accessible - the command will be completed succesfully and you can see the following output, meaning HANA Cloud is NOT accessible and the command for starting HANA Cloud has BEEN triggered.
 
 .. so that the starting of the HANA Cloud instance has been triggered by SAP Automation Pilot
-![Screenshot](assets/hana-starting-AutoPi)
+![Screenshot](assets/hana-starting-AutoPi.png)
 
 
 .. where the HANA Cloud instance at its initial state is not running and after triggering the command has been started (see screrenshots from the SAP HANA Cloud Central)
@@ -101,7 +101,7 @@ The command outputs are visualized underneath:
 
 :information_source: How SAP Automation Pilot finds out if your HANA Cloud is available. 
 As already described, SAP Automation Pilot calls [HANA Cloud Available Metrics API](https://help.sap.com/docs/HANA_CLOUD_DATABASE/f9c5015e72e04fffa14d7d4f7267d897/46e370ced3ef4d2bbd0ec2337df5f565.html), gets the response for the metric  it is from type `gauge`, the Automation Pilot converts it into an array and applies a conditionl check so that in case the latest three pings are failed (value is "0") - then it considers the HANA Cloud instance is not accessible. This conditional check is implemented in both executions `notifyANS` and `startHanaCloud`. The check itselef is the following one and of course - it can be modified to fit better your needs: 
-`$(.pingHanaCloud.output.body | toArray | [.[0] ,.[1] ,.[2]] | any(.value == 1) ) equals false`
+```$(.pingHanaCloud.output.body | toArray | [.[0] ,.[1] ,.[2]] | any(.value == 1) ) equals false```
 
 :information_source: Alerting triggered by the Automation Pilot command
 Alerting via email, slack message, Jira ticket or other channel using SAP Alert Notification service
