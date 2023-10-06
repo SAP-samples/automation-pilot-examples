@@ -73,9 +73,9 @@ You'll need to provide values for the following **input keys**:
 * _hanaServiceInstance_ - The Instance ID for your HANA Cloud - it can be found from the provisioned service in BTP Cockpit, look for "Instance ID".
 
 You also can look now into the prepared outputs (no need provide values for them but it is important to understand what data is retured as command's output):
-* checkPing - The entire response for the metric "HDBAccessible" returned by HANA Cloud Metrics Service REST API.
-* isHanaCloudAvailable - Check on whether or not the HANA Cloud instance is available, where: "true" = HANA Cloud is available; "false" = HANA Cloud is not available.
-* resultHanaStart - Check on whether or not the HANA Cloud instance has been started successfully, where: "true" = HANA Cloud has been started ; "false" = HANA Cloud was not started'.
+* _checkPing_ - The entire response for the metric "HDBAccessible" returned by HANA Cloud Metrics Service REST API.
+* _isHanaCloudAvailable_ - Check on whether or not the HANA Cloud instance is available, where: "true" = HANA Cloud is available; "false" = HANA Cloud is not available.
+* _resultHanaStart_ - Check on whether or not the HANA Cloud instance has been started successfully, where: "true" = HANA Cloud has been started ; "false" = HANA Cloud was not started'.
 
 
 After triggering the command there will be two possible options: 
