@@ -46,7 +46,7 @@ These examples can be used with little to no changes or they can be modified to 
 
 To use the examples in this repository, you'll need SAP Automation Pilot tenant. The easiest way to get one is with SAP BTP trial:
 
-* [SAP BTP Trial Overview](https://www.sap.com/products/technology-platform/trial.html)
+* [SAP BTP Trial Overview](https://www.sap.com/products/technology-platform/pricing.html)
 * [Tutorial: Get a Free Account on SAP BTP Trial](https://developers.sap.com/tutorials/hcp-create-trial-account.html)
 * [Tutorial: Setup Automation Pilot in SAP BTP](https://blogs.sap.com/2023/01/09/setup-configuration-of-automation-pilot-in-btp-cockpit/)
 * [Automation Pilot Initial Setup Documentation](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/76e77c4563d042b2b46f6c622be3a091.html)
