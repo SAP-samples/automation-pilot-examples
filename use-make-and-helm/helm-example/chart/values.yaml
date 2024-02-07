@@ -1,0 +1,3 @@
+appName: busy-box
+imageName: busybox
+replicas: 1

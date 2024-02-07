@@ -1,0 +1,190 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [
+    {
+      "id": "examples-<<<TENANT_ID>>>:Kubeconfig:1",
+      "name": "Kubeconfig",
+      "description": "Provides the kubeconfig required to access the kubernetes cluster",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "owner": null,
+      "version": 1,
+      "keys": {
+        "kubeconfig": {
+          "type": "string",
+          "sensitive": true,
+          "description": "Single line base64 encoded value of a kubeconfig providing the required access to a kubernetes cluster"
+        }
+      },
+      "values": {
+        "kubeconfig": ""
+      },
+      "tags": {}
+    },
+    {
+      "id": "examples-<<<TENANT_ID>>>:MakeHelmGit:1",
+      "name": "MakeHelmGit",
+      "description": "Input containing the required information for git access to the helm project repository",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "owner": null,
+      "version": 1,
+      "keys": {
+        "helmProjectRepoAddress": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        },
+        "token": {
+          "type": "string",
+          "sensitive": true,
+          "description": "Token providing read access to the git repository. It can be left empty if the repository has public access."
+        }
+      },
+      "values": {
+        "helmProjectRepoAddress": "github.com/SAP-samples/automation-pilot-examples.git",
+        "token": ""
+      },
+      "tags": {}
+    }
+  ],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "scriptOutput": "$(.helmScript.output.output)"
+        },
+        "executors": [
+          {
+            "execute": "scripts-sapcp:ExecuteScript:2",
+            "input": {
+              "stdin": "$(.execution.input.kubeconfig)\n$(.execution.input.gitToken)",
+              "environment": "{\"GIT_PROTOCOL\":\"https://\",\"GIT_ADDRESS\":\"$(.execution.input.gitAddress)\",\"MAKE_TARGET\":\"$(.execution.input.makeTarget)\",\"HELM_PROJECT_DIR\":\"$(.execution.input.helmProjectPath)\"}",
+              "script": "#!/usr/bin/env bash\n\nread -t 5 CONFIG\nread -t 5 TOKEN\n\necho \"$CONFIG\" > ~/encodedConfig\n\nbase64 -i ~/encodedConfig -d > ~/config\n\nexport KUBECONFIG=~/config\n\ngit clone $GIT_PROTOCOL$TOKEN@$GIT_ADDRESS\n\ncd \"$HELM_PROJECT_DIR\"\n\nmake $MAKE_TARGET\n"
+            },
+            "alias": "helmScript",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:HelmExample:1",
+      "name": "HelmExample",
+      "description": "Clones a git repo with helm project in it and executes a make target on the cloned repo.",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "helmProjectPath": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "automation-pilot-examples/use-make-and-helm/helm-example",
+          "defaultValueFromInput": null,
+          "description": "Path pointing to the helm project directory. This directory is expected to contain the Makefile with the desired target"
+        },
+        "gitAddress": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "examples-<<<TENANT_ID>>>:MakeHelmGit:1",
+            "inputKey": "helmProjectRepoAddress"
+          },
+          "description": "Address pointing to the git repository. I.E. github.com/{{user}}/{{repository}}.git"
+        },
+        "makeTarget": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": [
+            "install_app",
+            "uninstall_app"
+          ],
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "install_app",
+          "defaultValueFromInput": null,
+          "description": "Make target to execute in the designated folder."
+        },
+        "gitToken": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "examples-<<<TENANT_ID>>>:MakeHelmGit:1",
+            "inputKey": "token"
+          },
+          "description": "Token granting read permissions to the git repository."
+        },
+        "kubeconfig": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "examples-<<<TENANT_ID>>>:Kubeconfig:1",
+            "inputKey": "kubeconfig"
+          },
+          "description": "Single line Base64 encoded kubeconfig granting access to the target kubernetes cluster."
+        }
+      },
+      "outputKeys": {
+        "scriptOutput": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The output of the script execution"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}
