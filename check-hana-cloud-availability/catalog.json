@@ -1,0 +1,364 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "isHanaCloudAvailable": "$(.pingHanaCloud.output.body | toArray | [.[0] ,.[1] ,.[2]] | any(.value == 1) )",
+          "resultHanaStart": "$(.startHanaCloud.executed)",
+          "checkPing": "$(.pingHanaCloud.output.body)"
+        },
+        "executors": [
+          {
+            "execute": "http-sapcp:SensitiveHttpRequest:1",
+            "input": {
+              "password": "$(.execution.input.hanaClientSecret)",
+              "method": "GET",
+              "user": "$(.execution.input.hanaClientID)",
+              "url": "$(.execution.input.hanaClientTokenURL)"
+            },
+            "alias": "getToken",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "responseBodyTransformer": "toObject.data[0].values | reverse",
+              "method": "GET",
+              "authorizationHeader": "Bearer $(.getToken.output.body | toObject.access_token)",
+              "url": "https://api.gateway.orchestration.prod-eu10.hanacloud.ondemand.com/metrics/v1/serviceInstances/$(.execution.input.hanaServiceInstance)/values?names=HDBAccessible"
+            },
+            "alias": "pingHanaCloud",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "monitoring-sapcp:SendAlertNotificationServiceEvent:1",
+            "input": {
+              "password": "$(.execution.input.AnsPassword)",
+              "data": " { \"eventType\": \"FailedHCAvailabilityCheck\", \"severity\": \"ERROR\", \"category\": \"ALERT\", \"subject\": \"Failed HANA Cloud Availability Check $(nowMillis | toDate(\"yyyy-MM-dd\"))\", \"body\": \"The availability check for HANA Cloud with Service Instance ID $(.execution.input.hanaServiceInstance) has failed. Now the Automation Pilot proceeds with an automated START for this HANA Cloud instance.\", \"resource\": { \"resourceName\": \"hana\", \"resourceType\": \"database\" } } ",
+              "user": "$(.execution.input.AnsUser)",
+              "url": "$(.execution.input.AnsUrl)/cf/producer/v1/resource-events"
+            },
+            "alias": "notifyANS",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.pingHanaCloud.output.body | toArray | [.[0] ,.[1] ,.[2]] | any(.value == 1) )",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "false"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "dblm-sapcp:StartHanaCloudInstance:1",
+            "input": {
+              "resourceGroup": "$(.execution.input.hanaCloudResourceGroup)",
+              "password": "$(.execution.input.BtpTechnicalUserPassword)",
+              "resourceName": "$(.execution.input.hanaCloudResourceName)",
+              "region": "$(.execution.input.hanaCloudRegion)",
+              "user": "$(.execution.input.BtpTechnicalUserUsername)",
+              "subAccount": "$(.execution.input.hanaCloudSubAccount)"
+            },
+            "alias": "startHanaCloud",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.pingHanaCloud.output.body | toArray | [.[0] ,.[1] ,.[2]] | any(.value == 1) )",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "false"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:CheckHanaCloudAvailabilitySample:1",
+      "name": "CheckHanaCloudAvailabilitySample",
+      "description": "check availability for HANA Cloud",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "AnsPassword": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password / Client Secret ID to the ANS Producer API, available in your ANS service key file, look for \"client_secret\"."
+        },
+        "hanaClientSecret": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "HANA Client Secret ID - available in your HANA Cloud service key file, look for \"client secret\"."
+        },
+        "AnsUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "URL to the Alert Notification service Producer API, available in your ANS service key file, look for \"url\"."
+        },
+        "hanaCloudRegion": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The region where your SAP BTP sub-account is located at, e.g. \"cf-eu10\"."
+        },
+        "hanaClientTokenURL": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The URL needed to be called in order to generate a token to access your HANA Cloud instance. The URL is build as it follows: in the HANA Cloud service key file look for the specified \"url\" + add to it {/oauth/token?grant_type=client_credentials}."
+        },
+        "AnsUser": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "User used to authenticate to the the ANS Producer API, available in your ANS service key file, look for \"client_id\"."
+        },
+        "hanaServiceInstance": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The Instance ID for your HANA Cloud - it can be found from the provisioned service in BTP Cockpit, look for \"Instance ID\". "
+        },
+        "hanaCloudResourceGroup": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name of the CF Space where your HANA Cloud is located at, e.g. \"dev\", \"prod\", etc."
+        },
+        "BtpTechnicalUserPassword": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the SAP BTP technical user you have created and currently maintain active."
+        },
+        "hanaCloudSubAccount": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The exact \"Org Name\" for your SAP BTP sub-account where your HANA Cloud instance is located at."
+        },
+        "hanaClientID": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "HANA Client ID - available in your HANA Cloud service key file, look for \"clientid\"."
+        },
+        "hanaCloudResourceName": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The exact name for your HANA Cloud instance, e.g. \"hanaDemo\", \"hanaProd\", etc."
+        },
+        "BtpTechnicalUserUsername": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Username for the SAP BTP technical user you have created and currently maintain active."
+        }
+      },
+      "outputKeys": {
+        "isHanaCloudAvailable": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Check on whether or not the HANA Cloud instance is available, where: \"true\" = HANA Cloud is available; \"false\" = HANA Cloud is not available."
+        },
+        "resultHanaStart": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Check on whether or not the HANA Cloud instance has been started successfully, where: \"true\" = HANA Cloud has been started ; \"false\" = HANA Cloud was not started'."
+        },
+        "checkPing": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The entire response for the metric \"HDBAccessible\" returned by HANA Cloud Metrics Service REST API."
+        }
+      },
+      "tags": {}
+    }
+  ]
+}
