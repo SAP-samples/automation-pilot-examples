@@ -10,22 +10,22 @@
       "configuration": {
         "values": [],
         "output": {
-          "summary": "$(if .Update.executed then \"Database was updated to version \\(.FindPatchVersion.output.message | toObject.version)\" else \"Database was not updated, it will remain on version \\(.GetAvailableVersions.output.currentVersion.version)\"  end)"
+          "summary": "$(if .Update.executed then \"Database was updated to the \\(.execution.input.updateStrategy) \\(.DetermineVersion.output.message | toObject.version)\" else \"Database was not updated, it will remain on version \\(.GetAvailableVersions.output.currentVersion.version)\"  end)"
         },
         "executors": [
           {
             "execute": "dblm-sapcp:GetHanaCloudInstanceUpdateVersions:1",
             "input": {
-              "resourceGroup": "$(.execution.input.resourceGroup)",
+              "resourceGroup": "$(.execution.input.space)",
               "password": "$(.execution.input.password)",
-              "resourceName": "$(.execution.input.resourceName)",
+              "resourceName": "$(.execution.input.hanaCloudInstance)",
               "region": "$(.execution.input.region)",
               "user": "$(.execution.input.user)",
-              "subAccount": "$(.execution.input.subAccount)",
+              "subAccount": "$(.execution.input.org)",
               "identityProvider": "$(.execution.input.identityProvider)"
             },
             "alias": "GetAvailableVersions",
-            "progressMessage": null,
+            "progressMessage": "The following available versions were detected: $(.GetAvailableVersions.output.availableVersions | map(.version) | join(\", \"))",
             "initialDelay": null,
             "pause": null,
             "when": null,
@@ -37,10 +37,121 @@
           {
             "execute": "utils-sapcp:Void:1",
             "input": {
-              "message": "$(.GetAvailableVersions.output.availableVersions | filter(.releaseTrack == $.GetAvailableVersions.output.currentVersion.releaseTrack and .releaseCycle == $.GetAvailableVersions.output.currentVersion.releaseCycle)[0])"
+              "message": "$(.GetAvailableVersions.output.availableVersions | sortBy(.releaseTrack | split(\".\") | map(toNumber)) | filter(.releaseCycle == $.GetAvailableVersions.output.currentVersion.releaseCycle))"
             },
-            "alias": "FindPatchVersion",
+            "alias": "SortVersions",
+            "progressMessage": "The versions were sorted in ascending order by their release track",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack != $.GetAvailableVersions.output.currentVersion.releaseTrack)[0])"
+            },
+            "alias": "FindNextQRC",
             "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.updateStrategy)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "next QRC version"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack != $.GetAvailableVersions.output.currentVersion.releaseTrack)[-1])"
+            },
+            "alias": "FindLatestQRC",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.updateStrategy)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "latest QRC version"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack == $.GetAvailableVersions.output.currentVersion.releaseTrack)[0])"
+            },
+            "alias": "FindPatch",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.updateStrategy)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "latest patch version"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.FindNextQRC.output.message)$(.FindLatestQRC.output.message)$(.FindPatch.output.message)"
+            },
+            "alias": "DetermineVersion",
+            "progressMessage": "The following version was selected, based on the update strategy: $(.DetermineVersion.output.message | toObject.version // \"No version matches the update strategy\")",
             "initialDelay": null,
             "pause": null,
             "when": null,
@@ -53,10 +164,10 @@
             "execute": "utils-sapcp:GetUserChoice:1",
             "input": {
               "options": "{\"confirm\":\"Confirm Update\",\"abort\":\"Do Not Update\"}",
-              "title": "Update database '$(.execution.input.resourceName)' to version $(.FindPatchVersion.output.message | toObject.version)?"
+              "title": "Update database '$(.execution.input.hanaCloudInstance)' from version $(.GetAvailableVersions.output.currentVersion.version) to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)?"
             },
             "alias": "ConfirmUpdate",
-            "progressMessage": null,
+            "progressMessage": "The user $(if .ConfirmUpdate.output.selection == \"CONFIRMED\" then \"confirmed\" else \"CANCELED\" end) an update to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)",
             "initialDelay": null,
             "pause": null,
             "when": {
@@ -74,11 +185,11 @@
                       ]
                     },
                     {
-                      "expression": "$(.FindPatchVersion.output.message != null)",
-                      "operator": "EQUALS",
+                      "expression": "$(.DetermineVersion.output.message | length)",
+                      "operator": "NOT_EQUALS",
                       "semantic": "OR",
                       "values": [
-                        "true"
+                        "0"
                       ]
                     }
                   ]
@@ -93,20 +204,20 @@
           {
             "execute": "dblm-sapcp:UpdateHanaCloudInstance:1",
             "input": {
-              "resourceGroup": "$(.execution.input.resourceGroup)",
+              "resourceGroup": "$(.execution.input.space)",
               "password": "$(.execution.input.password)",
-              "resourceName": "$(.execution.input.resourceName)",
-              "releaseTrack": "$(.FindPatchVersion.output.message | toObject.releaseTrack)",
+              "resourceName": "$(.execution.input.hanaCloudInstance)",
+              "releaseTrack": "$(.DetermineVersion.output.message | toObject.releaseTrack)",
               "region": "$(.execution.input.region)",
               "deadline": "180",
-              "releaseCycle": "$(.FindPatchVersion.output.message | toObject.releaseCycle)",
-              "version": "$(.FindPatchVersion.output.message | toObject.version)",
+              "releaseCycle": "$(.DetermineVersion.output.message | toObject.releaseCycle)",
+              "version": "$(.DetermineVersion.output.message | toObject.version)",
               "user": "$(.execution.input.user)",
-              "subAccount": "$(.execution.input.subAccount)",
+              "subAccount": "$(.execution.input.org)",
               "identityProvider": "$(.execution.input.identityProvider)"
             },
             "alias": "Update",
-            "progressMessage": null,
+            "progressMessage": "The HANA Cloud database was successfully updated to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)",
             "initialDelay": null,
             "pause": null,
             "when": {
@@ -116,11 +227,11 @@
                   "semantic": "AND",
                   "cases": [
                     {
-                      "expression": "$(.FindPatchVersion.output.message != null)",
-                      "operator": "EQUALS",
+                      "expression": "$(.DetermineVersion.output.message | length)",
+                      "operator": "NOT_EQUALS",
                       "semantic": "OR",
                       "values": [
-                        "true"
+                        "0"
                       ]
                     }
                   ]
@@ -156,13 +267,13 @@
         ],
         "listeners": []
       },
-      "id": "examples-<<<TENANT_ID>>>:PatchUpdateHanaCloudInstance:1",
-      "name": "PatchUpdateHanaCloudInstance",
-      "description": "Update a specified HANA Cloud Instance on Cloud Foundry to the most recent patch version",
+      "id": "examples-<<<TENANT_ID>>>:UpdateHanaCloudDatabaseCF:1",
+      "name": "UpdateHanaCloudDatabaseCF",
+      "description": "Update your HANA Cloud databases on Cloud Foundry to either the next QRC, latest QRC, or the most recent patch version. The command automatically determines and applies the appropriate update based on user's selection.",
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
-        "resourceGroup": {
+        "updateStrategy": {
           "type": "string",
           "sensitive": false,
           "required": true,
@@ -170,13 +281,17 @@
           "maxSize": null,
           "minValue": null,
           "maxValue": null,
-          "allowedValues": null,
+          "allowedValues": [
+            "next QRC version",
+            "latest QRC version",
+            "latest patch version"
+          ],
           "allowedValuesFromInputKeys": null,
           "suggestedValues": null,
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "Technical name of a Cloud Foundry Space, e.g., my-space-demo-1."
+          "description": "Update strategies that allow you to update in a variety of ways depending on your needs"
         },
         "password": {
           "type": "string",
@@ -194,7 +309,7 @@
           "defaultValueFromInput": null,
           "description": "Cloud Foundry user's password"
         },
-        "resourceName": {
+        "hanaCloudInstance": {
           "type": "string",
           "sensitive": false,
           "required": true,
@@ -208,7 +323,23 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "Technical name or ID of a HANA Cloud instance."
+          "description": "Technical name or ID of a HANA Cloud instance"
+        },
+        "org": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry Orgranization, e.g., my-org-name-1."
         },
         "region": {
           "type": "string",
@@ -242,7 +373,7 @@
           "defaultValueFromInput": null,
           "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
         },
-        "subAccount": {
+        "space": {
           "type": "string",
           "sensitive": false,
           "required": true,
@@ -256,7 +387,7 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "Technical name of a Cloud Foundry Orgranization, e.g., my-org-name-1."
+          "description": "Technical name of a Cloud Foundry Space, e.g., my-space-demo-1."
         },
         "identityProvider": {
           "type": "string",
@@ -299,6 +430,343 @@
         }
       },
       "tags": {
+        "feature:logs": "",
+        "env": "cf"
+      }
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "summary": "$(if .Update.executed then \"Database was updated to the \\(.execution.input.updateStrategy) \\(.DetermineVersion.output.message | toObject.version)\" else \"Database was not updated, it will remain on version \\(.GetAvailableVersions.output.parameters.currentProductVersion.id)\"  end)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.execution.input.hanaCloudInstance)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "GetAvailableVersions",
+            "progressMessage": "The following available versions were detected: $(.GetAvailableVersions.output.parameters.availableUpgradeVersions | map(.id) | join(\", \"))",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.GetAvailableVersions.output.parameters.availableUpgradeVersions | sortBy(.track | split(\".\") | map(toNumber)) | filter(.releaseCycle == $.GetAvailableVersions.output.parameters.currentProductVersion.releaseCycle) | map({ releaseCycle: .releaseCycle, releaseTrack: .track, version: .id}))"
+            },
+            "alias": "SortVersions",
+            "progressMessage": "The versions were sorted in ascending order by their release track",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack != $.GetAvailableVersions.output.parameters.currentProductVersion.track)[0])"
+            },
+            "alias": "FindNextQRC",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.updateStrategy)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "next QRC version"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack != $.GetAvailableVersions.output.parameters.currentProductVersion.track)[-1])"
+            },
+            "alias": "FindLatestQRC",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.updateStrategy)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "latest QRC version"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack == $.GetAvailableVersions.output.parameters.currentProductVersion.track)[0])"
+            },
+            "alias": "FindPatch",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.updateStrategy)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "latest patch version"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.FindNextQRC.output.message)$(.FindLatestQRC.output.message)$(.FindPatch.output.message)"
+            },
+            "alias": "DetermineVersion",
+            "progressMessage": "The following version was selected, based on the update strategy: $(.DetermineVersion.output.message | toObject.version // \"No version matches the update strategy\")",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:GetUserChoice:1",
+            "input": {
+              "options": "{\"confirm\":\"Confirm Update\",\"abort\":\"Do Not Update\"}",
+              "title": "Update database '$(.execution.input.hanaCloudInstance)' from version $(.GetAvailableVersions.output.parameters.currentProductVersion.id) to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)?"
+            },
+            "alias": "ConfirmUpdate",
+            "progressMessage": "The user $(if .ConfirmUpdate.output.selection == \"CONFIRMED\" then \"confirmed\" else \"CANCELED\" end) an update to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)",
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "AND",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.shouldConfirmBeforeUpdate)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    },
+                    {
+                      "expression": "$(.DetermineVersion.output.message | length)",
+                      "operator": "NOT_EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.hanaCloudInstance)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "180",
+              "parameters": "{\"data\":{\"productVersion\":{\"releaseCycle\":\"$(.DetermineVersion.output.message | toObject.releaseCycle)\",\"track\":\"$(.DetermineVersion.output.message | toObject.releaseTrack)\",\"id\":\"$(.DetermineVersion.output.message | toObject.version)\"}}}"
+            },
+            "alias": "Update",
+            "progressMessage": "The HANA Cloud database was successfully updated to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)",
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "AND",
+              "conditions": [
+                {
+                  "semantic": "AND",
+                  "cases": [
+                    {
+                      "expression": "$(.DetermineVersion.output.message | length)",
+                      "operator": "NOT_EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.ConfirmUpdate.output.selection)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "confirm"
+                      ]
+                    },
+                    {
+                      "expression": "$(.execution.input.shouldConfirmBeforeUpdate)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "false"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:UpdateHanaCloudDatabaseOtherEnv:1",
+      "name": "UpdateHanaCloudDatabaseOtherEnv",
+      "description": "Update your HANA Cloud databases on Other Env (Subaccount level) to either the next QRC, latest QRC, or the most recent patch version. The command automatically determines and applies the appropriate update based on user's selection.",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "updateStrategy": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": [
+            "next QRC version",
+            "latest QRC version",
+            "latest patch version"
+          ],
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Update strategies that allow you to update in a variety of ways depending on your needs"
+        },
+        "hanaCloudInstance": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name or ID of a HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service key to the SAP Service Manager"
+        },
+        "shouldConfirmBeforeUpdate": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "true",
+          "defaultValueFromInput": null,
+          "description": "Whether to require confirmation before starting the update, if there's one available"
+        }
+      },
+      "outputKeys": {
+        "summary": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Summary of the outcome"
+        }
+      },
+      "tags": {
+        "feature:logs": "",
         "env": "cf"
       }
     }
