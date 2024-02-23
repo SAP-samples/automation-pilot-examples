@@ -73,7 +73,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 
 | Example | Description |
 |---------|-------------|
-| [Update HANA Cloud](patch-update-hana-cloud) | Automatically update the HANA Cloud database to the latest patch version, to the next or most recent QRC version |
+| [Update HANA Cloud](update-hana-cloud) | Automatically update the HANA Cloud database to the latest patch version, to the next or most recent QRC version |
 | [Mass Stop/Start HANA Cloud](mass-stop-start-hana-cloud) | Stop or start all HANA Cloud databases across your entire BTP account |
 | [Check HANA Cloud Backup](check-hana-cloud-backup) | Check regularly whether there was a recent backup of a SAP HANA Cloud database |
 | [Check HANA Cloud Audit Logs](check-hana-cloud-audit-logs) | Check regularly for any suspicious audit log entries in a SAP HANA Cloud database |
