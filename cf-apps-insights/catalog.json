@@ -1,0 +1,221 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "appsInsights": "$(.generateInsights.output.response)"
+        },
+        "executors": [
+          {
+            "execute": "applm-sapcp:ListCfApps:1",
+            "input": {
+              "resourceGroup": "$(.execution.input.resourceGroup)",
+              "password": "$(.execution.input.password)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "subAccount": "$(.execution.input.subAccount)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "listCfApps",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.listCfApps.output.resourceNames | map({ resourceName: . }))",
+              "defaultValues": "{\"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"resourceGroup\":\"$(.execution.input.resourceGroup)\", \"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\"}",
+              "command": "applm-sapcp:GetCfAppState:1"
+            },
+            "alias": "getStates",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          },
+          {
+            "execute": "aicore-sapcp:GenerateGpt4Completion32K:1",
+            "input": {
+              "systemMessage": " Here is a json array with Cloud Foundry applications: $(.getStates.output.outputs | map({ application: .resourceInstancesData, applicationName: .resourceName})) $(\"\\n\") Every application has one or more instances in it. $(\"\\n\")  $(\"\\n\")  Make a short summary for every application. Let's think step by step. $(\"\\n\")  $(\"\\n\") Prefixing it with \"N\" where \"N\" is the index of the application in the array.  $(\"\\n\") Lastly print the last number \"N\".     $(\"\\n\") Print the state of the application. $(\"\\n\") Print the CPU always in percents rounded to the second symbol after the decimal point.  $(\"\\n\") Print memory usage in Mb and Gb.  $(\"\\n\") Print how long the application has been alive in seconds, minutes and hours.  $(\"\\n\")  $(\"\\n\") Check the following suggestions $(\"\\n\")  If application is in ERROR or CRASHED state suggest restart of the application.  $(\"\\n\")  If CPU is higher than 80% suggest to increase CPU.  $(\"\\n\")  If the number of instances is 1 suggest increase of the number of instances.  $(\"\\n\")  Double check if the answer is correct. ",
+              "deploymentId": "$(.execution.input.deploymentId)",
+              "maxTokens": "4000",
+              "temperature": "0.2",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "prompt": "How many Cloud Foundry applications are there? Are the applications alive?  How many instances has each application? What is the CPU and memory usage? How long the application has been alive? Are there any suggestions?"
+            },
+            "alias": "generateInsights",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": []
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:CloudFoundryAppsInsights:1",
+      "name": "CloudFoundryAppsInsights",
+      "description": "Provides Cloud Foundry Apps Insights powered by Generative AI using gpt4-32k",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "resourceGroup": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name or ID of a Cloud Foundry Space, e.g.: my-space-demo-1, ce7bfb6e-0000-49fb-ae75-433536d905d6"
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for Cloud Foundry subaccount user"
+        },
+        "deploymentId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ID of the deployment for gpt4-32k which will execute the query"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service key for the SAP AI Core service"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name or ID of a Cloud Foundry region (e.g. cf-eu10, cf-eu1)"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email for Cloud Foundry subaccount user which will be used for authentication"
+        },
+        "subAccount": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name or ID of a Cloud Foundry Organization, e.g.: my-org-name-1, 0ffeb410-5f78-0000-af5c-5b26baf46623"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": " Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section"
+        }
+      },
+      "outputKeys": {
+        "appsInsights": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Cloud Foundry Apps Insights powered by Generative AI"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}
