@@ -13,7 +13,7 @@ Effortlessly identify the state of your Cloud Foundry applications using **Cloud
 Gain valuable insights into the health and performance of each of your CF applications. Verify their state and receive short summary, empowering you to take proactive measures and maintain optimal functionality.
 
 
-Leveraging the capabilities of `gpt4-32k`, this command provides insights and useful suggestions for critical actions such as application restarts, instanes increase, quota adjustments and e.g.
+Leveraging the capabilities of `gpt4-32k`, this command provides insights and useful suggestions for critical actions such as application restarts, instances increase, quota adjustments and e.g.
 
 Here are example Cloud Foundry Apps Insights:
 
@@ -70,7 +70,7 @@ Import the content of [examples catalog](catalog.json) in your Automation Pilot 
 
 You'll need to provide values for the following input keys:
 
-* *deploymentId* - ID of the deployment which will execute the query
+* *deploymentId* - ID of the deployment for gpt4-32k which will execute the query
 * *serviceKey* - Service key for the SAP AI Core service
 * *region* - Technical name of your SAP BTP region, e.g. cf-eu10, cf-us20
 * *subAccount* - Name of your Cloud Foundry organization
