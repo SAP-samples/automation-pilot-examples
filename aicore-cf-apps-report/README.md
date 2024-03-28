@@ -8,7 +8,7 @@ Table of Contents
 
 ## Description
 
-Effortlessly identify the state of your Cloud Foundry applications using CloudFoundryAppsInsights example command, enhanced by the power of Gen AI.
+Effortlessly identify the state of your Cloud Foundry applications using **CloudFoundryAppsInsights** example command, enhanced by the power of Gen AI.
 
 Gain valuable insights into the health and performance of each of your CF applications. Verify their state and receive short summary, empowering you to take proactive measures and maintain optimal functionality.
 
@@ -66,7 +66,7 @@ Check out the following resources for more information:
 
 ## How to use
 
-Import the content of [examples catalog](catalog.json) in your Automation Pilot tenant. Navigate to the *MassRestartCfApp* command and trigger it.
+Import the content of [examples catalog](catalog.json) in your Automation Pilot tenant. Navigate to the **CloudFoundryAppsInsights** command and trigger it.
 
 You'll need to provide values for the following input keys:
 
@@ -80,13 +80,5 @@ You'll need to provide values for the following input keys:
 * *identityProvider* -  Identity provider to be used
 
 :information_source: Some of the needed information is available in your subaccount's *Overview* page under *Cloud Foundry Environment*.
-:information_source:  Cloud Foundry Apps Insights example uses model `gpt4-32k`
 
-> [!NOTE]
->Some of the needed information is available in your subaccount's *Overview* page under *Cloud Foundry Environment*.
-
-> [!CAUTION]
->Cloud Foundry Apps Insights example uses model *gpt4-32k*
-
-> [!NOTE]
->With small changes the insights can be modified in the prompt.
+:information_source:  **CloudFoundryAppsInsights** example uses model `gpt4-32k` and with small changes the insights can be modified in the prompt
