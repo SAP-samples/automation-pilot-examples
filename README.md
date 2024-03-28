@@ -94,6 +94,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 |---------|-------------|
 | [Mass Restart CF Apps](mass-restart-cf-apps) | Restart all applications in a given Cloud Foundry space |
 | [Mass Stop/Start CF Apps](mass-stop-start-cf-apps) | Stop or start all Cloud Foundry applications across your entire BTP account |
+| [:sparkles: Cloud Foundry Apps Insights](aicore-cf-apps-report) | Effortlessly identify the state of your Cloud Foundry applications powered by Gen AI |
 
 ### Neo
 
