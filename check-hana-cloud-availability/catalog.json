@@ -39,7 +39,7 @@
               "responseBodyTransformer": "toObject.data[0].values | reverse",
               "method": "GET",
               "authorizationHeader": "Bearer $(.getToken.output.body | toObject.access_token)",
-              "url": "https://api.gateway.orchestration.prod-eu10.hanacloud.ondemand.com/metrics/v1/serviceInstances/$(.execution.input.hanaServiceInstance)/values?names=HDBAccessible"
+              "url": "https://api.gateway.orchestration.$(.execution.input.hanaCluster)-$(.execution.input.hanaDatacenter).hanacloud.ondemand.com/metrics/v1/serviceInstances/$(.execution.input.hanaServiceInstance)/values?names=HDBAccessible"
             },
             "alias": "pingHanaCloud",
             "progressMessage": null,
@@ -52,12 +52,16 @@
             "errorMessages": []
           },
           {
-            "execute": "monitoring-sapcp:SendAlertNotificationServiceEvent:1",
+            "execute": "ans-sapcp:SendAnsEvent:1",
             "input": {
-              "password": "$(.execution.input.AnsPassword)",
-              "data": " { \"eventType\": \"FailedHCAvailabilityCheck\", \"severity\": \"ERROR\", \"category\": \"ALERT\", \"subject\": \"Failed HANA Cloud Availability Check $(nowMillis | toDate(\"yyyy-MM-dd\"))\", \"body\": \"The availability check for HANA Cloud with Service Instance ID $(.execution.input.hanaServiceInstance) has failed. Now the Automation Pilot proceeds with an automated START for this HANA Cloud instance.\", \"resource\": { \"resourceName\": \"hana\", \"resourceType\": \"database\" } } ",
-              "user": "$(.execution.input.AnsUser)",
-              "url": "$(.execution.input.AnsUrl)/cf/producer/v1/resource-events"
+              "severity": "ERROR",
+              "subject": "Failed HANA Cloud Availability Check $(nowMillis | toDate(\"yyyy-MM-dd\"))",
+              "resourceName": "hana",
+              "eventType": "FailedHCAvailabilityCheck",
+              "serviceKey": "$(.execution.input.AnsServiceKey)",
+              "body": "The availability check for HANA Cloud with Service Instance ID $(.execution.input.hanaServiceInstance) has failed. Now the Automation Pilot proceeds with an automated START for this HANA Cloud instance.",
+              "category": "ALERT",
+              "resourceType": "database"
             },
             "alias": "notifyANS",
             "progressMessage": null,
@@ -132,22 +136,6 @@
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
-        "AnsPassword": {
-          "type": "string",
-          "sensitive": true,
-          "required": false,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "Password / Client Secret ID to the ANS Producer API, available in your ANS service key file, look for \"client_secret\"."
-        },
         "hanaClientSecret": {
           "type": "string",
           "sensitive": true,
@@ -164,7 +152,7 @@
           "defaultValueFromInput": null,
           "description": "HANA Client Secret ID - available in your HANA Cloud service key file, look for \"client secret\"."
         },
-        "AnsUrl": {
+        "hanaCluster": {
           "type": "string",
           "sensitive": false,
           "required": false,
@@ -178,7 +166,39 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "URL to the Alert Notification service Producer API, available in your ANS service key file, look for \"url\"."
+          "description": "Needed to access to the HANA Cloud API gateway, where 'cluster' typically identifies either a production, pre-production or trial environment"
+        },
+        "hanaDatacenter": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Needed to access to the HANA Cloud API gateway, where 'datacenter' is the datacenter where your HANA Cloud is deployed, i.e. eu10, us10, etc."
+        },
+        "AnsServiceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Key for your Alert Notification service instance"
         },
         "hanaCloudRegion": {
           "type": "string",
@@ -211,22 +231,6 @@
           "defaultValue": null,
           "defaultValueFromInput": null,
           "description": "The URL needed to be called in order to generate a token to access your HANA Cloud instance. The URL is build as it follows: in the HANA Cloud service key file look for the specified \"url\" + add to it {/oauth/token?grant_type=client_credentials}."
-        },
-        "AnsUser": {
-          "type": "string",
-          "sensitive": false,
-          "required": false,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "User used to authenticate to the the ANS Producer API, available in your ANS service key file, look for \"client_id\"."
         },
         "hanaServiceInstance": {
           "type": "string",
