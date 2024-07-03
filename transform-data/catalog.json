@@ -1,0 +1,412 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "output": "$(if .toXml.executed then .toXml.output.output | join(\"\\n\") elif .fromXmltoXml.executed then .fromXmltoXml.output.message elif .toYaml.executed then .toYaml.output.message elif .toCsv.executed then .toCsv.output.message elif .execution.input.targetFormat == \"JSON\" then .inputAsJson.output.message else .toXml.output.output | join(\"\\n\") end)"
+        },
+        "executors": [
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(if .execution.input.data | toObject != null then .execution.input.data else .execution.input.data | toArray end)"
+            },
+            "alias": "toJsonFromJson",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "AND",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.sourceFormat)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "JSON"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.execution.input.data | fromXml)"
+            },
+            "alias": "toJsonFromXml",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.sourceFormat)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "XML"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.execution.input.data | fromYaml)"
+            },
+            "alias": "toJsonFromYaml",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.sourceFormat)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "YAML"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "scripts-sapcp:ExecutePythonScript:1",
+            "input": {
+              "stdin": "$(.execution.input.data)",
+              "script": "import csv\nimport json\nimport sys\n\n# create a list\ndata = []\n\n# read from standard input\nreader = csv.DictReader(sys.stdin)\n\n# for each row in the CSV, add it to the list\nfor row in reader:\n    data.append(row)\n\n# write to standard output\njson.dump(data, sys.stdout, indent=2)"
+            },
+            "alias": "toJsonFromCSV",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.sourceFormat)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "CSV"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(if .toJsonFromJson.executed then .toJsonFromJson.output.message elif .toJsonFromXml.executed then .toJsonFromXml.output.message elif .toJsonFromYaml.executed then .toJsonFromYaml.output.message elif .toJsonFromYaml.executed then .toJsonFromYaml.output.message else .toJsonFromCSV.output.result | join(\"\\n\") | toArray end)"
+            },
+            "alias": "inputAsJson",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "scripts-sapcp:ExecuteScript:2",
+            "input": {
+              "stdin": "$(.inputAsJson.output.message)",
+              "script": "jq -r '\n  def toxml:\n    . as $in |\n    if type == \"object\" then\n      $in | to_entries | map(\"<\\(.key)>\" + (.value | toxml) + \"</\\(.key)>\") | join(\"\")\n    elif type == \"array\" then\n      map(\"<item>\" + (toxml) + \"</item>\") | join(\"\")\n    else\n      tostring\n    end;\n\n  if type == \"array\" then\n    \"<root>\" + (map(toxml) | join(\"\")) + \"</root>\"\n  else\n    toxml\n  end\n'"
+            },
+            "alias": "toXml",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "AND",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.targetFormat)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "XML"
+                      ]
+                    },
+                    {
+                      "expression": "$(.inputAsJson.output.message | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    },
+                    {
+                      "expression": "$(.execution.input.sourceFormat)",
+                      "operator": "NOT_EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "XML"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(if .execution.input.data | fromXml != null then .execution.input.data else null end)"
+            },
+            "alias": "fromXmltoXml",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "AND",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.targetFormat)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "XML"
+                      ]
+                    },
+                    {
+                      "expression": "$(.execution.input.sourceFormat)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "XML"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.inputAsJson.output.message | if . | toObject then . | toObject else . | toArray end | toYaml)"
+            },
+            "alias": "toYaml",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.targetFormat)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "YAML"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.inputAsJson.output.message | toArray | [.[0] | [to_entries[].key] | join(\",\")] +  (. | map(. | [to_entries[].value] | join(\",\")))| join(\"\\n\"))"
+            },
+            "alias": "toCsv",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.targetFormat)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "CSV"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:TransformData:1",
+      "name": "TransformData",
+      "description": "Transforms data between different formats",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "data": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "targetFormat": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": [
+            "JSON",
+            "XML",
+            "YAML",
+            "CSV"
+          ],
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "sourceFormat": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": [
+            "JSON",
+            "XML",
+            "YAML",
+            "CSV"
+          ],
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        }
+      },
+      "outputKeys": {
+        "output": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {
+        "feature:logs": "",
+        "feature:priority": "medium"
+      }
+    }
+  ]
+}
