@@ -404,7 +404,6 @@
         }
       },
       "tags": {
-        "feature:logs": "",
         "feature:priority": "medium"
       }
     }
