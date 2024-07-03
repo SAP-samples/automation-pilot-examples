@@ -1,4 +1,4 @@
-# Utility Commands
+# Transform Data
 
 Table of Contents
 
@@ -10,6 +10,11 @@ Table of Contents
 ## Description
 
 The commands attempts to transform data from the source data type to the target data type.
+Currently this commands transforming data from and to:
+* JSON
+* XML
+* YAML
+* CSV
 
 ## Requirements
 

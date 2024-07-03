@@ -122,7 +122,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 
 | Example | Description |
 |---------|-------------|
-| [Transform Data](transform-data) | Transform Data between different formats |
+| [Transform Data](transform-data) | Transform Data between different formats - JSON, XML, YAML, and CSV |
 
 ## Resources
 
