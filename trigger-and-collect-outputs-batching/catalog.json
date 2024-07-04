@@ -1,0 +1,620 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {},
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "method": "DELETE",
+              "user": "$(.execution.input.user)",
+              "url": "$(.execution.metadata.autoPiUrl)/api/v1/executions/$(.execution.input.execution)"
+            },
+            "alias": "deleteExecution",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:DeleteExecution:1",
+      "name": "DeleteExecution",
+      "description": "Triggers a command for execution",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "execution": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The id of the execution"
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password of a service account with 'Write' permissions"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of a service account with 'Write' permissions"
+        }
+      },
+      "outputKeys": {},
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "outputs": "$(.getExecutionOutputs.output.outputs | map(.output))"
+        },
+        "executors": [
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$([range(.execution.input.executions) | {\"values\": $.execution.input.inputValues // {}, \"sensitiveValues\": $.execution.input.sensitiveInputValues // {}}])",
+              "defaultValues": "{\"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"command\": \"$(.execution.input.command)\", \"inputs\": $(.execution.input.inputs // [])}",
+              "command": "autopi-sapcp:TriggerExecution:1"
+            },
+            "alias": "generateExecutions",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 10,
+              "delay": "5s",
+              "logic": "FIXED",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.execution.error.originalMessage)",
+                        "operator": "CONTAINS",
+                        "semantic": "OR",
+                        "values": [
+                          "Reason: Connectivity timeout issue"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$([.generateExecutions.output.outputs[] | {\"execution\": .execution}])",
+              "defaultValues": "{\"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\"}",
+              "command": "autopi-sapcp:WaitExecutionStatus:1"
+            },
+            "alias": "waitExecutions",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 10,
+              "delay": "5s",
+              "logic": "FIXED",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.execution.error.originalMessage)",
+                        "operator": "CONTAINS",
+                        "semantic": "OR",
+                        "values": [
+                          "Reason: Connectivity timeout issue"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$([.generateExecutions.output.outputs[] | {\"execution\": .execution}])",
+              "defaultValues": "{\"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\"}",
+              "command": "autopi-sapcp:GetExecutionOutput:1"
+            },
+            "alias": "getExecutionOutputs",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 10,
+              "delay": "5s",
+              "logic": "FIXED",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.execution.error.originalMessage)",
+                        "operator": "CONTAINS",
+                        "semantic": "OR",
+                        "values": [
+                          "Reason: Connectivity timeout issue"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.generateExecutions.output.outputs | map({execution}))",
+              "defaultValues": "{\"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\"}",
+              "command": "examples-<<<TENANT_ID>>>:DeleteExecution:1"
+            },
+            "alias": "deleteExecutions",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 10,
+              "delay": "5s",
+              "logic": "FIXED",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.execution.error.originalMessage)",
+                        "operator": "CONTAINS",
+                        "semantic": "OR",
+                        "values": [
+                          "Reason: Connectivity timeout issue"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:TriggerAndCollectOutputs:1",
+      "name": "TriggerAndCollectOutputs",
+      "description": null,
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "executions": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "1",
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "inputs": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "command": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "utils-sapcp:Void:1",
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "inputValues": {
+          "type": "object",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "sensitiveInputValues": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        }
+      },
+      "outputKeys": {
+        "outputs": {
+          "type": "array",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {
+        "feature:logs": "",
+        "feature:priority": "medium"
+      }
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "outputs": "$((if .generateExecutionBatches.output.outputs then [.generateExecutionBatches.output.outputs | map(.outputs)[][]] else [] end) + (.remainderExecutions.output.outputs // []))"
+        },
+        "executors": [
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$([range((.execution.input.executions / .execution.input.batchSize) | split(\".\")[0] | toNumber) | {\"executions\": \"\\($.execution.input.batchSize)\"}])",
+              "defaultValues": "{\"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"command\": \"$(.execution.input.command)\", \"inputValues\": $(.execution.input.inputValues // {}), \"sensitiveInputValues\": $(.execution.input.sensitiveInputValues // {}), \"inputs\": $(.execution.input.inputs // [])}",
+              "command": "examples-<<<TENANT_ID>>>:TriggerAndCollectOutputs:1"
+            },
+            "alias": "generateExecutionBatches",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "examples-<<<TENANT_ID>>>:TriggerAndCollectOutputs:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "executions": "$(.execution.input.executions % .execution.input.batchSize)",
+              "user": "$(.execution.input.user)",
+              "command": "$(.execution.input.command)",
+              "inputValues": "$(.execution.input.inputValues)",
+              "sensitiveInputValues": "$(.execution.input.sensitiveInputValues)"
+            },
+            "alias": "remainderExecutions",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.executions % .execution.input.batchSize)",
+                      "operator": "GREATER_THAN_OR_EQUAL",
+                      "semantic": "OR",
+                      "values": [
+                        "1"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:TriggerAndCollectOutputsBatching:1",
+      "name": "TriggerAndCollectOutputsBatching",
+      "description": null,
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "executions": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "1",
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "inputs": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "batchSize": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "50",
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "command": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "utils-sapcp:Void:1",
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "inputValues": {
+          "type": "object",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "{\"message\": \"Hello\"}",
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "sensitiveInputValues": {
+          "type": "object",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        }
+      },
+      "outputKeys": {
+        "outputs": {
+          "type": "array",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {
+        "feature:logs": "",
+        "feature:priority": "medium"
+      }
+    }
+  ]
+}

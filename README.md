@@ -123,6 +123,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | Example | Description |
 |---------|-------------|
 | [Transform Data](transform-data) | Transform Data between different formats - JSON, XML, YAML, and CSV |
+| [Trigger and Collect Outputs Batching](trigger-and-collect-outputs-batching) | Trigger Multiple Executions in Batches and Collect their Outputs |
 
 ## Resources
 
