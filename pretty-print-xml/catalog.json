@@ -10,7 +10,7 @@
       "configuration": {
         "values": [],
         "output": {
-          "xml": "$(.prettyPrintXml.output.output | join(\"\\n\"))"
+          "xml": "$(.prettyPrintXml.output.output | filter(length != 0 and . != \"\\t\" and . != \"\\t\\t\") | join(\"\\n\"))"
         },
         "executors": [
           {
