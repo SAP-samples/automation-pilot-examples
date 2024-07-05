@@ -1,0 +1,81 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "output": "$(.terraformInit.output.output | join(\"\\n\"))"
+        },
+        "executors": [
+          {
+            "execute": "scripts-sapcp:ExecuteScript:2",
+            "input": {
+              "environment": "{\"MAIN\":\"$(.execution.input.main | toEscapedJson)\"}",
+              "script": "# Set the Terraform version and URL\nTF_VERSION=\"1.9.1\"\nTF_URL=\"https://releases.hashicorp.com/terraform/${TF_VERSION}/terraform_${TF_VERSION}_linux_amd64.zip\"\n\n# Download Terraform\necho \"Downloading Terraform ${TF_VERSION}\"\ncurl -sSL \"${TF_URL}\" -o /tmp/terraform.zip\n\n# Extract the Terraform binary\necho \"Extracting Terraform binary...\"\nunzip -o /tmp/terraform.zip -d /tmp\n\n# Moving terraform\nmv /tmp/terraform ./terraform\nchmod +x terraform\n\necho \"Terraform ${TF_VERSION} has been installed.\"\n\n# Create Terraform Config Files\necho \"${MAIN}\" > main.tf\n\n# Execute Terraform\n./terraform init"
+            },
+            "alias": "terraformInit",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": [
+          {
+            "status": "FAILED",
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.execution.error)"
+            },
+            "when": null
+          }
+        ]
+      },
+      "id": "examples-<<<TENANT_ID>>>:TerraformWithBTPProvider:1",
+      "name": "TerraformWithBTPProvider",
+      "description": null,
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "main": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "terraform {\n    required_providers {\n        btp = {\n            source = \"sap/btp\"\n        }\n    }\n}\n\nprovider \"btp\" {\n# You can leave this block empty for now, as we're not configuring any resources yet.\n# The provider will still be installed.\n}",
+          "defaultValueFromInput": null,
+          "description": null
+        }
+      },
+      "outputKeys": {
+        "output": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {
+        "feature:priority": "medium"
+      }
+    }
+  ]
+}
