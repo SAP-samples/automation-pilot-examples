@@ -1,5 +1,3 @@
-<!-- This template is the default one for all the example's README files -->
-
 # Terraform with BTP Provider
 
 Table of Contents
