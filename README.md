@@ -1,6 +1,6 @@
 # SAP Automation Pilot Examples
 
-![Logo](assets/automation-pilot.png)
+![Logo](assets/autopi.svg)
 
 [![REUSE status](https://api.reuse.software/badge/github.com/SAP-samples/automation-pilot-examples)](https://api.reuse.software/info/github.com/SAP-samples/automation-pilot-examples)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](CODE_OF_CONDUCT.md)
