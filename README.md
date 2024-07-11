@@ -18,6 +18,7 @@ Table of Contents
   * [Neo](#neo)
   * [Scripting](#scripting)
   * [Automation Pilot](#automation-pilot)
+  * [Utility Commands](#utility-commands)
 * [Resources](#resources)
 * [Known Issues](#known-issues)
 * [How to obtain support](#how-to-obtain-support)
@@ -116,6 +117,12 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | Example | Description |
 |---------|-------------|
 | [Backup Catalog to GitHub](backup-catalog) | Backup catalog's content to GitHub |
+
+### Utility Commands
+
+| Example | Description |
+|---------|-------------|
+| [Transform Data](transform-data) | Transform Data between different formats - JSON, XML, YAML, and CSV |
 
 ## Resources
 
