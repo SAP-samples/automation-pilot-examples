@@ -1,5 +1,3 @@
-<!-- This template is the default one for all the example's README files -->
-
 # Trigger Multiple Executions and Collect their Outputs
 
 Table of Contents
