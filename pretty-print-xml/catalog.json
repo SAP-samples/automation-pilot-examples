@@ -1,0 +1,70 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "xml": "$(.prettyPrintXml.output.output | filter(length != 0 and . != \"\\t\" and . != \"\\t\\t\") | join(\"\\n\"))"
+        },
+        "executors": [
+          {
+            "execute": "scripts-sapcp:ExecuteScript:2",
+            "input": {
+              "environment": "{\"XML\":\"$(.execution.input.xml | toEscapedJson)\"}",
+              "script": "printf \"%s\" \"${XML}\" > data.xml\n\necho 'import xml.dom.minidom\n\ndom = xml.dom.minidom.parse(\"data.xml\")\npretty_xml_as_string = dom.toprettyxml()\nprint(pretty_xml_as_string)\n' > program.py\n\npython3 program.py"
+            },
+            "alias": "prettyPrintXml",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:PrettyPrintXml:1",
+      "name": "PrettyPrintXml",
+      "description": null,
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "xml": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        }
+      },
+      "outputKeys": {
+        "xml": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {}
+    }
+  ]
+}
