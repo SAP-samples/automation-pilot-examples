@@ -2,9 +2,10 @@
 
 Table of Contents
 
-* [Description](#description)
-* [Requirements](#requirements)
-* [How to use](#how-to-use)
+- [Mass Stop/Start HANA Cloud Databases](#mass-stopstart-hana-cloud-databases)
+  - [Description](#description)
+  - [Requirements](#requirements)
+  - [How to use](#how-to-use)
 
 ## Description
 
@@ -14,7 +15,9 @@ SAP Automation Pilot has the capabilities to perform mass operations on tens or 
 
 This example includes two commands - *MassStopHanaCloudInstances* and *MassStartHanaCloudInstances*. They begin by querying all HANA Cloud databases across all Cloud Foundry spaces in your BTP account. After that, these commands would either start or stop each HANA Cloud instance in parallel.
 
-To collect all databases, we utilize the *ListServiceInstances* command which is part of the [SAP Service Manager](https://discovery-center.cloud.sap/serviceCatalog/service-manager?region=all) catalog. The example assumes that all HANA Cloud service instances are labeled with the *service: hana-cloud*. This is necessary to identity them among other service instances that you might have in your spaces. This logic can easily be changed by modifying the *ListHanaCloudInstances* step in the example commands. Please also check [this documentation page](https://help.sap.com/docs/service-manager/sap-service-manager/filtering-parameters-and-operators) for more information on how to use the filter queries.
+To collect all databases, we utilize the *ListServiceInstances* command which is part of the [SAP Service Manager](https://discovery-center.cloud.sap/serviceCatalog/service-manager?region=all) catalog.
+
+:warning: The example assumes that all HANA Cloud service instances are labeled with `service: hana-cloud`. This is necessary to identity them among other service instances that you might have in your spaces. This logic can easily be changed by modifying the *ListHanaCloudInstances* step in the example commands. Please also check [this documentation page](https://help.sap.com/docs/service-manager/sap-service-manager/filtering-parameters-and-operators) for more information on how to use the filter queries.
 
 ![List Parameters](assets/list-parameters.png)
 

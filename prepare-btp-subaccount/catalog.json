@@ -120,7 +120,7 @@
         "password": {
           "type": "string",
           "sensitive": true,
-          "required": false,
+          "required": true,
           "minSize": null,
           "maxSize": null,
           "minValue": null,
@@ -195,12 +195,12 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "Technical name of the SAP BTP region, e.g. cf-eu10, cf-eu10-004"
+          "description": "Technical name of the SAP BTP region, e.g. cf-eu10"
         },
         "user": {
           "type": "string",
           "sensitive": false,
-          "required": false,
+          "required": true,
           "minSize": null,
           "maxSize": null,
           "minValue": null,
