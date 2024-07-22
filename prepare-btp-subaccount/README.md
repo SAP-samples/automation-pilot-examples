@@ -2,11 +2,11 @@
 
 Table of Contents
 
-- [Create and Configure BTP Subaccount](#create-and-configure-btp-subaccount)
-- [Description](#description)
-- [Requirements](#requirements)
-- [How to use](#how-to-use)
-- [Expected result](#expected-result)
+* [Create and Configure BTP Subaccount](#create-and-configure-btp-subaccount)
+* [Description](#description)
+* [Requirements](#requirements)
+* [How to use](#how-to-use)
+* [Expected result](#expected-result)
 
 ## Description
 

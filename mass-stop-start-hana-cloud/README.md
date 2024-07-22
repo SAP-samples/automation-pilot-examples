@@ -2,10 +2,10 @@
 
 Table of Contents
 
-- [Mass Stop/Start HANA Cloud Databases](#mass-stopstart-hana-cloud-databases)
-- [Description](#description)
-- [Requirements](#requirements)
-- [How to use](#how-to-use)
+* [Mass Stop/Start HANA Cloud Databases](#mass-stopstart-hana-cloud-databases)
+* [Description](#description)
+* [Requirements](#requirements)
+* [How to use](#how-to-use)
 
 ## Description
 
