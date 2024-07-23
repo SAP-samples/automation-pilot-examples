@@ -26,6 +26,7 @@ Customers can easily modify the example command to fit their scenarios. For exam
 
 ![BTP Entitlements](./assets/btp-entitlements.png)
 
+:warning: The example command is designed to ensure that the available subaccount is not deleted in the event of a failure.
 :information_source: Make sure to check the other examples in the [BTP Provisioning](../README.md#btp-provisioning) section.
 
 ## Requirements
@@ -33,7 +34,8 @@ Customers can easily modify the example command to fit their scenarios. For exam
 To use this example you'll need the following:
 
 * BTP global account
-* Platform user with access to the BTP global account
+* Platform user with access to the BTP global account and administrator roles in the subaccount where the key will be created in the CIS Central service instance
+* Enable Entitlements for Cloud Management Service in both the global account in BTP and the subaccount with the `central` plan
 * Instance of [SAP Cloud Management Service](https://discovery-center.cloud.sap/serviceCatalog/8ffcd3a4-2d85-4a04-a762-be3e31f78a7c) with plan *central* and a service key/binding with default configurations. They must be created in a separate BTP subaccount in the same global account. When creating the service instance you must choose Password as the Authorization Type:
 
 ![Cloud Management Authorization](./assets/cloud-management-authorization.png)

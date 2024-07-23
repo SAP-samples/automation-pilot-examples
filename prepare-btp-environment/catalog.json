@@ -147,7 +147,7 @@
         "password": {
           "type": "string",
           "sensitive": true,
-          "required": false,
+          "required": true,
           "minSize": null,
           "maxSize": null,
           "minValue": null,
@@ -195,7 +195,7 @@
         "user": {
           "type": "string",
           "sensitive": false,
-          "required": false,
+          "required": true,
           "minSize": null,
           "maxSize": null,
           "minValue": null,
