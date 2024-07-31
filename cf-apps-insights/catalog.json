@@ -125,7 +125,7 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "ID of the deployment for gpt4-32k which will execute the query"
+          "description": "ID of the deployment for gpt4o which will execute the query"
         },
         "serviceKey": {
           "type": "object",
