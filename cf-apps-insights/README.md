@@ -2,10 +2,9 @@
 
 Table of Contents
 
-- [:sparkles: Cloud Foundry Apps Insights](#sparkles-cloud-foundry-apps-insights)
-  - [Description](#description)
-  - [Requirements](#requirements)
-  - [How to use](#how-to-use)
+* [Description](#description)
+* [Requirements](#requirements)
+* [How to use](#how-to-use)
 
 ## Description
 
