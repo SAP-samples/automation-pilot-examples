@@ -2,9 +2,10 @@
 
 Table of Contents
 
-* [Description](#description)
-* [Requirements](#requirements)
-* [How to use](#how-to-use)
+- [:sparkles: Cloud Foundry Apps Insights](#sparkles-cloud-foundry-apps-insights)
+  - [Description](#description)
+  - [Requirements](#requirements)
+  - [How to use](#how-to-use)
 
 ## Description
 
@@ -81,4 +82,6 @@ You'll need to provide values for the following input keys:
 
 :information_source: Some of the needed information is available in your subaccount's *Overview* page under *Cloud Foundry Environment*.
 
-:information_source:  **CloudFoundryAppsInsights** example uses model `gpt4o` and with small changes the insights can be modified in the prompt. Also, using a subaccount with fewer applications and instances enhances the accuracy of GPT model responses.
+:information_source:  **CloudFoundryAppsInsights** example uses model `gpt4o` and with small changes the insights can be modified in the prompt. 
+
+:warning: Using a subaccount with fewer applications and instances enhances the accuracy of GPT model responses.
