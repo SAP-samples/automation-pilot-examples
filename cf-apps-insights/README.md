@@ -2,9 +2,9 @@
 
 Table of Contents
 
-- [Description](#description)
-- [Requirements](#requirements)
-- [How to use](#how-to-use)
+* [Description](#description)
+* [Requirements](#requirements)
+* [How to use](#how-to-use)
 
 ## Description
 
