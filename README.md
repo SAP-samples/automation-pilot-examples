@@ -111,6 +111,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [Use Custom Python Package](use-custom-python-package) | Install and use custom Python package in a script |
 | [Use Custom NPM Package](use-custom-npm-package) | Install and use custom NPM package in a NodeJS script |
 | [Use make and helm](use-make-and-helm) | Pull git repo and use make and helm to deploy the helm chart to kubernetes cluster |
+| [Terraform with BTP Provider](terraform-with-btp-provider) | Use Terraform with the BTP Provider |
 
 ### Automation Pilot
 
