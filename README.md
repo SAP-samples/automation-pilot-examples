@@ -118,6 +118,12 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 |---------|-------------|
 | [Backup Catalog to GitHub](backup-catalog) | Backup catalog's content to GitHub |
 
+### Alert Notification service
+
+| Example                                                             | Description                                                                    |
+|---------------------------------------------------------------------|--------------------------------------------------------------------------------|
+| [CF resource quota notifications](check-cf-space-quota-utilization) | Get insights about Cloud Foundry resource usage via Alert Notification service |
+
 ### Utility Commands
 
 | Example | Description |
