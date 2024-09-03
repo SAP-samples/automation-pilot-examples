@@ -1,10 +1,9 @@
 # Advanced Availability Check
 
 Table of Contents
-- [Advanced Availability Check](#advanced-availability-check)
-  - [Description](#description)
-  - [Requirements](#requirements)
-  - [How to use](#how-to-use)
+* [Description](#description)
+* [Requirements](#requirements)
+* [How to use](#how-to-use)
 
 ## Description
 * Performs multiple request against httpbin.org
@@ -12,16 +11,11 @@ Table of Contents
   
 **Advanced Availability Check** is designed to assess the availability of a given service and subsequently report the results to Dynatrace. This enables comprehensive monitoring, tracking of Service Level Agreements (SLAs), and data visualization within the Dynatrace platform.
 For demonstration and testing purposes, this example utilizes the HTTP Bin service. It is a simple HTTP request and response service, which allows for easy testing and exploration of HTTP requests and responses. However, this example can be readily adapted to fit specific customer requirements and use cases with different services.
- By following this documentation, can be implement an advanced and reliable mechanism to monitor the availability of services thereby enhancing the operational efficiency and service reliability.
-
-
-
-
+By following this documentation, can be implement an advanced and reliable mechanism to monitor the availability of services thereby enhancing the operational efficiency and service reliability.
 
 ## Requirements
 To use this example you’ll need the following:
 * Dynatrace setup with access token and envoronment url
-
 
 :information_source: How to setup your Dynatrace
 
@@ -34,8 +28,6 @@ To use this example you’ll need the following:
 ![new-token](./assets/new-token.png)
 * Click on **Generate Token** and save your access token securely
 * The **environment url** can be cound in the *Dynatrace Environment API Documentation*
-  
-  
 
 :information_source: Result of the **Dynatrace** setup can be viewed in the **Data explorer** where different **Dashboards** can be configured.
 * *Stacked column chart for 2 metrics and 2 applications*
