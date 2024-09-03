@@ -1,9 +1,10 @@
 # Advanced Availability Check
 
 Table of Contents
-* [Description](#description)
-* [Requirements](#requirements)
-* [How to use](#how-to-use)
+- [Advanced Availability Check](#advanced-availability-check)
+  - [Description](#description)
+  - [Requirements](#requirements)
+  - [How to use](#how-to-use)
 
 ## Description
 * Performs multiple request against httpbin.org
@@ -66,6 +67,6 @@ You’ll need to provide values for the following input keys:
 * *dynatraceEnvironmentUrl* - Environment url for Dynatrace
 
 > :information_source: For the *dataPoints* follow this template
->  {metric},{category}={name} {payload}
+> {metric},{category}={name} {payload}
 >
 > example: metricName, app=appA 1
