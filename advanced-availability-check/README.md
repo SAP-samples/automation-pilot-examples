@@ -13,7 +13,7 @@ For demonstration and testing purposes, this example utilizes the HTTP Bin servi
 
 By following this documentation, can be implement an advanced and reliable mechanism to monitor the availability of services thereby enhancing the operational efficiency and service reliability.
 
-On top of that, availability checks can easily be performed on regular intervals (e.g., every day or week) by using the [Scheduled Executions](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/96863a2380d24ba4bab0145bbd78e411.html) functionality in Automation Pilot.
+On top of that, availability checks can easily be performed on regular intervals (e.g. every 5 minutes or every hour) by using the [Scheduled Executions](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/96863a2380d24ba4bab0145bbd78e411.html) functionality in Automation Pilot.
 
 ## Requirements
 To use this example you’ll need the following:
