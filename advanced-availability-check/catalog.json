@@ -1,0 +1,176 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.tools.sap/sl-autopilot/community-commands",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {},
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "method": "GET",
+              "url": "https://httpbin.org/delay/5",
+              "timeout": "10"
+            },
+            "alias": "getDelayEndpoint",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "method": "POST",
+              "url": "https://httpbin.org/delay/5",
+              "timeout": "10"
+            },
+            "alias": "postDelayEndpoint",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "method": "GET",
+              "url": "https://httpbin.org/stream/5",
+              "timeout": "10"
+            },
+            "alias": "streamJsonResponse",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "method": "GET",
+              "url": "https://httpbin.org/stream-bytes/100",
+              "timeout": "10"
+            },
+            "alias": "getRandomBytes",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": [
+          {
+            "status": "FAILED",
+            "execute": "dynatrace-<<<TENANT_ID>>>:PushDynatraceMetric:1",
+            "input": {
+              "apiToken": "$(.execution.input.dynatraceApiToken)",
+              "dataPoints": "$(.execution.inut.dynatraceDataPoints)",
+              "environmentUrl": "$(.execution.input.dynatraceEnvironmentUrl)"
+            },
+            "when": null
+          },
+          {
+            "status": "FINISHED",
+            "execute": "dynatrace-<<<TENANT_ID>>>:PushDynatraceMetric:1",
+            "input": {
+              "apiToken": "$(.execution.input.dynatraceApiToken)",
+              "dataPoints": "$(.execution.inut.dynatraceDataPoints)",
+              "environmentUrl": "$(.execution.input.dynatraceEnvironmentUrl)"
+            },
+            "when": null
+          }
+        ]
+      },
+      "id": "examples-<<<TENANT_ID>>>:AdvancedAvailabilityCheck:1",
+      "name": "AdvancedAvailabilityCheck",
+      "description": null,
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "dynatraceApiToken": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Generated Dynatrace API Token"
+        },
+        "dynatraceDataPoints": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Custom data points, provided in the following syntax: metric.key,dimensions payload"
+        },
+        "dynatraceEnvironmentUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Environment url for Dynatrace, e.g.: for managed - https://{your-domain}/e/{your-environment-id} & for saas: https://{your-environment-id}.live.dynatrace.com"
+        }
+      },
+      "outputKeys": {},
+      "tags": {
+        "feature:logs": "",
+        "feature:priority": "medium"
+      }
+    }
+  ]
+}
