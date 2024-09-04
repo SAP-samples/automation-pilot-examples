@@ -6,16 +6,18 @@ Table of Contents
 * [How to use](#how-to-use)
 
 ## Description
-* Performs multiple request against httpbin.org
-* Send relevant check data to the Dynatrace with *Status Change Listener* **PushDynatraceMetric** command
-  
+
 **Advanced Availability Check** is designed to assess the availability of a given service and subsequently report the results to Dynatrace. This enables comprehensive monitoring, tracking of Service Level Agreements (SLAs), and data visualization within the Dynatrace platform.
+
 For demonstration and testing purposes, this example utilizes the HTTP Bin service. It is a simple HTTP request and response service, which allows for easy testing and exploration of HTTP requests and responses. However, this example can be readily adapted to fit specific customer requirements and use cases with different services.
+
 By following this documentation, can be implement an advanced and reliable mechanism to monitor the availability of services thereby enhancing the operational efficiency and service reliability.
+
+On top of that, availability checks can easily be performed on regular intervals (e.g., every day or week) by using the [Scheduled Executions](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/96863a2380d24ba4bab0145bbd78e411.html) functionality in Automation Pilot.
 
 ## Requirements
 To use this example you’ll need the following:
-* Dynatrace setup with access token and envoronment url
+* Dynatrace setup with access token and environment url
 
 :information_source: How to setup your Dynatrace
 
@@ -34,7 +36,7 @@ To use this example you’ll need the following:
 ![stacked](./assets/stacked.png)
 * *Single value chart presenting the availability of an application*
 ![pie](./assets/pie.png)
-* *Graphc hart for 2 metrics and 2 applications individually*
+* *Graph chart for 2 metrics and 2 applications individually*
 ![graph-line](./assets/graph-line.png)
 
 :information_source: How to setup your Dynatrace Dashboards
