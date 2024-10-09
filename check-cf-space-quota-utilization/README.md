@@ -10,10 +10,10 @@ Table of Contents
 
 ## Description
 
-This command allows you to get insights about the resource utilization in your Cloud Foundry runtime, like memory consumption and service usage in your Cloud Foundry space and its parrent Cloud Foundry organization. 
+This command allows you to get insights about the resource utilization in your Cloud Foundry runtime, like memory consumption and service usage in your Cloud Foundry space and its parent Cloud Foundry organization. 
 Forward the insights towards your [SAP Alert Notification service](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/what-is-sap-alert-notification-service-for-sap-btp) account where you can subscribe for events regarding your resource consumption.
 By using an appropriate configuration you could get informed about detailed resource usage, and you can also be notified when your resource usage is close the quota defined for your space and organization as well.
-The event which will be triggered towards your SAP Alert Notification instance is described in the following [documentation](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/resource-quota-utilization-events?locale=en-US#technical-details)
+The event which will be triggered towards your SAP Alert Notification instance is described in the following [documentation](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/resource-quota-utilization-events?locale=en-US#technical-details). On top of that you can get notified about your Cloud Foundry resource consumption on regular intervals (e.g., every hour or day) by using [Scheduled Executions](https://help.sap.com/docs/automation-pilot/automation-pilot/scheduled-execution?locale=en-US). 
 
 ## Requirements
 
@@ -26,46 +26,7 @@ The event which will be triggered towards your SAP Alert Notification instance i
 ## Prerequisites
 
 * Create an instance of SAP Alert Notification service and configure a subscription that will match the [Resource quota utilization event](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/resource-quota-utilization-events?locale=en-US#technical-details).
-  You can directly import the following example Alert Notification service configuration that will forward the resulting event from the command execution to your email:
-  ```java
-    {
-      "actions": [
-        {
-          "type": "EMAIL",
-          "name": "my-email",
-          "state": "ENABLED",
-          "properties": {
-            "destination": "<<your-email-address>>",
-            "useHtml": "false"
-          }
-        }
-      ],
-      "conditions": [
-        {
-          "name": "match-resource-quota-events",
-          "mandatory": false,
-          "propertyKey": "eventType",
-          "predicate": "CONTAINS",
-          "propertyValue": "ResourceQuotaUtilization",
-          "labels": [],
-          "description": ""
-        }
-      ],
-      "subscriptions": [
-        {
-          "name": "forward-resource-quota-events-to-my-mail",
-          "conditions": [
-            "match-resource-quota-events"
-          ],
-          "actions": [
-            "my-email"
-          ],
-          "state": "ENABLED"
-        }
-      ]
-    }
-  ```
-NOTE: Replace the ``<<your-email-address>>`` placeholder with the actual email address where you want to receive the event.
+  You can directly import the following [example Alert Notification service configuration](alert_notification_configuration.json) that will forward the resulting event from the command execution to your email.
 
 ## How to use
 
@@ -74,11 +35,9 @@ Import the content of [examples catalog](catalog.json) in your Automation Pilot 
 You'll need to provide values for the following input keys:
 
 * *ansServiceKey* - A Service key created in your SAP Alert Notification service instance. For further information check the [Credentials management page](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/credential-management)
-* *cfApiBaseUrl* - The API Endpoint of your Cloud Foundry Runtime, e.g. https://api.cf.eu10.hana.ondemand.com NOTE:: You can find the value in the BTP Cockpit Overview page.
-* *cfUaaUrl* - The UAA Endpoint of your Cloud Foundry Runtime, e.g. https://uaa.cf.eu10.hana.ondemand.com. The value could be found in the response of the API Endpoint.
+* *region* - Technical name of your SAP BTP region, e.g. cf-eu10,cf-eu20
 * *user* - The email or ID of your technical user.
 * *password* - The password of your technical user.
-* *region* - Technical name of your SAP BTP region, e.g. cf-eu10, cf-us20.
 * *spaceId* - The GUID of the Cloud Foundry space which you want to receive events for.
 * *identityProvider* - Optional: origin key of your identity provider. Defaults to sap.ids.
 

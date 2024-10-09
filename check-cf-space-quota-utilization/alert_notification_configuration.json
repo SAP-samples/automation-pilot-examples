@@ -1,0 +1,36 @@
+{
+  "actions": [
+    {
+      "type": "EMAIL",
+      "name": "my-email",
+      "state": "ENABLED",
+      "properties": {
+        "destination": "<<your-email-address>>",
+        "useHtml": "false"
+      }
+    }
+  ],
+  "conditions": [
+    {
+      "name": "match-resource-quota-events",
+      "mandatory": false,
+      "propertyKey": "eventType",
+      "predicate": "CONTAINS",
+      "propertyValue": "ResourceQuotaUtilization",
+      "labels": [],
+      "description": ""
+    }
+  ],
+  "subscriptions": [
+    {
+      "name": "forward-resource-quota-events-to-my-mail",
+      "conditions": [
+        "match-resource-quota-events"
+      ],
+      "actions": [
+        "my-email"
+      ],
+      "state": "ENABLED"
+    }
+  ]
+}

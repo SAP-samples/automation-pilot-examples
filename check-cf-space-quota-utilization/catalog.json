@@ -8,127 +8,15 @@
   "commands": [
     {
       "configuration": {
-        "values": [],
-        "output": {
-          "memoryPercentage": "$(.execution.input.totalOrgMemory | if . == null or . == 0 then 0 else (($.execution.input.usedOrgMemory | toNumber) / ($.execution.input.totalOrgMemory | toNumber) * 10000 | round | . / 100 ) end)"
-        },
-        "executors": [],
-        "listeners": []
-      },
-      "id": "examples-<<<TENANT_ID>>>:CalculateOrgMemPercentage:1",
-      "name": "CalculateOrgMemPercentage",
-      "description": null,
-      "catalog": "examples-<<<TENANT_ID>>>",
-      "version": 1,
-      "inputKeys": {
-        "totalOrgMemory": {
-          "type": "string",
-          "sensitive": false,
-          "required": true,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "Total memory dedicated for the Cloud Foundry organization in MB"
-        },
-        "usedOrgMemory": {
-          "type": "string",
-          "sensitive": false,
-          "required": true,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "Used memory by all applications in the Cloud Foundry organization in MB"
-        }
-      },
-      "outputKeys": {
-        "memoryPercentage": {
-          "type": "string",
-          "sensitive": false,
-          "description": "Percentage of the used memory by all applications in the Cloud Foundry organization"
-        }
-      },
-      "tags": {
-        "feature:logs": "",
-        "feature:priority": "medium"
-      }
-    },
-    {
-      "configuration": {
-        "values": [],
-        "output": {
-          "memoryPercentage": "$(.execution.input.totalSpaceMemory | if . == null then \"0\" else ((($.execution.input.usedSpaceMemory | toNumber) / ($.execution.input.totalSpaceMemory | toNumber)) * 10000 | round | . / 100 | if . == null then 0 else . end) end)"
-        },
-        "executors": [],
-        "listeners": []
-      },
-      "id": "examples-<<<TENANT_ID>>>:CalculateSpaceMemPercentage:1",
-      "name": "CalculateSpaceMemPercentage",
-      "description": null,
-      "catalog": "examples-<<<TENANT_ID>>>",
-      "version": 1,
-      "inputKeys": {
-        "totalSpaceMemory": {
-          "type": "string",
-          "sensitive": false,
-          "required": true,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "Total memory dedicated for the Cloud Foundry space in MB"
-        },
-        "usedSpaceMemory": {
-          "type": "string",
-          "sensitive": false,
-          "required": true,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "Used memory by all started applications in Cloud Foundry space in MB"
-        }
-      },
-      "outputKeys": {
-        "memoryPercentage": {
-          "type": "string",
-          "sensitive": false,
-          "description": "Percentage of used memory by all started applications in Cloud Foundry Space"
-        }
-      },
-      "tags": {
-        "feature:logs": "",
-        "feature:priority": "medium"
-      }
-    },
-    {
-      "configuration": {
-        "values": [],
+        "values": [
+          {
+            "alias": "regionData",
+            "valueFrom": {
+              "inputReference": "metadata-sapcp:CfRegionData:1",
+              "inputKey": "$(.execution.input.region)"
+            }
+          }
+        ],
         "output": {
           "eventId": "$(.sendEventToAns.output.id)"
         },
@@ -138,7 +26,7 @@
             "input": {
               "password": "$(.execution.input.password)",
               "clientId": "cf",
-              "tokenUrl": "$(.execution.input.cfUaaUrl)/oauth/token",
+              "tokenUrl": "$(.regionData.baseUaaUrl)/oauth/token",
               "user": "$(.execution.input.user)"
             },
             "alias": "getCfOauthToken",
@@ -158,7 +46,7 @@
             "input": {
               "method": "GET",
               "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
-              "url": "$(.execution.input.cfApiBaseUrl)/v3/spaces/$(.execution.input.spaceId)",
+              "url": "$(.regionData.cfApiUrl)/v3/spaces/$(.execution.input.spaceId)",
               "timeout": "10"
             },
             "alias": "getCfSpace",
@@ -178,7 +66,7 @@
             "input": {
               "method": "GET",
               "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
-              "url": "$(.execution.input.cfApiBaseUrl)/v3/organizations/$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)",
+              "url": "$(.regionData.cfApiUrl)/v3/organizations/$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)",
               "timeout": "10"
             },
             "alias": "getCfOrg",
@@ -198,7 +86,7 @@
             "input": {
               "method": "GET",
               "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
-              "url": "$(.execution.input.cfApiBaseUrl)/v3/organizations/$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)/usage_summary",
+              "url": "$(.regionData.cfApiUrl)/v3/organizations/$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)/usage_summary",
               "timeout": "10"
             },
             "alias": "getCfOrgUsage",
@@ -239,7 +127,7 @@
             "input": {
               "method": "GET",
               "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
-              "url": "$(.execution.input.cfApiBaseUrl)/v3/service_instances?organization_guids=$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_instances?organization_guids=$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)",
               "timeout": "10"
             },
             "alias": "getServiceInstanceByOrg",
@@ -280,7 +168,7 @@
             "input": {
               "method": "GET",
               "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
-              "url": "$(.execution.input.cfApiBaseUrl)/v3/service_instances?space_guids=$(.execution.input.spaceId)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_instances?space_guids=$(.execution.input.spaceId)",
               "timeout": "10"
             },
             "alias": "getServiceInstanceBySpace",
@@ -337,10 +225,9 @@
             "dryRun": null
           },
           {
-            "execute": "examples-<<<TENANT_ID>>>:CalculateSpaceMemPercentage:1",
+            "execute": "utils-sapcp:Void:1",
             "input": {
-              "totalSpaceMemory": "$(.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb)",
-              "usedSpaceMemory": "$(.calculateSpaceMemory.output.spaceMemory)"
+              "message": "$(.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | if . == null then \"0\" else ((($.calculateSpaceMemory.output.spaceMemory | toNumber) / ($.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | toNumber)) * 10000 | round | . / 100 | if . == null then 0 else . end) end)"
             },
             "alias": "calculateSpaceMemoryPercentage",
             "description": null,
@@ -355,10 +242,9 @@
             "dryRun": null
           },
           {
-            "execute": "examples-<<<TENANT_ID>>>:CalculateOrgMemPercentage:1",
+            "execute": "utils-sapcp:Void:1",
             "input": {
-              "totalOrgMemory": "$(.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb)",
-              "usedOrgMemory": "$(.getCfOrgUsage.output.body | toObject | .usage_summary.memory_in_mb)"
+              "message": "$(.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb | if . == null or . == 0 then 0 else (($.getCfOrgUsage.output.body | toObject | .usage_summary.memory_in_mb | toNumber) / ($.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb | toNumber) * 10000 | round | . / 100 ) end)"
             },
             "alias": "calculateOrgMemoryPercentage",
             "description": null,
@@ -381,7 +267,7 @@
               "resourceName": "$(.getCfSpaceQuota.output.body | toObject | .name)",
               "eventType": "ResourceQuotaUtilization",
               "serviceKey": "$(.execution.input.ansServiceKey)",
-              "body": "Quota Utilization for space '$(.getCfSpace.output.body | toObject | .name)': $(\"\\n\")$(\"\\t\")Memory Total (MB): $(.calculateSpaceMemory.output.spaceMemory) of $(.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | if . == null then -1 else . end) [$(.calculateSpaceMemoryPercentage.output.memoryPercentage)%]$(\"\\n\")$(\"\\t\")Service Count: $(.getServiceInstanceBySpace.output.body | toObject | .pagination.total_results) of $(.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | if . == null then -1 else . end) [$(.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | if . == null then 0 else (($.getServiceInstanceBySpace.output.body | toObject | .pagination.total_results | toNumber) / ($.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | toNumber) * 10000 | round | . / 100) end)%]$(\"\\n\")$(\"\\n\")Quota Utilization for organization '$(.getCfOrg.output.body | toObject | .name)':$(\"\\n\")$(\"\\t\")Memory Total (MB): $(.getCfOrgUsage.output.body | toObject | .usage_summary.memory_in_mb) of $(.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb)[$(.calculateOrgMemoryPercentage.output.memoryPercentage)%]$(\"\\n\")$(\"\\t\")Service Count: $(.getCfOrgUsage.output.body | toObject | .usage_summary.service_instances) of $(.getCfOrgQuota.output.body | toObject | .services.total_service_instances) [$((.getCfOrgUsage.output.body | toObject | .usage_summary.service_instances | toNumber) / (.getCfOrgQuota.output.body | toObject | .services.total_service_instances | toNumber) * 10000 | round | . / 100)%]*$(\"\\n\")$(\"\\n\")* Calculation is based on utilization of all spaces for which authorization is explicitly granted.",
+              "body": "Quota Utilization for space '$(.getCfSpace.output.body | toObject | .name)': $(\"\\n\")$(\"\\t\")Memory Total (MB): $(.calculateSpaceMemory.output.spaceMemory) of $(.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | if . == null then -1 else . end) [$(.calculateSpaceMemoryPercentage.output.message)%]$(\"\\n\")$(\"\\t\")Service Count: $(.getServiceInstanceBySpace.output.body | toObject | .pagination.total_results) of $(.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | if . == null then -1 else . end) [$(.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | if . == null then 0 else (($.getServiceInstanceBySpace.output.body | toObject | .pagination.total_results | toNumber) / ($.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | toNumber) * 10000 | round | . / 100) end)%]$(\"\\n\")$(\"\\n\")Quota Utilization for organization '$(.getCfOrg.output.body | toObject | .name)':$(\"\\n\")$(\"\\t\")Memory Total (MB): $(.getCfOrgUsage.output.body | toObject | .usage_summary.memory_in_mb) of $(.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb)[$(.calculateOrgMemoryPercentage.output.message)%]$(\"\\n\")$(\"\\t\")Service Count: $(.getCfOrgUsage.output.body | toObject | .usage_summary.service_instances) of $(.getCfOrgQuota.output.body | toObject | .services.total_service_instances) [$((.getCfOrgUsage.output.body | toObject | .usage_summary.service_instances | toNumber) / (.getCfOrgQuota.output.body | toObject | .services.total_service_instances | toNumber) * 10000 | round | . / 100)%]*$(\"\\n\")$(\"\\n\")* Calculation is based on utilization of all spaces for which authorization is explicitly granted.",
               "category": "NOTIFICATION",
               "tags": "{     \"org_memory_usage_mb\": \"$(.getCfOrgUsage.output.body | toObject | .usage_summary.memory_in_mb)\",     \"org_service_count\": \"$(.getCfOrgUsage.output.body | toObject | .usage_summary.service_instances)\",     \"space_service_count\": \"$(.getServiceInstanceBySpace.output.body | toObject | .pagination.total_results)\",     \"org_quota_memory_limit_mb\": \"$(.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb)\",     \"org_quota_total_services_count\": \"$(.getCfOrgQuota.output.body | toObject | .services.total_service_instances)\",     \"org_memory_usage_percentage\": \"$((.getCfOrgUsage.output.body | toObject | .usage_summary.memory_in_mb | toNumber) / (.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb | toNumber) * 10000 | round | . / 100)\",     \"org_service_usage_percentage\": \"$((.getCfOrgUsage.output.body | toObject | .usage_summary.service_instances | toNumber) / (.getCfOrgQuota.output.body | toObject | .services.total_service_instances | toNumber) * 10000 | round | . / 100)\",     \"space_memory_usage_mb\": \"$(.calculateSpaceMemory.output.spaceMemory | if . == null then 0 else . end)\",     \"space_quota_memory_limit_mb\": \"$(.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | if . == null then -1 else . end)\",     \"space_quota_total_services_count\": \"$(.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | if . == null then -1 else . end)\",     \"space_memory_usage_percentage\": \"$(.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | if . == null then 0 else (($.calculateSpaceMemory.output.spaceMemory | toNumber) / ($.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | toNumber) * 10000 | round | . / 100 | if . == null then 0 else . end) end)\",     \"space_service_usage_percentage\": \"$(.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | if . == null then 0 else (($.getServiceInstanceBySpace.output.body | toObject | .pagination.total_results | toNumber) / ($.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | toNumber) * 10000 | round | . / 100) end)\" }",
               "resourceType": "resource_quota"
@@ -464,12 +350,14 @@
           "minValue": null,
           "maxValue": null,
           "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
           "suggestedValues": null,
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "SAP BTP region identifier, e.g. cf-eu10"
+          "description": "Technical name of your SAP BTP region, e.g. cf-eu10,cf-eu20"
         },
         "user": {
           "type": "string",
@@ -487,22 +375,6 @@
           "defaultValueFromInput": null,
           "description": "User ID or email of a Cloud Foundry technical user"
         },
-        "cfUaaUrl": {
-          "type": "string",
-          "sensitive": false,
-          "required": true,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "The Cloud Foundry UAA endpoint, e.g. https://uaa.cf.eu10.hana.ondemand.com"
-        },
         "identityProvider": {
           "type": "string",
           "sensitive": false,
@@ -518,22 +390,6 @@
           "defaultValue": "sap.ids",
           "defaultValueFromInput": null,
           "description": "Identity provider to be used  By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section."
-        },
-        "cfApiBaseUrl": {
-          "type": "string",
-          "sensitive": false,
-          "required": true,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "The Cloud Foundry API endpoint, e.g. https://api.cf.eu10.hana.ondemand.com"
         }
       },
       "outputKeys": {
