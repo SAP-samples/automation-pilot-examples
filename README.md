@@ -96,6 +96,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [:sparkles: Cloud Foundry Apps Insights](cf-apps-insights) | Effortlessly identify the state of your Cloud Foundry applications powered by Gen AI |
 | [Mass Restart CF Apps](mass-restart-cf-apps) | Restart all applications in a given Cloud Foundry space |
 | [Mass Stop/Start CF Apps](mass-stop-start-cf-apps) | Stop or start all Cloud Foundry applications across your entire BTP account |
+| [CF resource quota notifications](check-cf-space-quota-utilization) | Get insights about Cloud Foundry resource usage via Alert Notification service |
 
 ### Neo
 
