@@ -28,6 +28,8 @@ The event which will be triggered towards your SAP Alert Notification instance i
 * Create an instance of SAP Alert Notification service and configure a subscription that will match the [Resource quota utilization event](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/resource-quota-utilization-events?locale=en-US#technical-details).
   You can directly import the following [example Alert Notification service configuration](alert_notification_configuration.json) that will forward the resulting event from the command execution to your email.
 
+NOTE: Replace the ``<<your-email-address>>`` placeholder with the actual email address where you want to receive the event.
+
 ## How to use
 
 Import the content of [examples catalog](catalog.json) in your Automation Pilot tenant. Navigate to the *CheckResourceQuotaUtilization* command and trigger it.
