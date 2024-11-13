@@ -12,7 +12,7 @@
         "output": {
           "spaceId": "$(.CreateSpace.output.spaceId)",
           "region": "$(.EnableCloudFoundry.output.region)",
-          "xsuaaServiceKey": "$(.CreateXsuaaKey.output.serviceBinding)",
+          "xsuaaServiceKey": "$(.CreateXsuaaKey.output.serviceKey)",
           "orgId": "$(.EnableCloudFoundry.output.orgId)"
         },
         "executors": [
