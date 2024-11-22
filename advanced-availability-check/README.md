@@ -1,13 +1,14 @@
 # Advanced Availability Check
 
 Table of Contents
-* [Description](#description)
-* [Requirements](#requirements)
-* [How to use](#how-to-use)
+- [Advanced Availability Check](#advanced-availability-check)
+  - [Description](#description)
+  - [Requirements](#requirements)
+  - [How to use](#how-to-use)
 
 ## Description
 
-**Advanced Availability Check** is designed to assess the availability of a given service and subsequently report the results to Dynatrace. This enables comprehensive monitoring, tracking of Service Level Agreements (SLAs), and data visualization within the Dynatrace platform.
+**Advanced Availability Check** is designed to assess the availability of a given service and subsequently report the results to Dynatrace. This enables comprehensive monitoring, tracking of Service Level Agreements (SLAs) and data visualization within the Dynatrace platform.
 
 For demonstration and testing purposes, this example utilizes the HTTP Bin service. It is a simple HTTP request and response service, which allows for easy testing and exploration of HTTP requests and responses. However, this example can be readily adapted to fit specific customer requirements and use cases with different services.
 
