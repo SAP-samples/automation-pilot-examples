@@ -1,10 +1,10 @@
 # Advanced Availability Check
 
 Table of Contents
-- [Advanced Availability Check](#advanced-availability-check)
-  - [Description](#description)
-  - [Requirements](#requirements)
-  - [How to use](#how-to-use)
+* [Advanced Availability Check](#advanced-availability-check)
+* [Description](#description)
+* [Requirements](#requirements)
+* [How to use](#how-to-use)
 
 ## Description
 
