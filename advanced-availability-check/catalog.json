@@ -91,7 +91,7 @@
         "listeners": [
           {
             "status": "FAILED",
-            "execute": "dynatrace-<<<TENANT_ID>>>:PushDynatraceMetric:1",
+            "execute": "dynatrace-sapcp:PushDynatraceMetric:1",
             "input": {
               "apiToken": "$(.execution.input.dynatraceApiToken)",
               "dataPoints": "$(.execution.inut.dynatraceDataPoints)",
@@ -101,7 +101,7 @@
           },
           {
             "status": "FINISHED",
-            "execute": "dynatrace-<<<TENANT_ID>>>:PushDynatraceMetric:1",
+            "execute": "dynatrace-sapcp:PushDynatraceMetric:1",
             "input": {
               "apiToken": "$(.execution.input.dynatraceApiToken)",
               "dataPoints": "$(.execution.inut.dynatraceDataPoints)",
