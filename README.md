@@ -80,6 +80,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [Check HANA Cloud Backup](check-hana-cloud-backup) | Check regularly whether there was a recent backup of a SAP HANA Cloud database |
 | [Check HANA Cloud Audit Logs](check-hana-cloud-audit-logs) | Check regularly for any suspicious audit log entries in a SAP HANA Cloud database |
 | [Check HANA Cloud Availability](check-hana-cloud-availability) | Check regularly whether the HANA Cloud database is currently available |
+| [Rotate HANA Cloud Database Credentials](rotate-hana-cloud-db-credentials) | Automate the rotation of credentials for a HANA Cloud database |
 
 ### BTP Provisioning
 
@@ -125,6 +126,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | Example | Description |
 |---------|-------------|
 | [Transform Data](transform-data) | Transform Data between different formats - JSON, XML, YAML, and CSV |
+| [Convert JSON to HTML Table](convert-json-to-html-table) | Convert JSON array of objects to HTML table |
 | [Trigger and Collect Outputs Batching](trigger-and-collect-outputs-batching) | Trigger Multiple Executions in Batches and Collect their Outputs |
 | [Pretty Print XML](pretty-print-xml) | Pretty Print XML Data |
 
