@@ -1,0 +1,103 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "htmlTable": "<table> $(.BuildTableHeaderRow.output.message) $(.BuildTableDataRows.output.message) </table>"
+        },
+        "executors": [
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.execution.input.data | map(keys) | add | unique)"
+            },
+            "alias": "ExtractHeaders",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "<tr> $(.ExtractHeaders.output.message | toArray | map(\"<th>\\(.)</th>\") | join(\"\")) </tr>"
+            },
+            "alias": "BuildTableHeaderRow",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$((.execution.input.data[] | [ .[$.ExtractHeaders.output.message | toArray[]] ] | map(\"<td>\\(. // \"\")</td>\")) |  \"<tr>\" + join(\"\") + \"</tr>\")"
+            },
+            "alias": "BuildTableDataRows",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:ConvertJsonToHtmlTable:1",
+      "name": "ConvertJsonToHtmlTable",
+      "description": "Convert JSON array of objects to HTML table",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "data": {
+          "type": "array",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "JSON array data"
+        }
+      },
+      "outputKeys": {
+        "htmlTable": {
+          "type": "string",
+          "sensitive": false,
+          "description": "HTML table result"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}
