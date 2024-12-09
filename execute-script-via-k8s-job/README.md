@@ -5,6 +5,7 @@ Table of Contents
 * [Description](#description)
 * [Requirements](#requirements)
 * [How to use](#how-to-use)
+* [Setup Pull Secret](#setup-pull-secret)
 
 ## Description
 
@@ -65,3 +66,23 @@ To use this example you'll need the following:
 ![Script Output](./assets/script-output.png)
 
 :information_source: The Kubernetes Job will be automatically cleaned up after execution, ensuring that no resources are left behind. The job is configured with [ttlSecondsAfterFinished](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) which automatically deletes the job after 3 minutes.
+
+## Setup Pull Secret
+
+If you need to pull a container image from a private registry, you can set up a pull secret using the `CreateK8sImagePullSecret` command provided in the example.
+
+1. **Trigger the Command Manually**:
+
+* Navigate to the `CreateK8sImagePullSecret` command in your SAP Automation Pilot tenant.
+* Click on the *Trigger* button after getting familiar with the command.
+* Provide values for the following input keys:
+  * `secretName`: Name of the secret to be created.
+  * `namespace`: Namespace where the secret will be created.
+  * `dockerconfig`: Credentials for the private container image registry in the format described [here](https://kubernetes.io/docs/concepts/containers/images/#config-json).
+  * `kubeconfig`: Credentials for the specified Kubernetes cluster.
+
+2. **Use the Pull Secret**:
+
+* When triggering the `ExecuteScriptViaKubernetesJob` command, provide the name of the created pull secret in the `imagePullSecretName` input key.
+
+This will ensure that the Kubernetes job can pull the container image from the private registry using the specified pull secret.
