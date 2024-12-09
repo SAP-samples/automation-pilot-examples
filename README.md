@@ -15,9 +15,9 @@ Table of Contents
   * [HANA Cloud](#hana-cloud)
   * [BTP Provisioning](#btp-provisioning)
   * [Cloud Foundry](#cloud-foundry)
+  * [Kubernetes](#kubernetes)
   * [Neo](#neo)
   * [Scripting](#scripting)
-  * [Automation Pilot](#automation-pilot)
   * [Utility Commands](#utility-commands)
   * [Availability Check](#availability-check)
 * [Resources](#resources)
@@ -99,6 +99,12 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [Mass Restart CF Apps](mass-restart-cf-apps) | Restart all applications in a given Cloud Foundry space |
 | [Mass Stop/Start CF Apps](mass-stop-start-cf-apps) | Stop or start all Cloud Foundry applications across your entire BTP account |
 | [CF resource quota notifications](check-cf-space-quota-utilization) | Get insights about Cloud Foundry resource usage via Alert Notification service |
+
+### Kubernetes
+
+| Example | Description |
+|---------|-------------|
+| [Execute Script Via Kubernetes Job](execute-script-via-k8s-job) | Execute a custom script within a Kubernetes Job in a customer-owned Kubernetes cluster |
 
 ### Neo
 
