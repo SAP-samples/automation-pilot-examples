@@ -115,12 +115,6 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [Use Custom NPM Package](use-custom-npm-package) | Install and use custom NPM package in a NodeJS script |
 | [Use make and helm](use-make-and-helm) | Pull git repo and use make and helm to deploy the helm chart to kubernetes cluster |
 
-### Automation Pilot
-
-| Example | Description |
-|---------|-------------|
-| [Backup Catalog to GitHub](backup-catalog) | Backup catalog's content to GitHub |
-
 ### Utility Commands
 
 | Example | Description |
