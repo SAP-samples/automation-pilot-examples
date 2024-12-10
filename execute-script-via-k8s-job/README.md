@@ -16,6 +16,7 @@ This example demonstrates how to execute a custom bash script within a Kubernete
 * **Resource Management**: Utilize the resources of your Kubernetes cluster to execute scripts that require more CPU, memory, or storage than what is available in the default `ExecuteScript` command.
 * **Custom Images**: Use your own container images from private registries to tailor the execution environment to your needs.
 * **Timeout Configuration**: Set higher timeouts for script execution, ensuring that long-running scripts can complete without being interrupted.
+* **Event Logging**: Retrieve all Kubernetes events related to the script execution for better debugging and monitoring.
 
 ### Use Cases
 
@@ -58,12 +59,14 @@ To use this example you'll need the following:
 
 3. **Monitor the Execution**:
 
-* The command will create a Kubernetes Job to execute the script, wait for it to finish, and at the end will retrieve the exit code and the script output.
-* After the execution finishes, you can see the script output and exit code:
+* The command will create a Kubernetes Job to execute the script, wait for it to finish, and at the end will retrieve the exit code, the script output, and all related Kubernetes events.
+* After the execution finishes, you can see the script output, exit code, and related events:
 
 ![Successful Execution](./assets/successful-execution.png)
 
 ![Script Output](./assets/script-output.png)
+
+![Kubernetes Events](./assets/kubernetes-events.png)
 
 :information_source: The Kubernetes Job will be automatically cleaned up after execution, ensuring that no resources are left behind. The job is configured with [ttlSecondsAfterFinished](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) which automatically deletes the job after 3 minutes.
 

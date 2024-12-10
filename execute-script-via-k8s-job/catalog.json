@@ -122,7 +122,8 @@
         "values": [],
         "output": {
           "output": "$(.FetchScriptLogs.output.log | split(\"\\n\"))",
-          "exitCode": "$(.GetScriptPod.output.resources[0].status.containerStatuses[0].state.terminated.exitCode // -1)"
+          "exitCode": "$(.GetScriptPod.output.resources[0].status.containerStatuses[0].state.terminated.exitCode // -1)",
+          "events": "$(.FetchScriptEvents.output.resources | filter(.involvedObject.name | startswith($.GenerateScriptName.output.message)) | map({ involvedObject, reason, message, eventTime, type, reportingComponent, reportingInstance }))"
         },
         "executors": [
           {
@@ -145,7 +146,7 @@
           {
             "execute": "kubernetes-sapcp:CreateK8sResource:1",
             "input": {
-              "resource": "{   \"apiVersion\": \"batch/v1\",   \"kind\": \"Job\",   \"metadata\": {     \"name\": \"$(.GenerateScriptName.output.message)\",     \"namespace\": \"$(.execution.input.namespace)\",     \"labels\": {       \"app\": \"$(.GenerateScriptName.output.message)\"     }   },   \"spec\": {     \"ttlSecondsAfterFinished\": 180,     \"activeDeadlineSeconds\": $(.execution.input.timeout + 60),     \"completions\": 1,     \"backoffLimit\": 0,     \"template\": {       \"spec\": {         \"terminationGracePeriodSeconds\": 0,         \"restartPolicy\": \"Never\",         \"imagePullSecrets\": [           $(.execution.input.imagePullSecretName | if . != null then {name: .} else . end)       ],         \"containers\": [           {             \"name\": \"script-executor\",             \"image\": \"$(.execution.input.image)\",             \"command\": [               \"bash\",               \"-c\",               \"--\"             ],             \"args\": [               \"$(.execution.input.script | fromBase64 | toEscapedJson)\"             ],             \"env\": $(.execution.input.environment | to_entries | map({name: .key, value: .value}))           }         ]       }     }   } }",
+              "resource": "{ \"apiVersion\": \"batch/v1\", \"kind\": \"Job\", \"metadata\": { \"name\": \"$(.GenerateScriptName.output.message)\", \"namespace\": \"$(.execution.input.namespace)\", \"labels\": { \"app\": \"$(.GenerateScriptName.output.message)\" }}, \"spec\": { \"ttlSecondsAfterFinished\": 180, \"activeDeadlineSeconds\": $(.execution.input.timeout + 60), \"completions\": 1, \"backoffLimit\": 0, \"template\": { \"spec\": { \"terminationGracePeriodSeconds\": 0, \"restartPolicy\": \"Never\", \"imagePullSecrets\": [ $(.execution.input.imagePullSecretName | if . != null then {name: .} else . end)], \"containers\": [{ \"name\": \"script-executor\", \"image\": \"$(.execution.input.image)\", \"command\": [ \"bash\", \"-c\", \"--\" ], \"args\": [ \"$(.execution.input.script | fromBase64 | toEscapedJson)\" ], \"env\": $(.execution.input.environment | to_entries | map({name: .key, value: .value}))}]}}}}",
               "kubeconfig": "$(.execution.input.kubeconfig)",
               "resourceType": "jobs"
             },
@@ -243,7 +244,27 @@
             "initialDelay": null,
             "pause": null,
             "when": null,
-            "validate": {
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "kubernetes-sapcp:GetKubernetesPodLog:1",
+            "input": {
+              "tailLines": "$(.execution.input.outputLines)",
+              "pod": "$(.GetScriptPod.output.resources[0].metadata.name)",
+              "namespace": "$(.execution.input.namespace)",
+              "sinceSeconds": "3600",
+              "kubeconfig": "$(.execution.input.kubeconfig)"
+            },
+            "alias": "FetchScriptLogs",
+            "description": "Fetch the script logs from the pod",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
               "semantic": "OR",
               "conditions": [
                 {
@@ -261,22 +282,23 @@
                 }
               ]
             },
+            "validate": null,
             "autoRetry": null,
             "repeat": null,
             "errorMessages": [],
             "dryRun": null
           },
           {
-            "execute": "kubernetes-sapcp:GetKubernetesPodLog:1",
+            "execute": "kubernetes-sapcp:ListK8sResources:1",
             "input": {
-              "tailLines": "$(.execution.input.outputLines)",
-              "pod": "$(.GetScriptPod.output.resources[0].metadata.name)",
+              "apiVersion": "v1",
               "namespace": "$(.execution.input.namespace)",
-              "sinceSeconds": "3600",
-              "kubeconfig": "$(.execution.input.kubeconfig)"
+              "pageSize": "100",
+              "kubeconfig": "$(.execution.input.kubeconfig)",
+              "resourceType": "events"
             },
-            "alias": "FetchScriptLogs",
-            "description": "Fetch the script logs from the pod",
+            "alias": "FetchScriptEvents",
+            "description": "Fetch all Kubernetes events related to the script execution",
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -435,6 +457,11 @@
           "type": "number",
           "sensitive": false,
           "description": "Exit code returned from the script execution"
+        },
+        "events": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Kubernetes events produced by the script execution"
         }
       },
       "tags": {}
