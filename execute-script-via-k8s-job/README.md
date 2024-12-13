@@ -17,6 +17,7 @@ This example demonstrates how to execute a custom bash script within a Kubernete
 * **Custom Images**: Use your own container images from private registries to tailor the execution environment to your needs.
 * **Timeout Configuration**: Set higher timeouts for script execution, ensuring that long-running scripts can complete without being interrupted.
 * **Event Logging**: Retrieve all Kubernetes events related to the script execution for better debugging and monitoring.
+* **Data Security**: All data related to the execution of the script, including the script itself, parameters, and environment variables, is stored in a Kubernetes secret.
 
 ### Use Cases
 
@@ -48,14 +49,16 @@ To use this example you'll need the following:
 * Navigate to the `ExecuteScriptViaKubernetesJob` command in your SAP Automation Pilot tenant.
 * Click on the *Trigger* button after getting familiar with the command.
 * Provide values for the following input keys:
-  * `image`: Container image to be used for executing the script, e.g., *ubuntu:24.04*
-  * `namespace`: Namespace where the script will be executed.
-  * `script`: Script to be executed (base64 encoded).
   * `kubeconfig`: Credentials for the specified Kubernetes cluster.
-  * `environment` (optional): Environment variables available during script execution.
-  * `outputLines` (optional): Number of script output lines to be returned (default is 1000).
+  * `namespace`: Namespace where the script will be executed.
+  * `image`: Container image to be used for executing the script, e.g., *ubuntu:24.04*
   * `imagePullSecretName` (optional): Name of the image pull secret to use when the image is sourced from a private registry.
+  * `script`: Script to be executed (base64 encoded).
+  * `environment` (optional): Environment variables available during script execution.
+  * `parameters` (optional): Parameters that will be passed to the script in the specified order.
+  * `stdin` (optional): Sensitive data passed to the script's standard input.
   * `timeout` (optional): Timeout of the script in seconds (default is 30).
+  * `outputLines` (optional): Number of script output lines to be returned (default is 1000).
 
 3. **Monitor the Execution**:
 
@@ -69,6 +72,8 @@ To use this example you'll need the following:
 ![Kubernetes Events](./assets/kubernetes-events.png)
 
 :information_source: The Kubernetes Job will be automatically cleaned up after execution, ensuring that no resources are left behind. The job is configured with [ttlSecondsAfterFinished](https://kubernetes.io/docs/concepts/workloads/controllers/ttlafterfinished/) which automatically deletes the job after 3 minutes.
+
+:information_source: The Kubernetes secret created for the script execution will also be automatically deleted with a status listener when the execution enters a terminal state (FINISHED, ABORTED, or SUSPENDED).
 
 ## Setup Pull Secret
 
