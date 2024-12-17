@@ -22,30 +22,13 @@
         },
         "executors": [
           {
-            "execute": "http-sapcp:GetTokenViaPasswordCredentials:1",
+            "execute": "http-sapcp:HttpRequest:1",
             "input": {
               "password": "$(.execution.input.password)",
               "clientId": "cf",
-              "tokenUrl": "$(.regionData.baseUaaUrl)/oauth/token",
-              "user": "$(.execution.input.user)"
-            },
-            "alias": "getCfOauthToken",
-            "description": null,
-            "progressMessage": null,
-            "initialDelay": null,
-            "pause": null,
-            "when": null,
-            "validate": null,
-            "autoRetry": null,
-            "repeat": null,
-            "errorMessages": [],
-            "dryRun": null
-          },
-          {
-            "execute": "http-sapcp:HttpRequest:1",
-            "input": {
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
               "method": "GET",
-              "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
+              "user": "$(.execution.input.user)",
               "url": "$(.regionData.cfApiUrl)/v3/spaces/$(.execution.input.spaceId)",
               "timeout": "10"
             },
@@ -64,8 +47,11 @@
           {
             "execute": "http-sapcp:HttpRequest:1",
             "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
               "method": "GET",
-              "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
+              "user": "$(.execution.input.user)",
               "url": "$(.regionData.cfApiUrl)/v3/organizations/$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)",
               "timeout": "10"
             },
@@ -84,8 +70,11 @@
           {
             "execute": "http-sapcp:HttpRequest:1",
             "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
               "method": "GET",
-              "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
+              "user": "$(.execution.input.user)",
               "url": "$(.regionData.cfApiUrl)/v3/organizations/$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)/usage_summary",
               "timeout": "10"
             },
@@ -104,9 +93,11 @@
           {
             "execute": "http-sapcp:HttpRequest:1",
             "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
               "method": "GET",
-              "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
-              "successResponseCodes": "[\"2xx\"]",
+              "user": "$(.execution.input.user)",
               "url": "$(.getCfOrg.output.body | toObject | .links.quota.href)",
               "timeout": "10"
             },
@@ -125,8 +116,11 @@
           {
             "execute": "http-sapcp:HttpRequest:1",
             "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
               "method": "GET",
-              "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
+              "user": "$(.execution.input.user)",
               "url": "$(.regionData.cfApiUrl)/v3/service_instances?organization_guids=$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)",
               "timeout": "10"
             },
@@ -145,9 +139,11 @@
           {
             "execute": "http-sapcp:HttpRequest:1",
             "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
               "method": "GET",
-              "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
-              "successResponseCodes": "[\"2xx\"]",
+              "user": "$(.execution.input.user)",
               "url": "$(.getCfSpace.output.body | toObject | .links.quota.href | if . == null then ($.getCfOrg.output.body | toObject | .links.quota.href) else . end)",
               "timeout": "10"
             },
@@ -166,8 +162,11 @@
           {
             "execute": "http-sapcp:HttpRequest:1",
             "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
               "method": "GET",
-              "authorizationHeader": "bearer $(.getCfOauthToken.output.accessToken)",
+              "user": "$(.execution.input.user)",
               "url": "$(.regionData.cfApiUrl)/v3/service_instances?space_guids=$(.execution.input.spaceId)",
               "timeout": "10"
             },
@@ -209,7 +208,7 @@
           {
             "execute": "examples-<<<TENANT_ID>>>:GetCfAppsDetails:1",
             "input": {
-              "defaultCfCredentials": "{\"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"resourceGroup\":\"$(.execution.input.spaceId)\", \"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.getCfOrg.output.body | toObject | .guid)\"}",
+              "defaultCfCredentials": "{\"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\", \"resourceGroup\":\"$(.execution.input.spaceId)\", \"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.getCfOrg.output.body | toObject | .guid)\"}",
               "appResources": "$(.getCfApps.output.resourceNames | map({ resourceName: . }))"
             },
             "alias": "calculateSpaceMemory",
