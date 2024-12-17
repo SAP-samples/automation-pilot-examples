@@ -1,69 +1,97 @@
-# Mass Stop/Start HANA Cloud Databases
+# Mass Stop and Start of HANA Cloud Instances
 
 Table of Contents
 
 * [Description](#description)
 * [Requirements](#requirements)
 * [How to use](#how-to-use)
+* [Expected result](#expected-result)
 
 ## Description
 
-SAP HANA Cloud databases are billed based on their usage. When used for development or test purposes, it's often necessary to keep them running only during working hours. SAP Automation Pilot can help reduce your company's costs by ensuring that your databases are only running when they are needed. To find out more about the HANA Cloud's billng costs, please feel free to consult [HANA Cloud at SAP Discover Center](https://discovery-center.cloud.sap/serviceCatalog/sap-hana-cloud?tab=service_plan&region=all).
+This example demonstrates how to automate the mass stopping and starting of HANA Cloud instances. It is particularly useful for managing large-scale environments where multiple HANA Cloud instances need to be controlled simultaneously. Automating these operations helps to reduce manual effort, minimize downtime, and ensure consistency across all instances.
 
-SAP Automation Pilot has the capabilities to perform mass operations on tens or even hundreds of HANA Cloud databases, including stop, start or restart. In addition to this, these operations can be performed regularly with the [Scheduled Executions functionality](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/96863a2380d24ba4bab0145bbd78e411.html).
+The example includes multiple commands, depending on the BTP subaccount environment.
 
-This example includes two commands - *MassStopHanaCloudInstances* and *MassStartHanaCloudInstances*. They begin by querying all HANA Cloud databases across all Cloud Foundry spaces in your BTP account. After that, these commands would either start or stop each HANA Cloud instance in parallel.
+For *Cloud Foundry Environment*:
 
-To collect all databases, we utilize the *ListServiceInstances* command which is part of the [SAP Service Manager](https://discovery-center.cloud.sap/serviceCatalog/service-manager?region=all) catalog.
+* **MassStopHanaCloudDatabasesCF**: Stops all HANA Cloud instances across every Cloud Foundry space in a subaccount.
+* **MassStartHanaCloudDatabasesCF**: Starts all HANA Cloud instances across every Cloud Foundry space in a subaccount.
 
-:warning: The example assumes that all HANA Cloud service instances are labeled with `service: hana-cloud`. This is necessary to identity them among other service instances that you might have in your spaces. This logic can easily be changed by modifying the *ListHanaCloudInstances* step in the example commands. Please also check [this documentation page](https://help.sap.com/docs/service-manager/sap-service-manager/filtering-parameters-and-operators) for more information on how to use the filter queries.
+For *Other Environment* (also known as *Multi-Environment* or Subaccount level):
 
-![List Parameters](assets/list-parameters.png)
+* **MassStopHanaCloudDatabasesOtherEnv**: Stops all HANA Cloud instances within a specified BTP subaccount (service: hana-cloud, plan: hana).
+* **MassStartHanaCloudDatabasesOtherEnv**: Starts all HANA Cloud instances within a specified BTP subaccount (service: hana-cloud, plan: hana).
 
-:warning: The commands within this example might cause downtime for a large amount of databases. Please make sure that you are not using them on productive systems.
+These commands provide flexibility to manage HANA Cloud instances at both the Cloud Foundry space level and the subaccount level, making it easier to handle different deployment scenarios. This example can manage one or multiple HANA instances, ranging from tens to even hundreds.
+
+### Core Benefits
+
+* **Efficiency**: Automates repetitive tasks, saving time and reducing the risk of human error.
+* **Scalability**: Easily manage multiple instances across different environments.
+* **Consistency**: Ensures that all instances are started or stopped in a uniform manner.
+* **Cost Management**: Helps in managing costs by stopping instances when not in use.
+
+### Sample Scenarios
+
+* **Development Environments**: Stop databases during non-working hours to save costs and start them again during working hours.
+* **Testing Environments**: Automatically start databases before running test suites and stop them afterward to optimize resource usage.
+* **Maintenance Windows**: Schedule stops and starts of databases during maintenance windows to ensure minimal disruption.
 
 ## Requirements
 
-To use this example you'll need the following:
+For *Cloud Foundry Environment* you'll need the following:
 
-* One or more HANA Cloud databases in the Cloud Foundry environment
-* Instance of [SAP Service Manager](https://help.sap.com/docs/service-manager/sap-service-manager/sap-service-manager) with plan *subaccount-admin* and a service key/binding with default configurations.
-* Platform user with *Space Developer* role in the spaces where the databases reside
+* **SAP Automation Pilot Tenant**: Ensure you have access to an SAP Automation Pilot tenant.
+* **HANA Cloud Databases**: HANA Cloud databases in Cloud Foundry.
+* **Service Manager Service Key**: A service key for the SAP Service Manager.
+* **Cloud Foundry User**: Credentials for a Cloud Foundry user with appropriate permissions (*Space Developer*).
 
-:warning: If you are planning to use SAP Universal ID, please keep [SAP Note 3085908](https://launchpad.support.sap.com/#/notes/3085908) in mind
+For *Other Environment* you'll need the following:
 
-Check out the following resources for more information:
-
-* [Deploy SAP HANA Cloud](https://developers.sap.com/tutorials/hana-cloud-deploying.html)
-* [Create Users and Manage Roles and Privileges](https://developers.sap.com/tutorials/hana-cloud-mission-trial-4.html)
-* [Creating Service Instances in Other Environments](https://help.sap.com/docs/service-manager/sap-service-manager/creating-instances-in-other-environments)
-* [Creating Service Bindings in Other Environments](https://help.sap.com/docs/service-manager/sap-service-manager/creating-service-bindings-in-other-environments)
+* **SAP Automation Pilot Tenant**: Ensure you have access to an SAP Automation Pilot tenant.
+* **HANA Cloud Databases**: HANA Cloud databases in *Other Environment*.
+* **Service Manager Service Key**: A service key for the SAP Service Manager.
 
 ## How to use
 
-Import the content of [examples catalog](catalog.json) in your Automation Pilot tenant.
-The examples includes two commands - *MassStopHanaCloudInstances* and *MassStartHanaCloudInstances*. Navigate to any of them and to trigger them.
+1. **Import the Example**:
+
+* Copy the content of the [catalog.json](./catalog.json) file.
+* Go to your SAP Automation Pilot tenant and navigate to `My Catalogs`.
+* Click on `Import` in the upper right corner.
+* Paste the catalog's content and import it.
+
+### Cloud Foundry Environment
+
+If your HANA Cloud database is in the *Cloud Foundry environment*, navigate to the desired command (e.g., `MassStopHanaCloudDatabasesCF`, `MassStartHanaCloudDatabasesCF`) in your SAP Automation Pilot tenant.
 
 You'll need to provide values for the following input keys:
 
-* *serviceKey* - Service Key for SAP Service Manager
-* *user* - Email or ID of your technical user
-* *password* - Password of your technical user
-* *identityProvider* - Optional: origin key of your identity provider. Defaults to sap.ids
+* `serviceKey`: Service key for the SAP Service Manager.
+* `user`: UserID/Email of the Cloud Foundry user which will be used for authentication.
+* `password`: Cloud Foundry user's password.
+* `identityProvider`: Identity provider to be used (optional, default is `sap.ids`).
+* `excludedInstances`: Names of HANA Cloud instances which should not be stopped/started. Example: `[ "my-prod-hana" ]` (optional).
 
-As mentioned before, Automation Pilot allows executions to be automatically triggered on regular intervals - hourly, daily, weekly, monthly or yearly. We can create two [Scheduled Executions](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/96863a2380d24ba4bab0145bbd78e411.html) - one to stop all databases after working hours and another to start them up again on the next morning.
+### Other Environment
 
-:information_source: Scheduled Executions use the UTC time zone.
+If your HANA Cloud database is in the *Other environment*, navigate to the desired command (e.g., `MassStopHanaCloudDatabasesOtherEnv`, `MassStartHanaCloudDatabasesOtherEnv`) in your SAP Automation Pilot tenant.
 
-Here are the some example schedule configurations:
+You'll need to provide values for the following input keys:
 
-* *MassStopHanaCloudInstances* - executed every weekday at 16:30 UTC
-  * Schedule - Weekly on Monday, Tuesday, Wednesday, Thursday and Friday
-  * Hours - 16
-  * Minutes - 30
-* *MassStartHanaCloudInstances* - every weekday at 06:30 UTC
-  * Schedule - Weekly on Monday, Tuesday, Wednesday, Thursday and Friday
-  * Hours - 6
-  * Minutes - 30
+* `serviceKey`: Service key for the SAP Service Manager.
+* `deadline`: Number of minutes to wait for the process to complete successfully (optional, default is 60 minutes).
+* `excludedInstances`: Names of HANA Cloud instances which should not be stopped/started. Example: `[ "my-prod-hana" ]` (optional).
 
-Another important aspect is alerting. It's important to receive notifications (in the form of email, slack message, Jira ticket or use any [other alerting channel supported](https://help.sap.com/docs/ALERT_NOTIFICATION/5967a369d4b74f7a9c2b91f5df8e6ab6/8a7e092eebc74b3ea01d506265e8c8f8.html)) whenever the commands fail. This could be easily achieved with the help of SAP Alert Notification. More information can be found [here](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/e75533639c6d4193aa8a7e7420c25f8c.html).
+## Expected result
+
+After executing the mass stop or start commands, you should see the following results:
+
+1. The command will list all HANA Cloud instances in the specified environment.
+2. It will exclude any instances specified in the `excludedInstances` input key.
+3. The command will initiate the stop/start process for each instance.
+4. It will wait for the stop/start process to complete for each instance.
+5. The output will list all instances that have been successfully stopped/started.
+
+You can verify the status of the instances in the SAP HANA Cloud Central or by checking the output values in the Automation Pilot execution logs.

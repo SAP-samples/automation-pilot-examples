@@ -10,18 +10,37 @@
       "configuration": {
         "values": [],
         "output": {
-          "stoppedInstancesCount": "$(.StopHanaCloudInstances.output.outputs | length)"
+          "startedInstances": "$(.ListHanaCloudInstances.output.serviceInstances | map(.name))"
         },
         "executors": [
           {
+            "execute": "sm-sapcp:GetServiceDetails:1",
+            "input": {
+              "service": "hana-cloud",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "plan": "hana"
+            },
+            "alias": "GetHanaServiceDetails",
+            "description": "Retrieves the service plan identifier for the service type \"hana-cloud\" and the plan \"hana\"",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
             "execute": "sm-sapcp:ListServiceInstances:1",
             "input": {
-              "labelSelector": "service eq 'hana-cloud'",
               "pageSize": "500",
-              "fieldSelector": "context/origin eq 'cloudfoundry' and ready eq true",
+              "fieldSelector": "service_plan_id eq '$(.GetHanaServiceDetails.output.planId)' and context/origin eq 'cloudfoundry'$(if (.execution.input.excludedInstances | length) == 0 then \"\" else \" and \" + (.execution.input.excludedInstances | map(\"name ne '\\(.)'\") | join(\" and \")) end)",
               "serviceKey": "$(.execution.input.serviceKey)"
             },
             "alias": "ListHanaCloudInstances",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -29,16 +48,18 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
               "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
-              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
-              "command": "dblm-sapcp:TriggerStopHanaCloudInstance:1"
+              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
+              "command": "dblm-sapcp:TriggerStartHanaCloudInstance:1"
             },
-            "alias": "StopHanaCloudInstances",
+            "alias": "StartHanaCloudInstances",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -46,16 +67,18 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
               "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
-              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
+              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
               "command": "dblm-sapcp:WaitHanaCloudInstanceOperation:1"
             },
             "alias": "WaitHanaCloudInstances",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -63,14 +86,15 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           }
         ],
         "listeners": []
       },
-      "id": "examples-<<<TENANT_ID>>>:MassStopHanaCloudInstances:1",
-      "name": "MassStopHanaCloudInstances",
-      "description": "Stop all HANA Cloud instances across every Cloud Foundry space in a subaccount",
+      "id": "examples-<<<TENANT_ID>>>:MassStartHanaCloudDatabasesCF:1",
+      "name": "MassStartHanaCloudDatabasesCF",
+      "description": "Starts all HANA Cloud instances across every Cloud Foundry space in a subaccount",
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
@@ -106,6 +130,22 @@
           "defaultValueFromInput": null,
           "description": "Service Key for SAP Service Manager"
         },
+        "excludedInstances": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[ ]",
+          "defaultValueFromInput": null,
+          "description": "Names of HANA Cloud instances which should not be started. Example: [ \"my-prod-hana\" ]"
+        },
         "user": {
           "type": "string",
           "sensitive": false,
@@ -140,10 +180,10 @@
         }
       },
       "outputKeys": {
-        "stoppedInstancesCount": {
-          "type": "number",
+        "startedInstances": {
+          "type": "array",
           "sensitive": false,
-          "description": "Total number of stopped HANA Cloud instances"
+          "description": "HANA Cloud instances that have been started"
         }
       },
       "tags": {
@@ -154,18 +194,37 @@
       "configuration": {
         "values": [],
         "output": {
-          "startedInstancesCount": "$(.StartHanaCloudInstances.output.outputs | length)"
+          "startedInstances": "$(.ListInstances.output.serviceInstances | map(.name))"
         },
         "executors": [
           {
+            "execute": "sm-sapcp:GetServiceDetails:1",
+            "input": {
+              "service": "hana-cloud",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "plan": "hana"
+            },
+            "alias": "GetHanaServiceDetails",
+            "description": "Retrieves the service plan identifier for the service type \"hana-cloud\" and the plan \"hana\".",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
             "execute": "sm-sapcp:ListServiceInstances:1",
             "input": {
-              "labelSelector": "service eq 'hana-cloud'",
-              "pageSize": "500",
-              "fieldSelector": "context/origin eq 'cloudfoundry' and ready eq true",
+              "pageSize": "100",
+              "fieldSelector": "service_plan_id eq '$(.GetHanaServiceDetails.output.planId)' and context/origin eq 'sapcp'$(if (.execution.input.excludedInstances | length) == 0 then \"\" else \" and \" + (.execution.input.excludedInstances | map(\"name ne '\\(.)'\") | join(\" and \")) end)",
               "serviceKey": "$(.execution.input.serviceKey)"
             },
-            "alias": "ListHanaCloudInstances",
+            "alias": "ListInstances",
+            "description": "Finds all HANA Cloud instances within the specified BTP subaccount",
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -173,16 +232,18 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
-              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
-              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
-              "command": "dblm-sapcp:TriggerStartHanaCloudInstance:1"
+              "inputs": "$(.ListInstances.output.serviceInstances | map({ instanceId: .id }))",
+              "defaultValues": "{ \"serviceKey\": \"$(.execution.input.serviceKey | toEscapedJson)\", \"parameters\": \"{\\\"data\\\": {\\\"serviceStopped\\\": false}}\" }",
+              "command": "sm-sapcp:TriggerUpdateServiceInstance:1"
             },
-            "alias": "StartHanaCloudInstances",
+            "alias": "TriggerStart",
+            "description": "Initiates a stop for all located HANA Cloud instances",
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -190,16 +251,20 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": {
+              "output": {}
+            }
           },
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
-              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
-              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
-              "command": "dblm-sapcp:WaitHanaCloudInstanceOperation:1"
+              "inputs": "$(.TriggerStart.output.outputs | filter(.operation | length != 0))",
+              "defaultValues": "{ \"serviceKey\": \"$(.execution.input.serviceKey | toEscapedJson)\", \"deadline\": \"$(.execution.input.deadline)\" }",
+              "command": "sm-sapcp:WaitServiceInstanceOperation:1"
             },
-            "alias": "WaitHanaCloudInstances",
+            "alias": "WaitStart",
+            "description": "Waits for the stop process to complete successfully",
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -207,14 +272,170 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": {
+              "output": {}
+            }
           }
         ],
         "listeners": []
       },
-      "id": "examples-<<<TENANT_ID>>>:MassStartHanaCloudInstances:1",
-      "name": "MassStartHanaCloudInstances",
-      "description": "Start all HANA Cloud instances across every Cloud Foundry space in a subaccount",
+      "id": "examples-<<<TENANT_ID>>>:MassStartHanaCloudDatabasesOtherEnv:1",
+      "name": "MassStartHanaCloudDatabasesOtherEnv",
+      "description": "Finds and starts all HANA Cloud instances within a specified BTP subaccount (service: hana-cloud, plan: hana)",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service key for the SAP Service Manager"
+        },
+        "excludedInstances": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[ ]",
+          "defaultValueFromInput": null,
+          "description": "Names of HANA Cloud instances which should not be started. Example: [ \"my-prod-hana\" ]"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "60",
+          "defaultValueFromInput": null,
+          "description": "Number of minutes to wait for the start process to complete successfully"
+        }
+      },
+      "outputKeys": {
+        "startedInstances": {
+          "type": "array",
+          "sensitive": false,
+          "description": "HANA Cloud instances that have been started"
+        }
+      },
+      "tags": {
+        "feature:logs": "",
+        "env": "cf"
+      }
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "stoppedInstances": "$(.ListHanaCloudInstances.output.serviceInstances | map(.name))"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceDetails:1",
+            "input": {
+              "service": "hana-cloud",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "plan": "hana"
+            },
+            "alias": "GetHanaServiceDetails",
+            "description": "Retrieves the service plan identifier for the service type \"hana-cloud\" and the plan \"hana\"",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:ListServiceInstances:1",
+            "input": {
+              "pageSize": "500",
+              "fieldSelector": "service_plan_id eq '$(.GetHanaServiceDetails.output.planId)' and context/origin eq 'cloudfoundry'$(if (.execution.input.excludedInstances | length) == 0 then \"\" else \" and \" + (.execution.input.excludedInstances | map(\"name ne '\\(.)'\") | join(\" and \")) end)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "ListHanaCloudInstances",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
+              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
+              "command": "dblm-sapcp:TriggerStopHanaCloudInstance:1"
+            },
+            "alias": "StopHanaCloudInstances",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.ListHanaCloudInstances.output.serviceInstances | map({ region: .context.landscape_label, subAccount: .context.organization_guid, resourceGroup: .context.space_guid, resourceName: .id }))",
+              "defaultValues": "{ \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\" }",
+              "command": "dblm-sapcp:WaitHanaCloudInstanceOperation:1"
+            },
+            "alias": "WaitHanaCloudInstances",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:MassStopHanaCloudDatabasesCF:1",
+      "name": "MassStopHanaCloudDatabasesCF",
+      "description": "Stops all HANA Cloud instances across every Cloud Foundry space in a subaccount",
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
@@ -250,6 +471,22 @@
           "defaultValueFromInput": null,
           "description": "Service Key for SAP Service Manager"
         },
+        "excludedInstances": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[ ]",
+          "defaultValueFromInput": null,
+          "description": "Names of HANA Cloud instances which should not be stopped. Example: [ \"my-prod-hana\" ]"
+        },
         "user": {
           "type": "string",
           "sensitive": false,
@@ -284,13 +521,170 @@
         }
       },
       "outputKeys": {
-        "startedInstancesCount": {
-          "type": "number",
+        "stoppedInstances": {
+          "type": "array",
           "sensitive": false,
-          "description": "Total number of started HANA Cloud instances"
+          "description": "HANA Cloud instances that have been stopped"
         }
       },
       "tags": {
+        "env": "cf"
+      }
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "stoppedInstances": "$(.ListInstances.output.serviceInstances | map(.name))"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceDetails:1",
+            "input": {
+              "service": "hana-cloud",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "plan": "hana"
+            },
+            "alias": "GetHanaServiceDetails",
+            "description": "Retrieves the service plan identifier for the service type \"hana-cloud\" and the plan \"hana\".",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:ListServiceInstances:1",
+            "input": {
+              "pageSize": "100",
+              "fieldSelector": "service_plan_id eq '$(.GetHanaServiceDetails.output.planId)' and context/origin eq 'sapcp'$(if (.execution.input.excludedInstances | length) == 0 then \"\" else \" and \" + (.execution.input.excludedInstances | map(\"name ne '\\(.)'\") | join(\" and \")) end)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "ListInstances",
+            "description": "Finds all HANA Cloud instances within the specified BTP subaccount",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.ListInstances.output.serviceInstances | map({ instanceId: .id }))",
+              "defaultValues": "{ \"serviceKey\": \"$(.execution.input.serviceKey | toEscapedJson)\", \"parameters\": \"{\\\"data\\\": {\\\"serviceStopped\\\": true}}\" }",
+              "command": "sm-sapcp:TriggerUpdateServiceInstance:1"
+            },
+            "alias": "TriggerStop",
+            "description": "Initiates a stop for all located HANA Cloud instances",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": {
+              "output": {}
+            }
+          },
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.TriggerStop.output.outputs | filter(.operation | length != 0))",
+              "defaultValues": "{ \"serviceKey\": \"$(.execution.input.serviceKey | toEscapedJson)\", \"deadline\": \"$(.execution.input.deadline)\" }",
+              "command": "sm-sapcp:WaitServiceInstanceOperation:1"
+            },
+            "alias": "WaitStop",
+            "description": "Waits for the stop process to complete successfully",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": {
+              "output": {}
+            }
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:MassStopHanaCloudDatabasesOtherEnv:1",
+      "name": "MassStopHanaCloudDatabasesOtherEnv",
+      "description": "Finds and stops all HANA Cloud instances within a specified BTP subaccount (service: hana-cloud, plan: hana)",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service key for the SAP Service Manager"
+        },
+        "excludedInstances": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[ ]",
+          "defaultValueFromInput": null,
+          "description": "Names of HANA Cloud instances which should not be stopped. Example: [ \"my-prod-hana\" ]"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "60",
+          "defaultValueFromInput": null,
+          "description": "Number of minutes to wait for the stop process to complete successfully"
+        }
+      },
+      "outputKeys": {
+        "stoppedInstances": {
+          "type": "array",
+          "sensitive": false,
+          "description": "HANA Cloud instances that have been stopped"
+        }
+      },
+      "tags": {
+        "feature:logs": "",
         "env": "cf"
       }
     }
