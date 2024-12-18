@@ -5,6 +5,7 @@ Table of Contents
 * [Description](#description)
 * [Requirements](#requirements)
 * [How to use](#how-to-use)
+* [How to Label Cloud Foundry Apps](#how-to-label-cloud-foundry-apps)
 
 ## Description
 
@@ -48,6 +49,7 @@ You'll need to provide values for the following input keys:
 * *password* - Password of your technical user
 * *identityProvider* - Optional: origin key of your identity provider. Defaults to sap.ids
 * *excludedSpaces* - Technical names of the Cloud Foundry spaces in which the applications should not be started/stopped. Example value: `["prod-1", "prod-2"]`
+* *excludedLabels* - If an application has any of the specified labels, it will not be started/stopped. Example value: `{ "env": "production" }"`
 
 :information_source: Most of the needed information is available in your subaccount's *Overview* page under *Cloud Foundry Environment*.
 
@@ -66,3 +68,31 @@ Here are the some example schedule configurations:
   * Schedule - Weekly on Monday, Tuesday, Wednesday, Thursday and Friday
   * Hours - 6
   * Minutes - 30
+
+## How to Label Cloud Foundry Apps
+
+### Using CF CLI
+
+To add a label to an application using the CF CLI, use the following command:
+
+```shell
+cf set-label my-app environment=production
+```
+
+### Using Manifest YAML
+
+To add labels to an application using a manifest YAML file, include the labels section under metadata.
+
+Example manifest.yml:
+
+```yaml
+applications:
+  - name: my-app
+    memory: 512M
+    instances: 1
+    path: .
+    metadata:
+      labels:
+        environment: production
+        owner: team-a
+```
