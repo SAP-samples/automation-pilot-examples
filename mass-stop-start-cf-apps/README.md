@@ -76,7 +76,7 @@ Here are the some example schedule configurations:
 To add a label to an application using the CF CLI, use the following command:
 
 ```shell
-cf set-label my-app environment=production
+cf set-label app my-app environment=production
 ```
 
 ### Using Manifest YAML
