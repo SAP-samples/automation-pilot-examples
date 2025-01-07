@@ -133,13 +133,13 @@
               "headers": "{\"Content-Type\":\"application/json\"}",
               "clientCert": "$(.execution.input.serviceKey.certificate + .execution.input.serviceKey.key)",
               "password": "$(.execution.input.password)",
-              "tokenUrl": "$((if (.execution.input.serviceKey.certificate == null) and (.execution.input.serviceKey.key == null) then .execution.input.serviceKey.url else .execution.input.serviceKey.certurl end) + \"/oauth/token?grant_type=client_credentials\")",
               "clientId": "$(.execution.input.serviceKey.clientid)",
-              "method": "GET",
+              "tokenUrl": "$((if (.execution.input.serviceKey.certificate == null) and (.execution.input.serviceKey.key == null) then .execution.input.serviceKey.url else .execution.input.serviceKey.certurl end) + \"/oauth/token?grant_type=client_credentials\")",
+              "method": "PUT",
               "clientSecret": "$(.execution.input.serviceKey.clientsecret)",
-              "body": "{\n    \"User\": \"$(.execution.input.user)\",\n    \"URL\": \"$(.execution.input.connectionUrl)\",\n    \"Password\": \"$(.execution.input.password | toEscapedJson)\"\n}",
+              "body": "{\n    \"Name\": \"$(.execution.input.destinationName)\",\n    \"Type\": \"TCP\",\n    \"User\": \"$(.execution.input.user)\",\n    \"Authentication\": \"BasicAuthentication\",\n    \"ProxyType\": \"Internet\",\n    \"URL\": \"$(.execution.input.connectionUrl)\",\n    \"Password\": \"$(.execution.input.password | toEscapedJson)\"\n}",
               "user": "$(.execution.input.user)",
-              "url": "$(.execution.input.serviceKey.uri)/destination-configuration/v1/subaccountDestinations/$(.execution.input.destinationName | toPercentEncoded)",
+              "url": "$(.execution.input.serviceKey.uri)/destination-configuration/v1/subaccountDestinations",
               "timeout": "10"
             },
             "alias": "UpdateDestination",
@@ -217,7 +217,7 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "The ew password for the database user"
+          "description": "The new password for the database user"
         },
         "destinationName": {
           "type": "string",
