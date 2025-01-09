@@ -3,6 +3,8 @@
 Table of Contents
 
 * [Description](#description)
+  * [Event Details](#event-details)
+  * [Example Event Payload](#example-event-payload)
 * [Requirements](#requirements)
 * [Prerequisites](#prerequisites)
 * [How to use](#how-to-use)
@@ -10,10 +12,135 @@ Table of Contents
 
 ## Description
 
-This command allows you to get insights about the resource utilization in your Cloud Foundry runtime, like memory consumption and service usage in your Cloud Foundry space and its parent Cloud Foundry organization. 
-Forward the insights towards your [SAP Alert Notification service](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/what-is-sap-alert-notification-service-for-sap-btp) account where you can subscribe for events regarding your resource consumption.
+This command allows you to get insights about the resource utilization in your Cloud Foundry runtime, like memory consumption and service usage in your Cloud Foundry space and its parent Cloud Foundry organization.
+These insights can be forwarded towards your [SAP Alert Notification service](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/what-is-sap-alert-notification-service-for-sap-btp) account where you can subscribe for events regarding your resource consumption.
 By using an appropriate configuration you could get informed about detailed resource usage, and you can also be notified when your resource usage is close the quota defined for your space and organization as well.
-The event which will be triggered towards your SAP Alert Notification instance is described in the following [documentation](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/resource-quota-utilization-events?locale=en-US#technical-details). On top of that you can get notified about your Cloud Foundry resource consumption on regular intervals (e.g., every hour or day) by using [Scheduled Executions](https://help.sap.com/docs/automation-pilot/automation-pilot/scheduled-execution?locale=en-US). 
+The event which will be triggered towards your SAP Alert Notification instance is described in the section below. On top of that you can get notified about your Cloud Foundry resource consumption on regular intervals (e.g., every hour or day) by using [Scheduled Executions](https://help.sap.com/docs/automation-pilot/automation-pilot/scheduled-execution?locale=en-US). 
+
+### Event Details
+
+| Event Property | Value |
+| -------------- | ----- |
+| eventType | **ResourceQuotaUtilization** |
+| severity | **INFO** |
+| category | **NOTIFICATION** |
+| priority | n/a |
+| subject | The subject is a constant value: **Space Quota Utilization** |
+| body | The value of this parameter is the following text:<br>**Quota Utilization for space <space name>:**<br>**Memory Total (MB):** <used memory in space> of <memory quota for the space> [<percentage>%]<br>**Service Count:** <number of services in space> of <service quota for the space> [<percentage>%]<br>**Quota Utilization for organization <organization name>:**<br>**Memory Total (MB):** <total used memory in organization> of <memory quota for the organization> [<percentage>%]<br>**Service Count:** <total number of services in organization> of <service quota for the organization> [<percentage>%]<br>*Calculation is based on utilization of all spaces for which authorization is explicitly granted.* |
+| resource | ... |
+| tags | ... |
+| region | Technical name of the SAP BTP environment and landscape your subaccount is on. |
+| regionType | **Example: cf-eu10** |
+
+The **resource** object contains:
+| Property | Description or Value |
+| ------------------------ | ---------------------|
+| resource.globalAccount (optional) | Global account identifier. |
+| resource.subAccount | The GUID of the Cloud Foundry organization. |
+| resource.resourceGroup | The GUID of the Cloud Foundry space. |
+| resource.resourceType | **resource_quota** |
+| resource.resourceName | The name of the quota definition |
+| resource.resourceInstance | n/a. |
+
+The **tags** object contains:
+| Tag | Value |
+| --------------------------------- | ----- |
+| tags.space_memory_usage_mb | Total memory used in the space in megabytes. |
+| tags.space_quota_memory_limit_mb | The memory limit in megabytes according to the space quota plan (definition) or organization quota definition, in case quota plan is not assigned for the space (-1 means “unlimited”). |
+| tags.space_memory_usage_percentage | Percentage of used memory quota. |
+| tags.space_service_count | Total number of service instances used in space. |
+| tags.space_quota_total_services_count | The maximum number of services that could be instantiated in this space according to space quota plan (definition) or organization quota definition, in case quota plan is not assigned for the space (-1 means “unlimited”). |
+| tags.space_service_usage_percentage | Percentage of used service quota. |
+| tags.org_memory_usage_mb | Total memory used in the organization in megabytes. |
+| tags.org_quota_memory_limit_mb | The memory limit in megabytes according to the organization quota definition (-1 means “unlimited”). |
+| tags.org_memory_usage_percentage | Percentage of used memory quota for organization. |
+| tags.org_service_count | Total number of service instances used in organization. |
+| tags.org_quota_total_services_count | The maximum number of services that could be instantiated in this organization according to organization quota definition (-1 means “unlimited”). |
+| tags.org_service_usage_percentage | Percentage of used service quota. |
+| tags.ans:eventScope | **CF_SPACE** |
+
+### Example Event Payload
+<details>
+<summary><b><i>Use the following payload to test out your subscription in the BTP Cockpit</i></b></summary>
+  
+For more details on how to test your subscription, see [Managing Subscriptions](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/managing-subscriptions#testing-subscriptions)
+
+  ```JSON
+      {
+       "body": "Quota Utilization for space 'mySpace':\n\tMemory Total (MB): 7768 of 12288 [63.2%]\n\tService Count: 16 of 350 [4.57%]\n\nQuota Utilization for organization 'myOrganization':\n\tMemory Total (MB): 70960 of 96256 [73.7%]\n\tService Count: 59 of 940 [6.28%]*\n\n* Calculation is based on utilization of all spaces for which authorization is explicitly granted.",
+       "category": "NOTIFICATION",
+       "eventTimestamp": 1591369204,
+       "eventType": " ResourceQuotaUtilization",
+       "priority": null,
+       "resource": {
+           "resourceInstance": null,
+           "resourceName": "dev_plan",
+           "resourceType": " resource_quota",
+           "tags": {}
+        },
+        "severity": "INFO",
+        "subject": " Space Quota Utilization",
+        "tags": {
+            "org_memory_usage_percentage": "73.7",
+            "space_service_count": "16",
+            "org_memory_usage_mb": "70960",
+            "space_service_usage_percentage": "4.57",
+            "space_memory_usage_mb": "7768",
+            "space_memory_usage_percentage": "63.2",
+            "org_quota_total_services_count": "940",
+            "space_quota_total_services_count": "350",
+            "org_service_usage_percentage": "6.28",
+            "org_quota_memory_limit_mb": "96256",
+            "org_service_count": "59",
+            "space_quota_memory_limit_mb": "12288"
+        }
+    }
+  ```
+</details>
+
+<details>
+<summary><b><i>The following payload is sent by SAP Alert Notification service on a webhook if no payload template is applied</i></b></summary>
+
+  ```JSON
+      {
+       "body": "Quota Utilization for space 'mySpace':\n\tMemory Total (MB): 7768 of 12288 [63.2%]\n\tService Count: 16 of 350 [4.57%]\n\nQuota Utilization for organization 'myOrganization':\n\tMemory Total (MB): 70960 of 96256 [73.7%]\n\tService Count: 59 of 940 [6.28%]*\n\n* Calculation is based on utilization of all spaces for which authorization is explicitly granted.",
+       "category": "NOTIFICATION",
+       "eventTimestamp": 1591369204,
+       "eventType": " ResourceQuotaUtilization",
+       "id": "c5441b0a-b434-499e-bdfa-8d9354fbfb80",
+       "priority": null,
+       "region": "cf-eu10",
+       "regionType": "sap-cp",
+       "resource": {
+           "globalAccount": null,
+           "resourceGroup": "b2fe70d7-56b1-48d6-ac5e-e93f2c8e70cd",
+           "resourceInstance": null,
+           "resourceName": "dev_plan",
+           "resourceType": " resource_quota",
+           "subAccount": "1ee4f517-072a-4392-9ae6-15bd38273be6",
+           "tags": {}
+        },
+        "severity": "INFO",
+        "subject": " Space Quota Utilization",
+        "tags": {
+            "org_memory_usage_percentage": "73.7",
+            "space_service_count": "16",
+            "org_memory_usage_mb": "70960",
+            "space_service_usage_percentage": "4.57",
+            "space_memory_usage_mb": "7768",
+            "space_memory_usage_percentage": "63.2",
+            "org_quota_total_services_count": "940",
+            "space_quota_total_services_count": "350",
+            "org_service_usage_percentage": "6.28",
+            "org_quota_memory_limit_mb": "96256",
+            "org_service_count": "59",
+            "space_quota_memory_limit_mb": "12288",
+            "ans:eventScope": "CF_SPACE"
+        }
+      }
+  ```
+
+</details>
 
 ## Requirements
 
@@ -25,19 +152,18 @@ The event which will be triggered towards your SAP Alert Notification instance i
 
 ## Prerequisites
 
-* Create an instance of SAP Alert Notification service and configure a subscription that will match the [Resource quota utilization event](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/resource-quota-utilization-events?locale=en-US#technical-details).
-  You can directly import the following [example Alert Notification service configuration](alert_notification_configuration.json) that will forward the resulting event from the command execution to your email.
+* Create an instance of SAP Alert Notification service and configure a subscription that will match the Resource quota utilization event. You may also directly import the following [example Alert Notification service configuration](alert_notification_configuration.json) that will forward the resulting event from the command execution to your email.
 
 NOTE: Replace the ``<<your-email-address>>`` placeholder with the actual email address where you want to receive the event.
 
 ## How to use
 
-Import the content of [examples catalog](catalog.json) in your Automation Pilot tenant. Navigate to the *CheckResourceQuotaUtilization* command and trigger it.
+First you would need to import the content of [examples catalog](catalog.json) in your SAP Automation Pilot tenant from the **My Catalogs** tab. This action will add a new catalog called ```Automation Pilot Examples```. Navigate to the ```CheckResourceQuotaUtilization``` command that this new catalog provides and select ```Trigger```.
 
-You'll need to provide values for the following input keys:
+To successfully trigger the command you'll need to provide the relevant values for the following input keys:
 
 * *ansServiceKey* - A Service key created in your SAP Alert Notification service instance. For further information check the [Credentials management page](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/credential-management)
-* *region* - Technical name of your SAP BTP region, e.g. cf-eu10,cf-eu20
+* *region* - The technical name of your SAP BTP region, e.g. cf-eu10,cf-eu20
 * *user* - The email or ID of your technical user.
 * *password* - The password of your technical user.
 * *spaceId* - The GUID of the Cloud Foundry space which you want to receive events for.
@@ -68,7 +194,7 @@ We have also created an SAP Alert Notification instance which has a subscription
 
 ![ANS subscription](assets/ans-subscription.png)
 
-Once we trigger the command, it will start analyzing the usage data int the Cloud Foundry space and its corresponding organization as well.
+Once we trigger the command, it will start analyzing the usage data in the Cloud Foundry space and its corresponding organization as well.
 
 ![Command execution](assets/command-execution.png)
 
