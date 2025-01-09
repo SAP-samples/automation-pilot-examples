@@ -4,6 +4,7 @@ Table of Contents
 
 * [Description](#description)
   * [Event Details](#event-details)
+  * [High-level Overview](#high-level-overview)
   * [Example Event Payload](#example-event-payload)
 * [Requirements](#requirements)
 * [Prerequisites](#prerequisites)
@@ -22,7 +23,7 @@ This command relies on the Cloud Foundry V3 API. Although the CF V3 API is more 
 
 For more information, you can refer to the CF V3 API documentation [here](https://v3-apidocs.cloudfoundry.org/version/3.184.0/index.html#introduction)
 
-## High-level Overview
+### High-level Overview
 
 The following executors are utilized when using this command: 
 
