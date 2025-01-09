@@ -14,8 +14,41 @@ Table of Contents
 
 This command allows you to get insights about the resource utilization in your Cloud Foundry runtime, like memory consumption and service usage in your Cloud Foundry space and its parent Cloud Foundry organization.
 These insights can be forwarded towards your [SAP Alert Notification service](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/what-is-sap-alert-notification-service-for-sap-btp) account where you can subscribe for events regarding your resource consumption.
-By using an appropriate configuration you could get informed about detailed resource usage, and you can also be notified when your resource usage is close the quota defined for your space and organization as well.
+By using an appropriate configuration you could get informed about detailed resource usage, and you can also be notified when your resource usage is close to the quota defined for your space and organization as well.
 The event which will be triggered towards your SAP Alert Notification instance is described in the section below. On top of that you can get notified about your Cloud Foundry resource consumption on regular intervals (e.g., every hour or day) by using [Scheduled Executions](https://help.sap.com/docs/automation-pilot/automation-pilot/scheduled-execution?locale=en-US). 
+
+It is important to understand that using this command will result in being billed seperatelly: once for the executions in SAP Automation Pilot and again for processing the event in the SAP Alert Notification service. Additionally, there is a notable difference between this command and the now-deprecated native resource quota utilization event. 
+This command relies on the Cloud Foundry V3 API. Although the CF V3 API is more modern compared to the CF V2 API, maintaining the functionality previously achieved with the V2 API will require a greater number of API requests. Events would also be generated on an hourly basis due to technical constraints instead of the 30 minute timeframe utilized before. On the other hand, this command presents the opportunity to customize the event to your liking and you are free to edit the examples referred to in this documenent.
+
+For more information, you can refer to the CF V3 API documentation [here](https://v3-apidocs.cloudfoundry.org/version/3.184.0/index.html#introduction)
+
+## High-level Overview
+
+The following executors are utilized when using this command: 
+
+* Executor ```getCfSpace``` runs a ```GET``` request to the ```/v3/spaces/:guid``` endpoint to acquire the Cloud Foundry Space ID and related Cloud Foundry Organization.
+
+* Executor ```getCfOrg``` runs a ```GET``` request to the ```/v3/organizations/:guid``` endpoint to acquire the Cloud Foundry Organization Quota GUID.
+
+* Executor ```getCfOrgUsage``` runs a ```GET``` request to the ```/v3/organizations/:guid/usage_summary``` to acquire the specified Cloud Foundry Organization object's memory and app instance usage summary.
+
+* Executor ```getCfOrgQuota``` runs a ```GET``` request to the ```/v3/organization_quotas/:guid``` endpoint to acquire the quota details of the Cloud Foundry Organization.
+
+* Executor ```getServiceInstanceByOrg``` runs a ```GET``` request to the ```/v3/service_instances/:guid``` endpoint to acquire all the instances contained in the specific Cloud Foundry Organization.
+
+* Executor ```getCfSpaceQuota``` runs a ```GET``` request to the ```/v3/space_quotas/:guid``` endpoint to acquire the Cloud Foundry Space Quota.
+
+* Executor ```getServiceInstanceBySpace``` runs a ```GET``` request to the ```/v3/service_instances?space_guids=<space-guid>``` request with the ```space_guids``` parameter to fetch all the service instances in a space.
+
+* Executor ```getCfApps``` relies on the ```ListCfApps``` command that lists all the Cloud Foundry application in a selected space. 
+
+* Executor ```calculateSpaceMemory```  relies on the input key ```appResources``` that consists of the resourceNames of all the applications in a given space. This input key is based on the information received when executing the ```ListCfApps``` command. ```calculateSpaceMemory``` then calculates the memory usage of every single application by using the ```calculateAppMemory```.
+
+* Executor ```calculateSpaceMemoryPercentage``` calculates the space memory usage in percentages.
+
+* Executor ```calculateOrgMemoryPercentage``` calculates the organization memory usage in percentages.
+
+* Executor ```SendAnsEvent``` send the event data to SAP Alert Notification Service where it would be processed according to your configuration.
 
 ### Event Details
 
@@ -154,11 +187,11 @@ For more details on how to test your subscription, see [Managing Subscriptions](
 
 * Create an instance of SAP Alert Notification service and configure a subscription that will match the Resource quota utilization event. You may also directly import the following [example Alert Notification service configuration](alert_notification_configuration.json) that will forward the resulting event from the command execution to your email.
 
-NOTE: Replace the ``<<your-email-address>>`` placeholder with the actual email address where you want to receive the event.
+**NOTE: Replace the ``<<your-email-address>>`` placeholder with the actual email address where you want to receive the event.**
 
 ## How to use
 
-First you would need to import the content of [examples catalog](catalog.json) in your SAP Automation Pilot tenant from the **My Catalogs** tab. This action will add a new catalog called ```Automation Pilot Examples```. Navigate to the ```CheckResourceQuotaUtilization``` command that this new catalog provides and select ```Trigger```.
+First you would need to import the content of [example catalog](catalog.json) in your SAP Automation Pilot tenant from the **My Catalogs** tab. This action will add a new catalog called ```Automation Pilot Examples```. Navigate to the ```CheckResourceQuotaUtilization``` command that this new catalog provides and select ```Trigger```.
 
 To successfully trigger the command you'll need to provide the relevant values for the following input keys:
 
