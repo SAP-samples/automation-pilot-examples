@@ -21,3 +21,21 @@ There are no mandatory requirements.
 ## How to use
 
 Import the content of [examples catalog](catalog.json) in your Automation Pilot tenant. Navigate to the *UseCustomPythonPackage* command and check the configuration of the *PythonScript* executor. You can also trigger the command to see it in action
+
+
+## Method 2
+The following method can also be used for installing additional packages from the python script runtime.
+
+```sh
+#!/usr/bin/env python3
+import sys
+import subprocess
+subprocess.call('pip install requests --no-warn-script-location', shell=True, stdout=subprocess.PIPE)  # Install the required package
+result = subprocess.check_output("pip show requests | grep Location | cut -d ' ' -f 2-", shell=True) # Fetches the path for the installed package (to avoid hardcoding)
+location = result.decode("utf-8").strip()  # Convert bytes to string and remove leading/trailing spaces
+sys.path.append('{}'.format(location)) # Adds the package path to the PATH variable
+import requests # Now you can import the package in the same script
+.. the rest of your code ..
+```
+
+
