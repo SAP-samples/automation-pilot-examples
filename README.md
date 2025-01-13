@@ -13,7 +13,7 @@ Table of Contents
 * [How to use](#how-to-use)
 * [Examples](#examples)
   * [HANA Cloud](#hana-cloud)
-  * [BTP Provisioning](#btp-provisioning)
+  * [BTP Management](#btp-management)
   * [Cloud Foundry](#cloud-foundry)
   * [Kubernetes](#kubernetes)
   * [Neo](#neo)
@@ -82,7 +82,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [Check HANA Cloud Availability](check-hana-cloud-availability) | Check regularly whether the HANA Cloud database is currently available |
 | [Rotate HANA Cloud Database Credentials](rotate-hana-cloud-db-credentials) | Automate the rotation of credentials for a HANA Cloud database |
 
-### BTP Provisioning
+### BTP Management
 
 | Example | Description |
 |---------|-------------|
@@ -90,6 +90,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [Setup Cloud Foundry BTP Environment](prepare-btp-environment) | Enable the Cloud Foundry environment, create a space and setup a service instance |
 | [Grant Privileges](grant-privileges) | Grant privileges to users on subaccount, organization and space level |
 | [Reassign Identity Provider](reassign-identity-provider) | Migrate all users on BTP subaccount level from one identity provider to another |
+| [Remove Inactive Subaccount Users](remove-inactive-subaccount-users) | Identify and remove inactive users from a BTP subaccount |
 
 ### Cloud Foundry
 
