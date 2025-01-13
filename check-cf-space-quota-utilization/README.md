@@ -64,12 +64,12 @@ The following executors are utilized when using this command:
 | resource | ... |
 | tags | ... |
 | region | Technical name of the SAP BTP environment and landscape your subaccount is on. |
-| regionType | **Example: cf-eu10** |
+| regionType | **Example: sap-cp** |
 
 The **resource** object contains:
 | Property | Description or Value |
 | ------------------------ | ---------------------|
-| resource.globalAccount (optional) | Global account identifier. |
+| resource.globalAccount | Global account identifier. |
 | resource.subAccount | The GUID of the Cloud Foundry organization. |
 | resource.resourceGroup | The GUID of the Cloud Foundry space. |
 | resource.resourceType | **resource_quota** |
