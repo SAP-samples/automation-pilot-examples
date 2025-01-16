@@ -1,4 +1,4 @@
-# Receive notifications about Cloud Foundry resources utilization via SAP Alert Notification service
+# Receive notifications about Cloud Foundry resource utilization via SAP Alert Notification service
 
 Table of Contents
 
@@ -18,7 +18,7 @@ These insights can be forwarded towards your [SAP Alert Notification service](ht
 By using an appropriate configuration you could get informed about detailed resource usage, and you can also be notified when your resource usage is close to the quota defined for your space and organization as well.
 The event which will be triggered towards your SAP Alert Notification instance is described in the section below. On top of that you can get notified about your Cloud Foundry resource consumption on regular intervals (e.g., every hour or day) by using [Scheduled Executions](https://help.sap.com/docs/automation-pilot/automation-pilot/scheduled-execution?locale=en-US). 
 
-It is important to understand that using this command will result in being billed seperatelly: once for the executions in SAP Automation Pilot and again for processing the event in the SAP Alert Notification service. Additionally, there is a notable difference between this command and the now-deprecated native resource quota utilization event. 
+It is important to understand that using this command will result in being billed seperately: once for the executions in SAP Automation Pilot and again for processing the event in the SAP Alert Notification service. Additionally, there is a notable difference between this command and the now-deprecated native resource quota utilization event. 
 This command relies on the Cloud Foundry V3 API. Although the CF V3 API is more modern compared to the CF V2 API, maintaining the functionality previously achieved with the V2 API will require a greater number of API requests. Events would also be generated on an hourly basis due to technical constraints instead of the 30 minute timeframe utilized before. On the other hand, this command presents the opportunity to customize the event to your liking and you are free to edit the examples referred to in this document.
 
 For more information, you can refer to the CF V3 API documentation [here](https://v3-apidocs.cloudfoundry.org/version/3.184.0/index.html#introduction)
@@ -51,7 +51,7 @@ The following executors are utilized when using this command:
 
 * Executor ```SendAnsEvent``` send the event data to SAP Alert Notification Service where it would be processed according to your configuration.
 
-The different values acquired from these requests would be included as tags in the event payload with appropriate naming and send to your SAP Alert Notification service instance. You may also edit the sample SAP Alert Notification service configuration provided so that it reflects your preferred delivery channel.
+The different values acquired from these requests would be included as tags in the event payload with appropriate naming and send to your SAP Alert Notification service instance. You may also edit the sample SAP Alert Notification service configuration provided so that it reflects your preferred delivery channel/s.
 
 ### Event Details
 
@@ -106,16 +106,16 @@ For more details on how to test your subscription, see [Managing Subscriptions](
        "body": "Quota Utilization for space 'mySpace':\n\tMemory Total (MB): 7768 of 12288 [63.2%]\n\tService Count: 16 of 350 [4.57%]\n\nQuota Utilization for organization 'myOrganization':\n\tMemory Total (MB): 70960 of 96256 [73.7%]\n\tService Count: 59 of 940 [6.28%]*\n\n* Calculation is based on utilization of all spaces for which authorization is explicitly granted.",
        "category": "NOTIFICATION",
        "eventTimestamp": 1591369204,
-       "eventType": " ResourceQuotaUtilization",
+       "eventType": "ResourceQuotaUtilization",
        "priority": null,
        "resource": {
            "resourceInstance": null,
            "resourceName": "dev_plan",
-           "resourceType": " resource_quota",
+           "resourceType": "resource_quota",
            "tags": {}
         },
         "severity": "INFO",
-        "subject": " Space Quota Utilization",
+        "subject": "Space Quota Utilization",
         "tags": {
             "org_memory_usage_percentage": "73.7",
             "space_service_count": "16",
@@ -152,12 +152,12 @@ For more details on how to test your subscription, see [Managing Subscriptions](
            "resourceGroup": "b2fe70d7-56b1-48d6-ac5e-e93f2c8e70cd",
            "resourceInstance": null,
            "resourceName": "dev_plan",
-           "resourceType": " resource_quota",
+           "resourceType": "resource_quota",
            "subAccount": "1ee4f517-072a-4392-9ae6-15bd38273be6",
            "tags": {}
         },
         "severity": "INFO",
-        "subject": " Space Quota Utilization",
+        "subject": "Space Quota Utilization",
         "tags": {
             "org_memory_usage_percentage": "73.7",
             "space_service_count": "16",
@@ -199,7 +199,7 @@ First you would need to import the content of [example catalog](catalog.json) in
 To successfully trigger the command you'll need to provide the relevant values for the following input keys:
 
 * *ansServiceKey* - A Service key created in your SAP Alert Notification service instance. For further information check the [Credentials management page](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/credential-management)
-* *region* - The technical name of your SAP BTP region, e.g. cf-eu10,cf-eu20
+* *region* - The technical name of your SAP BTP region, e.g., cf-eu10,cf-eu20
 * *user* - The email or ID of your technical user.
 * *password* - The password of your technical user.
 * *spaceId* - The GUID of the Cloud Foundry space which you want to receive events for.
@@ -234,6 +234,6 @@ Once we trigger the command, it will start analyzing the usage data in the Cloud
 
 ![Command execution](assets/command-execution.png)
 
-In a several minutes after the command has finished its execution the result of the resource utilization analysis could be observed as an email delivered via the SAP Alert Notification service:
+Several minutes after the command has finished its execution the result of the resource utilization analysis could be observed as an email delivered via the SAP Alert Notification service:
 
 ![Email notification](assets/ans-email.png)
