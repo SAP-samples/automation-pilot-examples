@@ -19,7 +19,7 @@ By using an appropriate configuration you could get informed about detailed reso
 The event which will be triggered towards your SAP Alert Notification instance is described in the section below. On top of that you can get notified about your Cloud Foundry resource consumption on regular intervals (e.g., every hour or day) by using [Scheduled Executions](https://help.sap.com/docs/automation-pilot/automation-pilot/scheduled-execution?locale=en-US). 
 
 It is important to understand that using this command will result in being billed seperatelly: once for the executions in SAP Automation Pilot and again for processing the event in the SAP Alert Notification service. Additionally, there is a notable difference between this command and the now-deprecated native resource quota utilization event. 
-This command relies on the Cloud Foundry V3 API. Although the CF V3 API is more modern compared to the CF V2 API, maintaining the functionality previously achieved with the V2 API will require a greater number of API requests. Events would also be generated on an hourly basis due to technical constraints instead of the 30 minute timeframe utilized before. On the other hand, this command presents the opportunity to customize the event to your liking and you are free to edit the examples referred to in this documenent.
+This command relies on the Cloud Foundry V3 API. Although the CF V3 API is more modern compared to the CF V2 API, maintaining the functionality previously achieved with the V2 API will require a greater number of API requests. Events would also be generated on an hourly basis due to technical constraints instead of the 30 minute timeframe utilized before. On the other hand, this command presents the opportunity to customize the event to your liking and you are free to edit the examples referred to in this document.
 
 For more information, you can refer to the CF V3 API documentation [here](https://v3-apidocs.cloudfoundry.org/version/3.184.0/index.html#introduction)
 
@@ -50,6 +50,8 @@ The following executors are utilized when using this command:
 * Executor ```calculateOrgMemoryPercentage``` calculates the organization memory usage in percentages.
 
 * Executor ```SendAnsEvent``` send the event data to SAP Alert Notification Service where it would be processed according to your configuration.
+
+The different values acquired from these requests would be included as tags in the event payload with appropriate naming and send to your SAP Alert Notification service instance. You may also edit the sample SAP Alert Notification service configuration provided so that it reflects your preferred delivery channel.
 
 ### Event Details
 
