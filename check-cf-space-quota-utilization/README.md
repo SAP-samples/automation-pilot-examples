@@ -51,7 +51,7 @@ The following executors are utilized when using this command:
 
 * Executor ```SendAnsEvent``` send the event data to SAP Alert Notification Service where it would be processed according to your configuration.
 
-The different values acquired from these requests would be included as tags in the event payload with appropriate naming and send to your SAP Alert Notification service instance. You may also edit the sample SAP Alert Notification service configuration provided so that it reflects your preferred delivery channel/s.
+The different values acquired from these requests would be included as tags in the event payload with appropriate naming and sent to your SAP Alert Notification service instance. You may also edit the sample SAP Alert Notification service configuration provided so that it reflects your preferred delivery channel/s and/or applies additional conditions on the provided event tags. For example, a condition tags.space_memory_usage_percentage Greater Than 75 will allow delivery of notifications through the configured channel in case the space memory usage is greater than 75% of the memory quota defined for this space.
 
 ### Event Details
 
