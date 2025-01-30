@@ -10,7 +10,8 @@
       "configuration": {
         "values": [],
         "output": {
-          "inactiveUsers": "$(.FindInactiveUsers.output.message | toArray | map({ user, lastLogonTime: if (.lastLogonTime == -1) then \"N/A\" else (.lastLogonTime | toDate(\"yyyy-MM-dd HH:mm:ss\")) end }))"
+          "inactiveUsers": "$(.FindInactiveUsers.output.message | toArray | map({ user, lastLogonTime: if (.lastLogonTime == -1) then \"N/A\" else (.lastLogonTime | toDate(\"yyyy-MM-dd HH:mm:ss\")) end }))",
+          "removedUsersCount": "$(.RemoveInactiveUsers.output.outputs | length)"
         },
         "executors": [
           {
@@ -203,6 +204,11 @@
           "type": "array",
           "sensitive": false,
           "description": "List of the detective inactive users based on the specified input parameters"
+        },
+        "removedUsersCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "How many users were removed by the command"
         }
       },
       "tags": {
