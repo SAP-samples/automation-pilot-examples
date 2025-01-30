@@ -10,7 +10,7 @@
       "configuration": {
         "values": [],
         "output": {
-          "inactiveUsers": "$(.FindInactiveUsers.output.message | toArray | map({ user, lastLogonTime: .lastLogonTime | toDate(\"yyyy-MM-dd HH:mm:ss\") }))"
+          "inactiveUsers": "$(.FindInactiveUsers.output.message | toArray | map({ user, lastLogonTime: if (.lastLogonTime == -1) then \"N/A\" else (.lastLogonTime | toDate(\"yyyy-MM-dd HH:mm:ss\")) end }))"
         },
         "executors": [
           {
