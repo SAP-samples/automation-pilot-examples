@@ -81,6 +81,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [Check HANA Cloud Audit Logs](check-hana-cloud-audit-logs) | Check regularly for any suspicious audit log entries in a SAP HANA Cloud database |
 | [Check HANA Cloud Availability](check-hana-cloud-availability) | Check regularly whether the HANA Cloud database is currently available |
 | [Rotate HANA Cloud Database Credentials](rotate-hana-cloud-db-credentials) | Automate the rotation of credentials for a HANA Cloud database |
+| [Run HANA Cloud Stored Procedure](run-hana-cloud-stored-procedure) | Trigger a stored procedure in HANA Cloud asynchronously and then continuously poll its status until completion |
 
 ### BTP Management
 
