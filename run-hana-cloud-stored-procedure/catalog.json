@@ -1,0 +1,189 @@
+{
+    "id": "examples-<<<TENANT_ID>>>",
+    "technicalName": "examples",
+    "name": "Automation Pilot Examples",
+    "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+    "owner": "<<<TENANT_ID>>>",
+    "inputs": [],
+    "commands": [
+      {
+        "configuration": {
+          "values": [],
+          "output": {
+            "errorText": "$(.PollProcedure.output.result | toArray[0][0].ERROR_TEXT)",
+            "errorCode": "$(.PollProcedure.output.result | toArray[0][0].ERROR_CODE)",
+            "startTime": "$(.PollProcedure.output.result | toArray[0][0].START_TIME)",
+            "endTime": "$(.PollProcedure.output.result | toArray[0][0].END_TIME)",
+            "id": "$(.PollProcedure.output.result | toArray[0][0].ASYNC_CALL_ID)"
+          },
+          "executors": [
+            {
+              "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+              "input": {
+                "password": "$(.execution.input.password)",
+                "statement": "CALL \"sleep\"( $(.execution.input.procedureDuration) ) ASYNC",
+                "connectionUrl": "$(.execution.input.connectionUrl)",
+                "resultRowFormat": "OBJECT",
+                "user": "$(.execution.input.user)"
+              },
+              "alias": "TriggerProcedure",
+              "description": "Starts the HANA Cloud stored procedure asynchronously",
+              "progressMessage": null,
+              "initialDelay": null,
+              "pause": null,
+              "when": null,
+              "validate": null,
+              "autoRetry": null,
+              "repeat": null,
+              "errorMessages": [],
+              "dryRun": null
+            },
+            {
+              "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+              "input": {
+                "password": "$(.execution.input.password)",
+                "statement": "SELECT\n    *\nFROM\n    M_PROCEDURE_ASYNC_EXECUTIONS\nWHERE\n    ASYNC_CALL_ID = ?",
+                "connectionUrl": "$(.execution.input.connectionUrl)",
+                "resultRowFormat": "OBJECT",
+                "parameters": "[\"$(.TriggerProcedure.output.result | toArray[0][0].ASYNC_CALL_ID)\"]",
+                "user": "$(.execution.input.user)"
+              },
+              "alias": "PollProcedure",
+              "description": "Continuously check the status of the stored procedure until it is complete",
+              "progressMessage": null,
+              "initialDelay": null,
+              "pause": null,
+              "when": null,
+              "validate": null,
+              "autoRetry": null,
+              "repeat": {
+                "maxCount": 100,
+                "until": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "$(.PollProcedure.output.result | toArray[0][0].END_TIME)",
+                          "operator": "NOT_EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "$(null)"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "delay": "10s",
+                "failOnMaxCount": true
+              },
+              "errorMessages": [],
+              "dryRun": null
+            }
+          ],
+          "listeners": []
+        },
+        "id": "examples-<<<TENANT_ID>>>:RunHanaCloudStoredProcedure:1",
+        "name": "RunHanaCloudStoredProcedure",
+        "description": "Triggers a stored procedure in HANA Cloud asynchronously and then continuously polls its status until completion",
+        "catalog": "examples-<<<TENANT_ID>>>",
+        "version": 1,
+        "inputKeys": {
+          "password": {
+            "type": "string",
+            "sensitive": true,
+            "required": true,
+            "minSize": null,
+            "maxSize": null,
+            "minValue": null,
+            "maxValue": null,
+            "allowedValues": null,
+            "allowedValuesFromInputKeys": null,
+            "suggestedValues": null,
+            "suggestedValuesFromInputKeys": null,
+            "defaultValue": null,
+            "defaultValueFromInput": null,
+            "description": "Password of the database user"
+          },
+          "connectionUrl": {
+            "type": "string",
+            "sensitive": false,
+            "required": true,
+            "minSize": null,
+            "maxSize": null,
+            "minValue": null,
+            "maxValue": null,
+            "allowedValues": null,
+            "allowedValuesFromInputKeys": null,
+            "suggestedValues": null,
+            "suggestedValuesFromInputKeys": null,
+            "defaultValue": null,
+            "defaultValueFromInput": null,
+            "description": "The JDBC connection URL used for the SQL statement"
+          },
+          "procedureDuration": {
+            "type": "number",
+            "sensitive": false,
+            "required": false,
+            "minSize": null,
+            "maxSize": null,
+            "minValue": null,
+            "maxValue": null,
+            "allowedValues": null,
+            "allowedValuesFromInputKeys": null,
+            "suggestedValues": null,
+            "suggestedValuesFromInputKeys": null,
+            "defaultValue": "30",
+            "defaultValueFromInput": null,
+            "description": "Duration of the procedure in seconds"
+          },
+          "user": {
+            "type": "string",
+            "sensitive": false,
+            "required": true,
+            "minSize": null,
+            "maxSize": null,
+            "minValue": null,
+            "maxValue": null,
+            "allowedValues": null,
+            "allowedValuesFromInputKeys": null,
+            "suggestedValues": null,
+            "suggestedValuesFromInputKeys": null,
+            "defaultValue": null,
+            "defaultValueFromInput": null,
+            "description": "Name of the database user"
+          }
+        },
+        "outputKeys": {
+          "errorText": {
+            "type": "string",
+            "sensitive": false,
+            "description": "The error message in case the procedure execution has failed"
+          },
+          "errorCode": {
+            "type": "number",
+            "sensitive": false,
+            "description": "The error code in case the procedure execution has failed"
+          },
+          "startTime": {
+            "type": "string",
+            "sensitive": false,
+            "description": "The start time of the procedure"
+          },
+          "endTime": {
+            "type": "string",
+            "sensitive": false,
+            "description": "The end time of the procedure"
+          },
+          "id": {
+            "type": "number",
+            "sensitive": false,
+            "description": "The unique identifier of the procedure execution"
+          }
+        },
+        "tags": {}
+      }
+    ]
+  }
