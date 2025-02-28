@@ -24,6 +24,7 @@
               "url": "$(.execution.input.hanaClientTokenURL)"
             },
             "alias": "getToken",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -31,7 +32,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "http-sapcp:HttpRequest:1",
@@ -42,6 +44,7 @@
               "url": "https://api.gateway.orchestration.$(.execution.input.hanaCluster)-$(.execution.input.hanaDatacenter).hanacloud.ondemand.com/metrics/v1/serviceInstances/$(.execution.input.hanaServiceInstance)/values?names=HDBAccessible"
             },
             "alias": "pingHanaCloud",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -49,7 +52,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "ans-sapcp:SendAnsEvent:1",
@@ -64,6 +68,7 @@
               "resourceType": "database"
             },
             "alias": "notifyANS",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -88,7 +93,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "dblm-sapcp:StartHanaCloudInstance:1",
@@ -101,6 +107,7 @@
               "subAccount": "$(.execution.input.hanaCloudSubAccount)"
             },
             "alias": "startHanaCloud",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -125,14 +132,15 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           }
         ],
         "listeners": []
       },
-      "id": "examples-<<<TENANT_ID>>>:CheckHanaCloudAvailabilitySample:1",
-      "name": "CheckHanaCloudAvailabilitySample",
-      "description": "check availability for HANA Cloud",
+      "id": "examples-<<<TENANT_ID>>>:CheckHanaCloudFoundryAvailabilitySample:1",
+      "name": "CheckHanaCloudFoundryAvailabilitySample",
+      "description": "Check availability for HANA Cloud running on Cloud Foundry",
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
@@ -166,7 +174,7 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "Needed to access to the HANA Cloud API gateway, where 'cluster' typically identifies either a production, pre-production or trial environment"
+          "description": "Needed to access to the HANA Cloud API gateway, where 'cluster' typically identifies either a production, pre-production or trial environment. Examples: 'trial', 'prod'."
         },
         "hanaDatacenter": {
           "type": "string",
@@ -214,7 +222,7 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "The region where your SAP BTP sub-account is located at, e.g. \"cf-eu10\"."
+          "description": "The cf region where your SAP BTP subaccount is located at, e.g. \"cf-eu10-001\"."
         },
         "hanaClientTokenURL": {
           "type": "string",
@@ -262,7 +270,7 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "The name of the CF Space where your HANA Cloud is located at, e.g. \"dev\", \"prod\", etc."
+          "description": "The name of the CF space where your HANA Cloud is located at, e.g. \"dev\", \"prod\", etc."
         },
         "BtpTechnicalUserPassword": {
           "type": "string",
@@ -294,7 +302,7 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "The exact \"Org Name\" for your SAP BTP sub-account where your HANA Cloud instance is located at."
+          "description": "The exact Cloud Foundry \"Org Name\" in your SAP BTP subaccount where your HANA Cloud instance is located."
         },
         "hanaClientID": {
           "type": "string",
@@ -363,6 +371,293 @@
         }
       },
       "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "isHanaCloudAvailable": "$(.pingHanaCloud.output.body | toArray | [.[0] ,.[1] ,.[2]] | any(.value == 1) )",
+          "resultHanaStart": "$(.startHanaCloudMultiEnv.executed)",
+          "checkPing": "$(.pingHanaCloud.output.body)"
+        },
+        "executors": [
+          {
+            "execute": "http-sapcp:SensitiveHttpRequest:1",
+            "input": {
+              "password": "$(.execution.input.hanaCloudBindingKey.uaa.clientsecret)",
+              "method": "GET",
+              "user": "$(.execution.input.hanaCloudBindingKey.uaa.clientid)",
+              "url": "$(.execution.input.hanaClientTokenURL)"
+            },
+            "alias": "getToken",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "responseBodyTransformer": "toObject.data[0].values | reverse",
+              "method": "GET",
+              "authorizationHeader": "Bearer $(.getToken.output.body | toObject.access_token)",
+              "url": "https://api.gateway.orchestration.$(.execution.input.hanaCluster)-$(.execution.input.hanaDatacenter).hanacloud.ondemand.com/metrics/v1/serviceInstances/$(.execution.input.hanaServiceInstance)/values?names=HDBAccessible"
+            },
+            "alias": "pingHanaCloud",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "ans-sapcp:SendAnsEvent:1",
+            "input": {
+              "severity": "ERROR",
+              "subject": "Failed HANA Cloud Availability Check $(nowMillis | toDate(\"yyyy-MM-dd\"))",
+              "resourceName": "hana",
+              "eventType": "FailedHCAvailabilityCheck",
+              "serviceKey": "$(.execution.input.AnsServiceKey)",
+              "body": "The availability check for HANA Cloud with Service Instance ID $(.execution.input.hanaServiceInstance) has failed. Now the Automation Pilot proceeds with an automated START for this HANA Cloud instance.",
+              "category": "ALERT",
+              "resourceType": "database"
+            },
+            "alias": "notifyANS",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.pingHanaCloud.output.body | toArray | [.[0] ,.[1] ,.[2]] | any(.value == 1) )",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "false"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.hanaServiceInstance)",
+              "displayName": "$(.execution.input.hanaCloudResourceName)",
+              "serviceKey": "$(.execution.input.ServiceManagerKey)",
+              "parameters": "{ \"data\": { \"serviceStopped\": false } }"
+            },
+            "alias": "startHanaCloudMultiEnv",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.pingHanaCloud.output.body | toArray | [.[0] ,.[1] ,.[2]] | any(.value == 1) )",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "false"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:CheckHanaCloudMultiEnvAvailabilitySample:1",
+      "name": "CheckHanaCloudMultiEnvAvailabilitySample",
+      "description": "Check availability for HANA Cloud running on Other environments",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "ServiceManagerKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Key or Service Binding for your Service Manager instance used to perform management tasks against multiple instances in your BTP subaccount."
+        },
+        "hanaCloudBindingKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Binding for your Hana Cloud instance"
+        },
+        "hanaClientTokenURL": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The URL needed to be called in order to generate a token to access your HANA Cloud instance. The URL is build as it follows: in the HANA Cloud service binding file look for the specified \"url\" + add to it {/oauth/token?grant_type=client_credentials}."
+        },
+        "hanaCluster": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Needed to access the HANA Cloud API gateway, where 'cluster' typically identifies either a production, pre-production or trial environment. Examples: 'trial', 'prod'."
+        },
+        "hanaDatacenter": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Needed to access the HANA Cloud API gateway, where 'datacenter' is the data center where your HANA Cloud is deployed, i.e. eu10, us10, etc."
+        },
+        "AnsServiceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Key for your Alert Notification service instance"
+        },
+        "hanaServiceInstance": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The Instance ID of your HANA Cloud instance - it can be found from the provisioned service in BTP Cockpit, look for \"Instance ID\"."
+        },
+        "hanaCloudResourceName": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The exact name of your HANA Cloud instance, e.g. \"hanaDemo\", \"hanaProd\", etc."
+        }
+      },
+      "outputKeys": {
+        "isHanaCloudAvailable": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Check on whether or not the HANA Cloud instance is available, where: \"true\" = HANA Cloud is available; \"false\" = HANA Cloud is not available."
+        },
+        "resultHanaStart": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Check on whether or not the HANA Cloud instance has been started successfully, where: \"true\" = HANA Cloud has been started ; \"false\" = HANA Cloud was not started'."
+        },
+        "checkPing": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The entire response for the metric \"HDBAccessible\" returned by HANA Cloud Metrics Service REST API."
+        }
+      },
+      "tags": {
+        "feature:logs": "",
+        "feature:priority": "medium"
+      }
     }
   ]
 }
