@@ -17,6 +17,7 @@ Table of Contents
   * [Cloud Foundry](#cloud-foundry)
   * [Kubernetes](#kubernetes)
   * [Neo](#neo)
+  * [HTTP](#http)
   * [Scripting](#scripting)
   * [Utility Commands](#utility-commands)
   * [Availability Check](#availability-check)
@@ -113,6 +114,13 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | Example | Description |
 |---------|-------------|
 | [Auto Scale Neo App](auto-scale-neo-app) | Automatically scales up a Neo application and monitors it over time, potentially scaling it back down |
+
+### HTTP
+
+| Example | Description |
+|---------|-------------|
+| [HTTP OAuth Client Credentials](http-oauth-client-credentials) | Perform HTTP requests to endpoints requiring OAuth 2.0 authentication using client credentials |
+| [HTTP Request via SAP Cloud Connector](http-cloud-connector) | Perform HTTP requests to internal endpoints via SAP Cloud Connector |
 
 ### Scripting
 

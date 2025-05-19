@@ -1,0 +1,184 @@
+{
+    "id": "examples-<<<TENANT_ID>>>",
+    "technicalName": "examples",
+    "name": "Automation Pilot Examples",
+    "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+    "owner": "<<<TENANT_ID>>>",
+    "inputs": [],
+    "commands": [
+        {
+            "configuration": {
+                "values": [],
+                "output": {
+                    "result": "$(.GetServiceOfferings.output.body)"
+                },
+                "executors": [
+                    {
+                        "execute": "http-sapcp:HttpRequest:1",
+                        "input": {
+                            "clientId": "$(.execution.input.serviceKey.clientid)",
+                            "tokenUrl": "$(.execution.input.serviceKey.url)/oauth/token",
+                            "method": "GET",
+                            "clientSecret": "$(.execution.input.serviceKey.clientsecret)",
+                            "url": "$(.execution.input.serviceKey.sm_url)/v1/service_offerings"
+                        },
+                        "alias": "GetServiceOfferings",
+                        "description": "",
+                        "progressMessage": null,
+                        "initialDelay": null,
+                        "pause": null,
+                        "when": null,
+                        "validate": null,
+                        "autoRetry": {
+                            "maxCount": 3,
+                            "delay": "5s",
+                            "logic": "INCREMENTAL",
+                            "applyOnValidation": false,
+                            "when": {
+                                "semantic": "OR",
+                                "conditions": [
+                                    {
+                                        "semantic": "OR",
+                                        "cases": [
+                                            {
+                                                "expression": "$(.execution.error.originalMessage)",
+                                                "operator": "CONTAINS",
+                                                "semantic": "AND",
+                                                "values": [
+                                                    "Failed to obtain oAuth 2.0 token",
+                                                    "Connectivity timeout issue"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "repeat": null,
+                        "errorMessages": [],
+                        "dryRun": null
+                    }
+                ],
+                "listeners": []
+            },
+            "id": "examples-<<<TENANT_ID>>>:HttpOAuthWithSecret:1",
+            "name": "HttpOAuthWithSecret",
+            "description": "Retrieve all service offerings available in a subaccount by using OAuth 2.0 Client Credentials with a client secret.",
+            "catalog": "examples-<<<TENANT_ID>>>",
+            "version": 1,
+            "inputKeys": {
+                "serviceKey": {
+                    "type": "object",
+                    "sensitive": true,
+                    "required": true,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": "Service Key for SAP Service Manager"
+                }
+            },
+            "outputKeys": {
+                "result": {
+                    "type": "object",
+                    "sensitive": false,
+                    "description": "Body of the HTTP Response"
+                }
+            },
+            "tags": {}
+        },
+        {
+            "configuration": {
+                "values": [],
+                "output": {
+                    "result": "$(.GetServiceInstances.output.body)"
+                },
+                "executors": [
+                    {
+                        "execute": "http-sapcp:HttpRequest:1",
+                        "input": {
+                            "clientCert": "$(.execution.input.serviceKey.certificate + .execution.input.serviceKey.key)",
+                            "clientId": "$(.execution.input.serviceKey.clientid)",
+                            "tokenUrl": "$(.execution.input.serviceKey.certurl)/oauth/token",
+                            "method": "GET",
+                            "url": "$(.execution.input.serviceKey.sm_url)/v1/service_offerings"
+                        },
+                        "alias": "GetServiceInstances",
+                        "description": "",
+                        "progressMessage": null,
+                        "initialDelay": null,
+                        "pause": null,
+                        "when": null,
+                        "validate": null,
+                        "autoRetry": {
+                            "maxCount": 3,
+                            "delay": "5s",
+                            "logic": "INCREMENTAL",
+                            "applyOnValidation": false,
+                            "when": {
+                                "semantic": "OR",
+                                "conditions": [
+                                    {
+                                        "semantic": "OR",
+                                        "cases": [
+                                            {
+                                                "expression": "$(.execution.error.originalMessage)",
+                                                "operator": "CONTAINS",
+                                                "semantic": "AND",
+                                                "values": [
+                                                    "Failed to obtain oAuth 2.0 token",
+                                                    "Connectivity timeout issue"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        "repeat": null,
+                        "errorMessages": [],
+                        "dryRun": null
+                    }
+                ],
+                "listeners": []
+            },
+            "id": "examples-<<<TENANT_ID>>>:HttpOAuthWithMtls:1",
+            "name": "HttpOAuthWithMtls",
+            "description": "Retrieve all service offerings available in a subaccount by utilizing OAuth 2.0 Client Credentials with a certificate",
+            "catalog": "examples-<<<TENANT_ID>>>",
+            "version": 1,
+            "inputKeys": {
+                "serviceKey": {
+                    "type": "object",
+                    "sensitive": true,
+                    "required": true,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": "Service Key for SAP Service Manager"
+                }
+            },
+            "outputKeys": {
+                "result": {
+                    "type": "object",
+                    "sensitive": false,
+                    "description": "Body of the HTTP Response"
+                }
+            },
+            "tags": {}
+        }
+    ]
+}
