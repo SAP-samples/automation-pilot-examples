@@ -1,4 +1,4 @@
-# HTTP OAuth Client Credentials Example
+# HTTP Request With OAuth Client Credentials
 
 Table of Contents
 
