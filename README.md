@@ -121,6 +121,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 |---------|-------------|
 | [HTTP Request With OAuth Client Credentials](http-oauth-client-credentials) | Perform HTTP requests to endpoints requiring OAuth 2.0 authentication using client credentials |
 | [HTTP Request via SAP Cloud Connector](http-cloud-connector) | Perform HTTP requests to internal endpoints via SAP Cloud Connector |
+| [Execute a SAP Host Agent Operation via SAP Cloud Connector](sap-host-agent-via-cloud-connector) | Execute a SAP Host Agent Operation in an internal environment via SAP Cloud Connector |
 
 ### Scripting
 
