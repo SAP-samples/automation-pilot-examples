@@ -24,6 +24,7 @@
               "identityProvider": "$(.execution.input.identityProvider)"
             },
             "alias": "ListSpaces",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -31,7 +32,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -39,6 +41,7 @@
               "message": "$((.ListSpaces.output.spacesData.resources | map(.name)) - .execution.input.excludedSpaces)"
             },
             "alias": "FilteredSpaces",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -46,16 +49,18 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
               "inputs": "$(.FilteredSpaces.output.message | toArray | map({ resourceGroup: . }))",
-              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\"}",
+              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\", \"excludedLabels\": \"$(.execution.input.excludedLabels | toEscapedJson)\"}",
               "command": "examples-<<<TENANT_ID>>>:MassStartCfAppsInSpace:1"
             },
             "alias": "StartApps",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -63,7 +68,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           }
         ],
         "listeners": []
@@ -106,6 +112,22 @@
           "defaultValueFromInput": null,
           "description": "Technical names of the Cloud Foundry spaces in which the applications should not be started"
         },
+        "excludedLabels": {
+          "type": "object",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "{ }",
+          "defaultValueFromInput": null,
+          "description": "If an application has any of the specified labels, it will not be started. Example: { \"env\": \"production\" }"
+        },
         "region": {
           "type": "string",
           "sensitive": false,
@@ -115,7 +137,9 @@
           "minValue": null,
           "maxValue": null,
           "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
           "suggestedValues": null,
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
@@ -198,6 +222,7 @@
               "identityProvider": "$(.execution.input.identityProvider)"
             },
             "alias": "ListApps",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -205,16 +230,18 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
-              "inputs": "$(.ListApps.output.appData.resources | filter(.state == \"STOPPED\") | map({ resourceName: .guid }))",
+              "inputs": "$(.ListApps.output.appData.resources | filter(.state == \"STOPPED\") | filter(.metadata.labels as $l | $.execution.input.excludedLabels | to_entries | all($l[.key] != .value)) | map({ resourceName: .guid }))",
               "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"resourceGroup\": \"$(.execution.input.resourceGroup)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\"}",
               "command": "applm-sapcp:StartCfApp:1"
             },
             "alias": "StartApps",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -222,7 +249,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           }
         ],
         "listeners": []
@@ -265,6 +293,22 @@
           "defaultValueFromInput": null,
           "description": "Cloud Foundry user's password"
         },
+        "excludedLabels": {
+          "type": "object",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "{ }",
+          "defaultValueFromInput": null,
+          "description": "If an application has any of the specified labels, it will not be started. Example: { \"env\": \"production\" }"
+        },
         "region": {
           "type": "string",
           "sensitive": false,
@@ -274,7 +318,9 @@
           "minValue": null,
           "maxValue": null,
           "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
           "suggestedValues": null,
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
@@ -357,6 +403,7 @@
               "identityProvider": "$(.execution.input.identityProvider)"
             },
             "alias": "ListSpaces",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -364,7 +411,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -372,6 +420,7 @@
               "message": "$((.ListSpaces.output.spacesData.resources | map(.name)) - .execution.input.excludedSpaces)"
             },
             "alias": "FilteredSpaces",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -379,16 +428,18 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
               "inputs": "$(.FilteredSpaces.output.message | toArray | map({ resourceGroup: . }))",
-              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\"}",
+              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\", \"excludedLabels\": \"$(.execution.input.excludedLabels | toEscapedJson)\"}",
               "command": "examples-<<<TENANT_ID>>>:MassStopCfAppsInSpace:1"
             },
             "alias": "StopApps",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -396,7 +447,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           }
         ],
         "listeners": []
@@ -439,6 +491,22 @@
           "defaultValueFromInput": null,
           "description": "Technical names of the Cloud Foundry spaces in which the applications should not be stopped"
         },
+        "excludedLabels": {
+          "type": "object",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "{ }",
+          "defaultValueFromInput": null,
+          "description": "If an application has any of the specified labels, it will not be stopped. Example: { \"env\": \"production\" }"
+        },
         "region": {
           "type": "string",
           "sensitive": false,
@@ -448,7 +516,9 @@
           "minValue": null,
           "maxValue": null,
           "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
           "suggestedValues": null,
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
@@ -525,12 +595,14 @@
             "input": {
               "resourceGroup": "$(.execution.input.resourceGroup)",
               "password": "$(.execution.input.password)",
+              "pageSize": "100",
               "region": "$(.execution.input.region)",
               "user": "$(.execution.input.user)",
               "subAccount": "$(.execution.input.subAccount)",
               "identityProvider": "$(.execution.input.identityProvider)"
             },
             "alias": "ListApps",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -538,16 +610,18 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:ForEach:1",
             "input": {
-              "inputs": "$(.ListApps.output.appData.resources | filter(.state != \"STOPPED\") | map({ resourceName: .guid }))",
+              "inputs": "$(.ListApps.output.appData.resources | filter(.state != \"STOPPED\") | filter(.metadata.labels as $l | $.execution.input.excludedLabels | to_entries | all($l[.key] != .value)) | map({ resourceName: .guid }))",
               "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"resourceGroup\": \"$(.execution.input.resourceGroup)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\"}",
               "command": "applm-sapcp:StopCfApp:1"
             },
             "alias": "StopApps",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -555,7 +629,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           }
         ],
         "listeners": []
@@ -598,6 +673,22 @@
           "defaultValueFromInput": null,
           "description": "Cloud Foundry user's password"
         },
+        "excludedLabels": {
+          "type": "object",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "{ }",
+          "defaultValueFromInput": null,
+          "description": "If an application has any of the specified labels, it will not be stopped. Example: { \"env\": \"production\" }"
+        },
         "region": {
           "type": "string",
           "sensitive": false,
@@ -607,7 +698,9 @@
           "minValue": null,
           "maxValue": null,
           "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
           "suggestedValues": null,
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,

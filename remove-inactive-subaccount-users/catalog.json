@@ -1,0 +1,220 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "inactiveUsers": "$(.FindInactiveUsers.output.message | toArray | map({ user, lastLogonTime: if (.lastLogonTime == -1) then \"N/A\" else (.lastLogonTime | toDate(\"yyyy-MM-dd HH:mm:ss\")) end }))",
+          "removedUsersCount": "$(.RemoveInactiveUsers.output.outputs | length)"
+        },
+        "executors": [
+          {
+            "execute": "xsuaa-sapcp:ListSubAccountUsers:1",
+            "input": {
+              "targetIdentityProvider": "$(.execution.input.targetIdentityProvider)",
+              "pageSize": "500",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "ListAllUsers",
+            "description": "List all users in the target BTP subaccount",
+            "progressMessage": "Listed $(.ListAllUsers.output.users | length) out of $(.ListAllUsers.output.totalResultsCount) users",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:2",
+            "input": {
+              "inputMapping": "{\"targetIdentityProvider\":\"$(.execution.input.targetIdentityProvider)\",\"serviceKey\":\"$(.execution.input.serviceKey)\",\"targetUser\":\"$(.GetUserDetails.current.item.user)\"}",
+              "inputs": "$(.ListAllUsers.output.users)",
+              "command": "xsuaa-sapcp:GetSubAccountUser:1"
+            },
+            "alias": "GetUserDetails",
+            "description": "Retrieve detailed information about each user, focusing primarily on their last logon time",
+            "progressMessage": "Retrieved details about user $(.GetUserDetails.current.input.targetUser)",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$((.ListAllUsers.output.users | map(.user)) as $users | .GetUserDetails.output.outputs | to_entries | map({ user: $users[.key], lastLogonTime: .value.lastLogonTime }))"
+            },
+            "alias": "BuildUserLastLogon",
+            "description": "Link each user to their corresponding last logon time",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.BuildUserLastLogon.output.message | toArray | filter(.lastLogonTime != -1 or $.execution.input.removeNeverLogged) | filter((nowMillis - $.execution.input.grace * 24 * 60 * 60 * 1000) > .lastLogonTime) | filter(.user | valueIn($.execution.input.excludeUsers) | not) | sortBy(.lastLogonTime))"
+            },
+            "alias": "FindInactiveUsers",
+            "description": "Identify all inactive users based on the given input parameters",
+            "progressMessage": "Found $(.FindInactiveUsers.output.message | toArray | length) inactive users",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:2",
+            "input": {
+              "inputMapping": "{\"targetIdentityProvider\":\"$(.execution.input.targetIdentityProvider)\",\"serviceKey\":\"$(.execution.input.serviceKey)\",\"targetUser\":\"$(.RemoveInactiveUsers.current.item.user)\"}",
+              "inputs": "$(.FindInactiveUsers.output.message)",
+              "command": "xsuaa-sapcp:RemoveSubAccountUser:1"
+            },
+            "alias": "RemoveInactiveUsers",
+            "description": "Remove each of the identified inactive users",
+            "progressMessage": "$(if .execution.metadata.tags[\"feature:dryRun\"] == null then \"Removing inactive user \\(.RemoveInactiveUsers.current.input.targetUser)\" else \"Execution will not remove inactive users because it was started in dry-run mode\" end)",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": {
+              "output": {
+                "outputs": "[ ]"
+              }
+            }
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:RemoveInactiveSubaccountUsers:1",
+      "name": "RemoveInactiveSubaccountUsers",
+      "description": "Removes inactive users from your SAP BTP account, with the option to customize the inactivity grace period",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "targetIdentityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider of the target users. By default it is SAP ID Service (sap.ids)."
+        },
+        "grace": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "180",
+          "defaultValueFromInput": null,
+          "description": "Number of days since a user's last login after which they are considered inactive"
+        },
+        "removeNeverLogged": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "true",
+          "defaultValueFromInput": null,
+          "description": "Specifies whether to remove users who have never logged into the SAP BTP account"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service key for SAP Authorization and Trust Management Service"
+        },
+        "excludeUsers": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[]",
+          "defaultValueFromInput": null,
+          "description": "List of users who should not be removed even if they are inactive"
+        }
+      },
+      "outputKeys": {
+        "inactiveUsers": {
+          "type": "array",
+          "sensitive": false,
+          "description": "List of the detective inactive users based on the specified input parameters"
+        },
+        "removedUsersCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "How many users were removed by the command"
+        }
+      },
+      "tags": {
+        "feature:logs": "",
+        "feature:priority": "medium"
+      }
+    }
+  ]
+}

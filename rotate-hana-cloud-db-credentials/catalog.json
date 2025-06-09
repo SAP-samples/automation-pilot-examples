@@ -1,0 +1,491 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {},
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"Accept\":\"application/json\"}",
+              "clientCert": "$(.execution.input.serviceKey.certificate + .execution.input.serviceKey.key)",
+              "responseBodyTransformer": "null",
+              "clientId": "$(.execution.input.serviceKey.clientid)",
+              "tokenUrl": "$((if (.execution.input.serviceKey.certificate == null) and (.execution.input.serviceKey.key == null) then .execution.input.serviceKey.url else .execution.input.serviceKey.certurl end) + \"/oauth/token?grant_type=client_credentials\")",
+              "method": "GET",
+              "clientSecret": "$(.execution.input.serviceKey.clientsecret)",
+              "successResponseCodes": "[\"200\",\"404\"]",
+              "url": "$(.execution.input.serviceKey.uri)/destination-configuration/v1/subaccountDestinations/$(.execution.input.destinationName | toPercentEncoded)",
+              "timeout": "10"
+            },
+            "alias": "CheckExistingDestination",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.CheckExistingDestination.output.status | valueIn( [ -1, 408, 429, 502, 503, 504 ]))",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:SensitiveHttpRequest:1",
+            "input": {
+              "headers": "{\"Content-Type\":\"application/json\"}",
+              "clientCert": "$(.execution.input.serviceKey.certificate + .execution.input.serviceKey.key)",
+              "password": "$(.execution.input.password)",
+              "tokenUrl": "$((if (.execution.input.serviceKey.certificate == null) and (.execution.input.serviceKey.key == null) then .execution.input.serviceKey.url else .execution.input.serviceKey.certurl end) + \"/oauth/token?grant_type=client_credentials\")",
+              "clientId": "$(.execution.input.serviceKey.clientid)",
+              "method": "POST",
+              "clientSecret": "$(.execution.input.serviceKey.clientsecret)",
+              "body": "{\n    \"Name\": \"$(.execution.input.destinationName)\",\n    \"Type\": \"TCP\",\n    \"User\": \"$(.execution.input.user)\",\n    \"Authentication\": \"BasicAuthentication\",\n    \"ProxyType\": \"Internet\",\n    \"URL\": \"$(.execution.input.connectionUrl)\",\n    \"Password\": \"$(.execution.input.password | toEscapedJson)\"\n}",
+              "user": "$(.execution.input.user)",
+              "url": "$(.execution.input.serviceKey.uri)/destination-configuration/v1/subaccountDestinations",
+              "timeout": "10"
+            },
+            "alias": "CreateDestination",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.CheckExistingDestination.output.status)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "404"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.CreateDestination.output.status | valueIn( [ 408, 429, 502, 503, 504 ]))",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:SensitiveHttpRequest:1",
+            "input": {
+              "headers": "{\"Content-Type\":\"application/json\"}",
+              "clientCert": "$(.execution.input.serviceKey.certificate + .execution.input.serviceKey.key)",
+              "password": "$(.execution.input.password)",
+              "clientId": "$(.execution.input.serviceKey.clientid)",
+              "tokenUrl": "$((if (.execution.input.serviceKey.certificate == null) and (.execution.input.serviceKey.key == null) then .execution.input.serviceKey.url else .execution.input.serviceKey.certurl end) + \"/oauth/token?grant_type=client_credentials\")",
+              "method": "PUT",
+              "clientSecret": "$(.execution.input.serviceKey.clientsecret)",
+              "body": "{\n    \"Name\": \"$(.execution.input.destinationName)\",\n    \"Type\": \"TCP\",\n    \"User\": \"$(.execution.input.user)\",\n    \"Authentication\": \"BasicAuthentication\",\n    \"ProxyType\": \"Internet\",\n    \"URL\": \"$(.execution.input.connectionUrl)\",\n    \"Password\": \"$(.execution.input.password | toEscapedJson)\"\n}",
+              "user": "$(.execution.input.user)",
+              "url": "$(.execution.input.serviceKey.uri)/destination-configuration/v1/subaccountDestinations",
+              "timeout": "10"
+            },
+            "alias": "UpdateDestination",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.CheckExistingDestination.output.status)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "200"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.UpdateDestination.output.status | valueIn( [ 408, 429, 502, 503, 504 ]))",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:CreateOrUpdateDestination:1",
+      "name": "CreateOrUpdateDestination",
+      "description": "Create or update an existing destination",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The new password for the database user"
+        },
+        "destinationName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the SAP Destination Service destination"
+        },
+        "connectionUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Connection URL for access to the HANA Cloud database"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service key for SAP Destination Service"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the database user"
+        }
+      },
+      "outputKeys": {},
+      "tags": {
+        "env": "cf"
+      }
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {},
+        "executors": [
+          {
+            "execute": "sql-sapcp:SensitiveExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "resultTransformer": "toArray[0][0][0]",
+              "statement": "SELECT GENERATE_PASSWORD($(.execution.input.passwordLength)) FROM DUMMY;",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.user)"
+            },
+            "alias": "GeneratePassword",
+            "description": "Generates a new password using the GENERATE_PASSWORD function. For more information, visit: https://help.sap.com/docs/hana-cloud-database/sap-hana-cloud-sap-hana-database-sql-reference-guide/generate-password-function-security",
+            "progressMessage": "Generated new password with length $(.execution.input.passwordLength)",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sql-sapcp:SensitiveExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "statement": "ALTER USER $(.execution.input.userToRotate) PASSWORD \"$(.GeneratePassword.output.result)\"",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.user)"
+            },
+            "alias": "RotatePassword",
+            "description": "Changes the database user's password to the newly generated one",
+            "progressMessage": "Changed the password for user $(.execution.input.userToRotate)",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": null
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "examples-<<<TENANT_ID>>>:CreateOrUpdateDestination:1",
+            "input": {
+              "password": "$(.GeneratePassword.output.result)",
+              "destinationName": "$(.execution.input.destinationName)",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "serviceKey": "$(.execution.input.destinationServiceKey)",
+              "user": "$(.execution.input.user)"
+            },
+            "alias": "CreateOrUpdateDestination",
+            "description": "Store the database user credentials in an SAP Destination Service destination, creating it if it doesn't exist or updating it if it does",
+            "progressMessage": "Updated destination $(.execution.input.destinationName) with new password",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:RotateHanaCloudDatabaseCredentials:1",
+      "name": "RotateHanaCloudDatabaseCredentials",
+      "description": "Rotate the password of a HANA Cloud user",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the admin database user that will be used for rotation."
+        },
+        "userToRotate": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the database user whose password will be rotated"
+        },
+        "destinationName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the SAP Destination Service destination where the new password will be stored"
+        },
+        "connectionUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Connection URL for access to the HANA Cloud database. Currently only JDBC is supported"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the admin database user that will be used for rotation"
+        },
+        "passwordLength": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "16",
+          "defaultValueFromInput": null,
+          "description": "Length of the new password"
+        },
+        "destinationServiceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service key for SAP Destination Service"
+        }
+      },
+      "outputKeys": {},
+      "tags": {}
+    }
+  ]
+}

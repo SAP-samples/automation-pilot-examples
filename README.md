@@ -13,12 +13,14 @@ Table of Contents
 * [How to use](#how-to-use)
 * [Examples](#examples)
   * [HANA Cloud](#hana-cloud)
-  * [BTP Provisioning](#btp-provisioning)
+  * [BTP Management](#btp-management)
   * [Cloud Foundry](#cloud-foundry)
+  * [Kubernetes](#kubernetes)
   * [Neo](#neo)
+  * [HTTP](#http)
   * [Scripting](#scripting)
-  * [Automation Pilot](#automation-pilot)
   * [Utility Commands](#utility-commands)
+  * [Availability Check](#availability-check)
 * [Resources](#resources)
 * [Known Issues](#known-issues)
 * [How to obtain support](#how-to-obtain-support)
@@ -79,8 +81,10 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [Check HANA Cloud Backup](check-hana-cloud-backup) | Check regularly whether there was a recent backup of a SAP HANA Cloud database |
 | [Check HANA Cloud Audit Logs](check-hana-cloud-audit-logs) | Check regularly for any suspicious audit log entries in a SAP HANA Cloud database |
 | [Check HANA Cloud Availability](check-hana-cloud-availability) | Check regularly whether the HANA Cloud database is currently available |
+| [Rotate HANA Cloud Database Credentials](rotate-hana-cloud-db-credentials) | Automate the rotation of credentials for a HANA Cloud database |
+| [Run HANA Cloud Stored Procedure](run-hana-cloud-stored-procedure) | Trigger a stored procedure in HANA Cloud asynchronously and then continuously poll its status until completion |
 
-### BTP Provisioning
+### BTP Management
 
 | Example | Description |
 |---------|-------------|
@@ -88,6 +92,7 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [Setup Cloud Foundry BTP Environment](prepare-btp-environment) | Enable the Cloud Foundry environment, create a space and setup a service instance |
 | [Grant Privileges](grant-privileges) | Grant privileges to users on subaccount, organization and space level |
 | [Reassign Identity Provider](reassign-identity-provider) | Migrate all users on BTP subaccount level from one identity provider to another |
+| [Remove Inactive Subaccount Users](remove-inactive-subaccount-users) | Identify and remove inactive users from a BTP subaccount |
 
 ### Cloud Foundry
 
@@ -96,12 +101,26 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [:sparkles: Cloud Foundry Apps Insights](cf-apps-insights) | Effortlessly identify the state of your Cloud Foundry applications powered by Gen AI |
 | [Mass Restart CF Apps](mass-restart-cf-apps) | Restart all applications in a given Cloud Foundry space |
 | [Mass Stop/Start CF Apps](mass-stop-start-cf-apps) | Stop or start all Cloud Foundry applications across your entire BTP account |
+| [CF resource quota notifications](check-cf-space-quota-utilization) | Get insights about Cloud Foundry resource usage via Alert Notification service |
+
+### Kubernetes
+
+| Example | Description |
+|---------|-------------|
+| [Execute Script Via Kubernetes Job](execute-script-via-k8s-job) | Execute a custom script within a Kubernetes Job in a customer-owned Kubernetes cluster |
 
 ### Neo
 
 | Example | Description |
 |---------|-------------|
 | [Auto Scale Neo App](auto-scale-neo-app) | Automatically scales up a Neo application and monitors it over time, potentially scaling it back down |
+
+### HTTP
+
+| Example | Description |
+|---------|-------------|
+| [HTTP Request With OAuth Client Credentials](http-oauth-client-credentials) | Perform HTTP requests to endpoints requiring OAuth 2.0 authentication using client credentials |
+| [HTTP Request via SAP Cloud Connector](http-cloud-connector) | Perform HTTP requests to internal endpoints via SAP Cloud Connector |
 
 ### Scripting
 
@@ -113,19 +132,20 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | [Use make and helm](use-make-and-helm) | Pull git repo and use make and helm to deploy the helm chart to kubernetes cluster |
 | [Terraform with BTP Provider](terraform-with-btp-provider) | Use Terraform with the BTP Provider |
 
-### Automation Pilot
-
-| Example | Description |
-|---------|-------------|
-| [Backup Catalog to GitHub](backup-catalog) | Backup catalog's content to GitHub |
-
 ### Utility Commands
 
 | Example | Description |
 |---------|-------------|
 | [Transform Data](transform-data) | Transform Data between different formats - JSON, XML, YAML, and CSV |
+| [Convert JSON to HTML Table](convert-json-to-html-table) | Convert JSON array of objects to HTML table |
 | [Trigger and Collect Outputs Batching](trigger-and-collect-outputs-batching) | Trigger Multiple Executions in Batches and Collect their Outputs |
 | [Pretty Print XML](pretty-print-xml) | Pretty Print XML Data |
+
+### Availability Check
+
+| Example | Description |
+|---------|-------------|
+| [Advanced Availability Check](advanced-availability-check) | Enables comprehensive monitoring, tracking of Service Level Agreements (SLAs) and data visualization within the Dynatrace platform. |
 
 ## Resources
 

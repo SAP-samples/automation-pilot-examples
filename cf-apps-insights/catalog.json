@@ -51,9 +51,9 @@
             "errorMessages": []
           },
           {
-            "execute": "aicore-sapcp:GenerateGpt4Completion32K:1",
+            "execute": "aicore-sapcp:GenerateGpt4OmniCompletion:1",
             "input": {
-              "systemMessage": " Here is a json array with Cloud Foundry applications: $(.getStates.output.outputs | map({ application: .resourceInstancesData, applicationName: .resourceName})) $(\"\\n\") Every application has one or more instances in it. $(\"\\n\")  $(\"\\n\")  Make a short summary for every application. Let's think step by step. $(\"\\n\")  $(\"\\n\") Prefixing it with \"N\" where \"N\" is the index of the application in the array.  $(\"\\n\") Lastly print the last number \"N\".     $(\"\\n\") Print the state of the application. $(\"\\n\") Print the CPU always in percents rounded to the second symbol after the decimal point.  $(\"\\n\") Print memory usage in Mb and Gb.  $(\"\\n\") Print how long the application has been alive in seconds, minutes and hours.  $(\"\\n\")  $(\"\\n\") Check the following suggestions $(\"\\n\")  If application is in ERROR or CRASHED state suggest restart of the application.  $(\"\\n\")  If CPU is higher than 80% suggest to increase CPU.  $(\"\\n\")  If the number of instances is 1 suggest increase of the number of instances.  $(\"\\n\")  Double check if the answer is correct. ",
+              "systemMessage": " Here is a json array with Cloud Foundry applications: $(.getStates.output.outputs | map({ application: .resourceInstancesData, applicationName: .resourceName})) $(\"\\n\") Every application has one or more instances in it. $(\"\\n\")  $(\"\\n\")  Make a short summary for every application. Let's think step by step. $(\"\\n\")  $(\"\\n\") Prefixing it with \"N\" where \"N\" is the index of the application in the array.  $(\"\\n\") Lastly print the last number \"N\".     $(\"\\n\") Print the state of the application. $(\"\\n\") Print the CPU always in percents rounded to the second symbol after the decimal point.  $(\"\\n\") Print memory usage in Mb and Gb.  $(\"\\n\") Print how long the application has been alive in seconds, minutes and hours.  $(\"\\n\")  $(\"\\n\") Check the following suggestions $(\"\\n\")  If application is in ERROR or CRASHED state suggest restart of the application.  $(\"\\n\")  If CPU is higher than 80% suggest to increase CPU.  $(\"\\n\")  If the number of instances is 1 suggest increase of the number of instances.  $(\"\\n\")  Double check if the answer is correct. Do not bold anything. Do not use markdown.",
               "deploymentId": "$(.execution.input.deploymentId)",
               "maxTokens": "4000",
               "temperature": "0.2",
@@ -75,7 +75,7 @@
       },
       "id": "examples-<<<TENANT_ID>>>:CloudFoundryAppsInsights:1",
       "name": "CloudFoundryAppsInsights",
-      "description": "Provides Cloud Foundry Apps Insights powered by Generative AI using gpt4-32k",
+      "description": "Provides Cloud Foundry Apps Insights powered by Generative AI using gpt4o",
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
@@ -125,7 +125,7 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "ID of the deployment for gpt4-32k which will execute the query"
+          "description": "ID of the deployment for gpt4o which will execute the query"
         },
         "serviceKey": {
           "type": "object",

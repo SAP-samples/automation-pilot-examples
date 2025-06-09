@@ -1,0 +1,73 @@
+{
+    "id": "examples-<<<TENANT_ID>>>",
+    "technicalName": "examples",
+    "name": "Automation Pilot Examples",
+    "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+    "owner": "<<<TENANT_ID>>>",
+    "inputs": [],
+    "commands": [
+        {
+            "configuration": {
+                "values": [],
+                "output": {
+                    "pingResponse": "$(.SendPing.output.body)"
+                },
+                "executors": [
+                    {
+                        "execute": "http-sapcp:HttpRequest:1",
+                        "input": {
+                            "method": "GET",
+                            "sccLocationId": "SCC_TEST",
+                            "url": "http://$(.execution.input.host)/sap/public/ping",
+                            "timeout": "15",
+                            "sccEnabled": "true"
+                        },
+                        "alias": "SendPing",
+                        "description": "Perform a basic connectivity check via the ICM Ping service",
+                        "progressMessage": null,
+                        "initialDelay": null,
+                        "pause": null,
+                        "when": null,
+                        "validate": null,
+                        "autoRetry": null,
+                        "repeat": null,
+                        "errorMessages": [],
+                        "dryRun": null
+                    }
+                ],
+                "listeners": []
+            },
+            "id": "examples-<<<TENANT_ID>>>:HttpCloudConnector:1",
+            "name": "HttpCloudConnector",
+            "description": "Performs an HTTP request to a SAP Basis system through the Cloud Connector configured for the current subaccount",
+            "catalog": "examples-<<<TENANT_ID>>>",
+            "version": 1,
+            "inputKeys": {
+                "host": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": true,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": "Virtual hostname and port of the SAP Basis system as made accessible via the Cloud Connector"
+                }
+            },
+            "outputKeys": {
+                "pingResponse": {
+                    "type": "string",
+                    "sensitive": false,
+                    "description": "Response from the ICM Ping service"
+                }
+            },
+            "tags": {}
+        }
+    ]
+}

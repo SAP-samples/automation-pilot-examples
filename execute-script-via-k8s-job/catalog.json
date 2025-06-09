@@ -1,0 +1,637 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [
+    {
+      "id": "examples-<<<TENANT_ID>>>:PreparationScript:1",
+      "name": "PreparationScript",
+      "description": "Script for preparation executed by the Kubernetes job",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "owner": null,
+      "version": 1,
+      "keys": {
+        "preparationScript": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Bash script to prepare the environment for the main script execution"
+        }
+      },
+      "values": {
+        "preparationScript": "#!/usr/bin/env bash\nset -Eeuo pipefail\n\nreadonly AUTOPI__MOUNT_PATH=\"/autopi/config\"\nreadonly AUTOPI__SCRIPT_SRC_PATH=\"${AUTOPI__MOUNT_PATH}/script\"\nreadonly AUTOPI__PARAMS_SRC_PATH=\"${AUTOPI__MOUNT_PATH}/parameters\"\nreadonly AUTOPI__STDIN_SRC_PATH=\"${AUTOPI__MOUNT_PATH}/stdin\"\nreadonly AUTOPI__ENV_SRC_PATH=\"${AUTOPI__MOUNT_PATH}/environment\"\nreadonly AUTOPI__TIMEOUT_SRC_PATH=\"${AUTOPI__MOUNT_PATH}/timeout\"\nreadonly AUTOPI__SCRIPT_DST_PATH=\"${HOME}/script.sh\"\nreadonly AUTOPI__DEFAULT_TIMEOUT_IN_SECONDS=30\n\nfunction error() {\n  echo \"${1}\" >&2\n  exit 1\n}\n\nfunction export_script() {\n  if [[ ! -f \"${AUTOPI__SCRIPT_SRC_PATH}\" ]]; then\n    error \"Error: No script found at ${AUTOPI__SCRIPT_SRC_PATH}\"\n  fi\n\n  cp \"${AUTOPI__SCRIPT_SRC_PATH}\" \"${AUTOPI__SCRIPT_DST_PATH}\"\n  chmod 500 \"${AUTOPI__SCRIPT_DST_PATH}\"\n}\n\nfunction read_params() {\n  local -n autopi__arr=\"${1}\"\n  if [[ ! -f \"${AUTOPI__PARAMS_SRC_PATH}\" ]]; then\n    autopi__arr=()\n    return\n  fi\n\n  while read -r autopi__param || [[ -n \"${autopi__param}\" ]]; do\n    autopi__arr+=(\"$(echo \"${autopi__param}\" | base64 --decode)\")\n  done <\"${AUTOPI__PARAMS_SRC_PATH}\"\n}\n\nfunction read_stdin() {\n  if [[ ! -f \"${AUTOPI__STDIN_SRC_PATH}\" ]]; then\n    return\n  fi\n\n  cat \"${AUTOPI__STDIN_SRC_PATH}\"\n}\n\nfunction export_env() {\n  if [[ ! -f \"${AUTOPI__ENV_SRC_PATH}\" ]]; then\n    return\n  fi\n\n  while read -r autopi__entry || [[ -n \"${autopi__entry}\" ]]; do\n    autopi__name=\"$(echo \"${autopi__entry}\" | cut -d'.' -f1)\"\n    autopi__value=\"$(echo \"${autopi__entry}\" | cut -d'.' -f2 | base64 --decode)\"\n\n    if [[ -n \"${autopi__name}\" ]]; then\n      export \"${autopi__name}\"=\"${autopi__value}\"\n    fi\n  done <\"${AUTOPI__ENV_SRC_PATH}\"\n}\n\nfunction read_timeout() {\n  if [[ ! -f \"${AUTOPI__TIMEOUT_SRC_PATH}\" ]]; then\n    echo \"${AUTOPI__DEFAULT_TIMEOUT_IN_SECONDS}\"\n    return\n  fi\n\n  cat \"${AUTOPI__TIMEOUT_SRC_PATH}\"\n}\n\nfunction main() {\n  export_script\n  export_env\n\n  local autopi__params\n  read_params autopi__params\n\n  read_stdin \\\n    | timeout -k 5s \"$(read_timeout)s\" \"${AUTOPI__SCRIPT_DST_PATH}\" \"${autopi__params[@]}\" 2>&1\n}\n\nmain\n"
+      },
+      "tags": {}
+    }
+  ],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "resource": ""
+        },
+        "executors": [
+          {
+            "execute": "kubernetes-sapcp:ApplyK8sResource:1",
+            "input": {
+              "resource": "{\"apiVersion\":\"v1\",\"kind\":\"Secret\",\"metadata\":{\"name\":\"$(.execution.input.secretName)\",\"namespace\":\"$(.execution.input.namespace)\"},\"type\":\"kubernetes.io/dockerconfigjson\",\"data\":{\".dockerconfigjson\":\"$(.execution.input.dockerconfig | toBase64)\"}}",
+              "kubeconfig": "$(.execution.input.kubeconfig)",
+              "resourceType": "secrets"
+            },
+            "alias": "CreateSecret",
+            "description": "Creates an image pull secret for the specified private container image registry",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:CreateK8sImagePullSecret:1",
+      "name": "CreateK8sImagePullSecret",
+      "description": "Creates or updates a Kubernetes image pull secret. If the provided secret exists, it will be updated; otherwise, a new secret will be created.",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "secretName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the secret"
+        },
+        "namespace": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Namespace where the secret will be created"
+        },
+        "dockerconfig": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Credentials for a private container image registry. Follow the format described here: https://kubernetes.io/docs/concepts/containers/images/#config-json"
+        },
+        "kubeconfig": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Credentials for the specified Kubernetes cluster where the secret will be created"
+        }
+      },
+      "outputKeys": {
+        "resource": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Represents a Kubernetes resource of the given type"
+        }
+      },
+      "tags": {
+        "env": "kubernetes"
+      }
+    },
+    {
+      "configuration": {
+        "values": [
+          {
+            "alias": "preparationScript",
+            "valueFrom": {
+              "inputReference": "examples-<<<TENANT_ID>>>:PreparationScript:1",
+              "inputKey": "preparationScript"
+            }
+          }
+        ],
+        "output": {
+          "output": "$(.FetchScriptLogs.output.log | split(\"\\n\"))",
+          "exitCode": "$(.GetScriptPod.output.resources[0].status.containerStatuses[0].state.terminated.exitCode // -1)",
+          "events": "$(.FetchScriptEvents.output.resources | filter(.involvedObject.name | startswith($.GenerateUniqueName.output.message)) | map({ involvedObject, reason, message, eventTime, type, reportingComponent, reportingInstance }))"
+        },
+        "executors": [
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "script-$(.execution.metadata.tenantId | toLowerCase)-$(guidShort)"
+            },
+            "alias": "GenerateUniqueName",
+            "description": "Generates a unique name for the Kubernetes resources",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "kubernetes-sapcp:CreateK8sResource:1",
+            "input": {
+              "resource": "{\"apiVersion\":\"v1\",\"kind\":\"Secret\",\"type\":\"Opaque\",\"metadata\":{\"name\":\"$(.GenerateUniqueName.output.message)\",\"namespace\":\"$(.execution.input.namespace)\"},\"data\":{\"script\":\"$(.execution.input.script)\",\"timeout\": \"$(.execution.input.timeout | toBase64)\", \"parameters\": \"$(.execution.input.parameters | map(toBase64) | join(\"\\n\") | toBase64)\", \"stdin\": \"$(.execution.input.stdin | toBase64)\", \"environment\":\"$(.execution.input.environment | to_entries | map(\"\\(.key).\\(.value | toBase64)\") | join(\"\\n\") | toBase64)\",\"timeout\":\"$(.execution.input.timeout | toBase64)\"}}",
+              "kubeconfig": "$(.execution.input.kubeconfig)",
+              "resourceType": "secrets"
+            },
+            "alias": "CreateScriptSecret",
+            "description": "Create a Kubernetes secret holding all of the script data",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "kubernetes-sapcp:CreateK8sResource:1",
+            "input": {
+              "resource": "{\"apiVersion\":\"batch/v1\",\"kind\":\"Job\",\"metadata\":{\"name\":\"$(.GenerateUniqueName.output.message)\",\"namespace\":\"$(.execution.input.namespace)\",\"labels\":{\"app\":\"$(.GenerateUniqueName.output.message)\"}},\"spec\":{\"ttlSecondsAfterFinished\":180,\"activeDeadlineSeconds\":$(.execution.input.timeout + 180),\"completions\":1,\"backoffLimit\":0,\"template\":{\"spec\":{\"terminationGracePeriodSeconds\":0,\"restartPolicy\":\"Never\",\"imagePullSecrets\":[$(.execution.input.imagePullSecretName | if . != null then { name: . } else . end)],\"volumes\":[{\"name\":\"script-data\",\"secret\":{\"secretName\":\"$(.GenerateUniqueName.output.message)\"}}],\"containers\":[{\"name\":\"script-executor\",\"image\":\"$(.execution.input.image)\",\"volumeMounts\":[{\"name\":\"script-data\",\"mountPath\":\"/autopi/config\",\"readOnly\":true}],\"command\":[\"bash\",\"-c\",\"$(.preparationScript | toEscapedJson)\"]}]}}}}",
+              "kubeconfig": "$(.execution.input.kubeconfig)",
+              "resourceType": "jobs"
+            },
+            "alias": "CreateScriptJob",
+            "description": "Create the Kubernetes Job that will run the script",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "kubernetes-sapcp:GetK8sResource:1",
+            "input": {
+              "apiVersion": "batch/v1",
+              "namespace": "$(.execution.input.namespace)",
+              "name": "$(.GenerateUniqueName.output.message)",
+              "kubeconfig": "$(.execution.input.kubeconfig)",
+              "resourceType": "jobs"
+            },
+            "alias": "PollScriptJob",
+            "description": "Wait for the Kubernetes job to complete, whether it succeeds or fails",
+            "progressMessage": null,
+            "initialDelay": {
+              "interval": "10s",
+              "when": null
+            },
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": {
+              "maxCount": 180,
+              "until": {
+                "semantic": "AND",
+                "conditions": [
+                  {
+                    "semantic": "AND",
+                    "cases": [
+                      {
+                        "expression": "$(.PollScriptJob.output.resource.status.active // 0)",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "0"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.PollScriptJob.output.resource.status.succeeded // 0)",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "1"
+                        ]
+                      },
+                      {
+                        "expression": "$(.PollScriptJob.output.resource.status.failed // 0)",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "1"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "delay": "10s",
+              "failOnMaxCount": true
+            },
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "kubernetes-sapcp:ListK8sResources:1",
+            "input": {
+              "apiVersion": "v1",
+              "namespace": "$(.execution.input.namespace)",
+              "labelSelector": "job-name=$(.GenerateUniqueName.output.message)",
+              "kubeconfig": "$(.execution.input.kubeconfig)",
+              "resourceType": "pods"
+            },
+            "alias": "GetScriptPod",
+            "description": "Retrieve details about the pod that executed the script",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "kubernetes-sapcp:GetKubernetesPodLog:1",
+            "input": {
+              "tailLines": "$(.execution.input.outputLines)",
+              "pod": "$(.GetScriptPod.output.resources[0].metadata.name)",
+              "namespace": "$(.execution.input.namespace)",
+              "sinceSeconds": "3600",
+              "kubeconfig": "$(.execution.input.kubeconfig)"
+            },
+            "alias": "FetchScriptLogs",
+            "description": "Fetch the script logs from the pod",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.GetScriptPod.output.resources | length)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "1"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "kubernetes-sapcp:ListK8sResources:1",
+            "input": {
+              "apiVersion": "v1",
+              "namespace": "$(.execution.input.namespace)",
+              "pageSize": "100",
+              "kubeconfig": "$(.execution.input.kubeconfig)",
+              "resourceType": "events"
+            },
+            "alias": "FetchScriptEvents",
+            "description": "Fetch all Kubernetes events related to the script execution",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": [
+          {
+            "status": "FINISHED",
+            "execute": "kubernetes-sapcp:DeleteK8sResource:1",
+            "input": {
+              "apiVersion": "v1",
+              "namespace": "$(.execution.input.namespace)",
+              "name": "$(.GenerateUniqueName.output.message)",
+              "kubeconfig": "$(.execution.input.kubeconfig)",
+              "resourceType": "secrets"
+            },
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.CreateScriptSecret.executed)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "status": "ABORTED",
+            "execute": "kubernetes-sapcp:DeleteK8sResource:1",
+            "input": {
+              "apiVersion": "v1",
+              "namespace": "$(.execution.input.namespace)",
+              "name": "$(.GenerateUniqueName.output.message)",
+              "kubeconfig": "$(.execution.input.kubeconfig)",
+              "resourceType": "secrets"
+            },
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.CreateScriptSecret.executed)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "status": "SUSPENDED",
+            "execute": "kubernetes-sapcp:DeleteK8sResource:1",
+            "input": {
+              "apiVersion": "v1",
+              "namespace": "$(.execution.input.namespace)",
+              "name": "$(.GenerateUniqueName.output.message)",
+              "kubeconfig": "$(.execution.input.kubeconfig)",
+              "resourceType": "secrets"
+            },
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.CreateScriptSecret.executed)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "id": "examples-<<<TENANT_ID>>>:ExecuteScriptViaKubernetesJob:1",
+      "name": "ExecuteScriptViaKubernetesJob",
+      "description": "Executes a script via a Kubernetes Job in a customer-provided cluster",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "image": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Container image to be used for executing the script"
+        },
+        "environment": {
+          "type": "object",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "{}",
+          "defaultValueFromInput": null,
+          "description": "Environment variables available during script execution"
+        },
+        "stdin": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Sensitive data passed to the script's standard input. You can specify multiple values by separating them with '\\n'"
+        },
+        "outputLines": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 5000,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "1000",
+          "defaultValueFromInput": null,
+          "description": "Number of script output lines to be returned"
+        },
+        "namespace": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Namespace where the script will be executed"
+        },
+        "imagePullSecretName": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the image pull secret to use when the image is sourced from a private registry"
+        },
+        "parameters": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[ ]",
+          "defaultValueFromInput": null,
+          "description": "Parameters that will be passed to the script in the specified order"
+        },
+        "script": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Script to be executed which must be encoded in Base64 format"
+        },
+        "timeout": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 15,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "30",
+          "defaultValueFromInput": null,
+          "description": "Timeout of the script in seconds"
+        },
+        "kubeconfig": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Credentials for the specified Kubernetes cluster where the script will be executed"
+        }
+      },
+      "outputKeys": {
+        "output": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Output from the script execution"
+        },
+        "exitCode": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Exit code returned from the script execution"
+        },
+        "events": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Kubernetes events produced by the script execution"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}

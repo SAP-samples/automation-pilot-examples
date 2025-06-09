@@ -1,0 +1,487 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [
+          {
+            "alias": "regionData",
+            "valueFrom": {
+              "inputReference": "metadata-sapcp:CfRegionData:1",
+              "inputKey": "$(.execution.input.region)"
+            }
+          }
+        ],
+        "output": {
+          "eventId": "$(.sendEventToAns.output.id)"
+        },
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/spaces/$(.execution.input.spaceId)",
+              "timeout": "10"
+            },
+            "alias": "getCfSpace",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/organizations/$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)",
+              "timeout": "10"
+            },
+            "alias": "getCfOrg",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/organizations/$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)/usage_summary",
+              "timeout": "10"
+            },
+            "alias": "getCfOrgUsage",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.getCfOrg.output.body | toObject | .links.quota.href)",
+              "timeout": "10"
+            },
+            "alias": "getCfOrgQuota",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_instances?organization_guids=$(.getCfSpace.output.body | toObject | .relationships.organization.data.guid)",
+              "timeout": "10"
+            },
+            "alias": "getServiceInstanceByOrg",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.getCfSpace.output.body | toObject | .links.quota.href | if . == null then ($.getCfOrg.output.body | toObject | .links.quota.href) else . end)",
+              "timeout": "10"
+            },
+            "alias": "getCfSpaceQuota",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({ \"origin\": .execution.input.identityProvider } | toUrlEncoded)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_instances?space_guids=$(.execution.input.spaceId)",
+              "timeout": "10"
+            },
+            "alias": "getServiceInstanceBySpace",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "applm-sapcp:ListCfApps:1",
+            "input": {
+              "resourceGroup": "$(.execution.input.spaceId)",
+              "password": "$(.execution.input.password)",
+              "pageSize": "100",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "subAccount": "$(.getCfOrg.output.body | toObject | .guid)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "getCfApps",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "examples-<<<TENANT_ID>>>:GetCfAppsDetails:1",
+            "input": {
+              "defaultCfCredentials": "{\"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\", \"resourceGroup\":\"$(.execution.input.spaceId)\", \"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.getCfOrg.output.body | toObject | .guid)\"}",
+              "appResources": "$(.getCfApps.output.resourceNames | map({ resourceName: . }))"
+            },
+            "alias": "calculateSpaceMemory",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | if . == null then \"0\" else ((($.calculateSpaceMemory.output.spaceMemory | toNumber) / ($.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | toNumber)) * 10000 | round | . / 100 | if . == null then 0 else . end) end)"
+            },
+            "alias": "calculateSpaceMemoryPercentage",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb | if . == null or . == 0 then 0 else (($.getCfOrgUsage.output.body | toObject | .usage_summary.memory_in_mb | toNumber) / ($.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb | toNumber) * 10000 | round | . / 100 ) end)"
+            },
+            "alias": "calculateOrgMemoryPercentage",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "ans-sapcp:SendAnsEvent:1",
+            "input": {
+              "severity": "INFO",
+              "resourceTags": "{\"organizationId\": \"$(.getCfOrg.output.body | toObject | .guid)\", \"organizationName\": \"$(.getCfOrg.output.body | toObject | .name)\", \"spaceName\": \"$(.getCfSpace.output.body | toObject | .name)\", \"spaceId\": \"$(.execution.input.spaceId)\"}",
+              "subject": "Space Quota Utilization",
+              "resourceName": "$(.getCfSpaceQuota.output.body | toObject | .name)",
+              "eventType": "ResourceQuotaUtilization",
+              "serviceKey": "$(.execution.input.ansServiceKey)",
+              "body": "Quota Utilization for space '$(.getCfSpace.output.body | toObject | .name)': $(\"\\n\")$(\"\\t\")Memory Total (MB): $(.calculateSpaceMemory.output.spaceMemory) of $(.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | if . == null then -1 else . end) [$(.calculateSpaceMemoryPercentage.output.message)%]$(\"\\n\")$(\"\\t\")Service Count: $(.getServiceInstanceBySpace.output.body | toObject | .pagination.total_results) of $(.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | if . == null then -1 else . end) [$(.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | if . == null then 0 else (($.getServiceInstanceBySpace.output.body | toObject | .pagination.total_results | toNumber) / ($.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | toNumber) * 10000 | round | . / 100) end)%]$(\"\\n\")$(\"\\n\")Quota Utilization for organization '$(.getCfOrg.output.body | toObject | .name)':$(\"\\n\")$(\"\\t\")Memory Total (MB): $(.getCfOrgUsage.output.body | toObject | .usage_summary.memory_in_mb) of $(.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb)[$(.calculateOrgMemoryPercentage.output.message)%]$(\"\\n\")$(\"\\t\")Service Count: $(.getCfOrgUsage.output.body | toObject | .usage_summary.service_instances) of $(.getCfOrgQuota.output.body | toObject | .services.total_service_instances) [$((.getCfOrgUsage.output.body | toObject | .usage_summary.service_instances | toNumber) / (.getCfOrgQuota.output.body | toObject | .services.total_service_instances | toNumber) * 10000 | round | . / 100)%]*$(\"\\n\")$(\"\\n\")* Calculation is based on utilization of all spaces for which authorization is explicitly granted.",
+              "category": "NOTIFICATION",
+              "tags": "{     \"org_memory_usage_mb\": \"$(.getCfOrgUsage.output.body | toObject | .usage_summary.memory_in_mb)\",     \"org_service_count\": \"$(.getCfOrgUsage.output.body | toObject | .usage_summary.service_instances)\",     \"space_service_count\": \"$(.getServiceInstanceBySpace.output.body | toObject | .pagination.total_results)\",     \"org_quota_memory_limit_mb\": \"$(.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb)\",     \"org_quota_total_services_count\": \"$(.getCfOrgQuota.output.body | toObject | .services.total_service_instances)\",     \"org_memory_usage_percentage\": \"$((.getCfOrgUsage.output.body | toObject | .usage_summary.memory_in_mb | toNumber) / (.getCfOrgQuota.output.body | toObject | .apps.total_memory_in_mb | toNumber) * 10000 | round | . / 100)\",     \"org_service_usage_percentage\": \"$((.getCfOrgUsage.output.body | toObject | .usage_summary.service_instances | toNumber) / (.getCfOrgQuota.output.body | toObject | .services.total_service_instances | toNumber) * 10000 | round | . / 100)\",     \"space_memory_usage_mb\": \"$(.calculateSpaceMemory.output.spaceMemory | if . == null then 0 else . end)\",     \"space_quota_memory_limit_mb\": \"$(.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | if . == null then -1 else . end)\",     \"space_quota_total_services_count\": \"$(.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | if . == null then -1 else . end)\",     \"space_memory_usage_percentage\": \"$(.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | if . == null then 0 else (($.calculateSpaceMemory.output.spaceMemory | toNumber) / ($.getCfSpaceQuota.output.body | toObject | .apps.total_memory_in_mb | toNumber) * 10000 | round | . / 100 | if . == null then 0 else . end) end)\",     \"space_service_usage_percentage\": \"$(.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | if . == null then 0 else (($.getServiceInstanceBySpace.output.body | toObject | .pagination.total_results | toNumber) / ($.getCfSpaceQuota.output.body | toObject | .services.total_service_instances | toNumber) * 10000 | round | . / 100) end)\" }",
+              "resourceType": "resource_quota"
+            },
+            "alias": "sendEventToAns",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:CheckResourceQuotaUtilization:1",
+      "name": "CheckResourceQuotaUtilization",
+      "description": "Calculate resource utilization of Cloud Foundry space and its parrent organization and send the insights as event towards SAP Alert Notification service",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "spaceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The GUID identifier of the Cloud Foundry space"
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the Cloud Foundry technical user"
+        },
+        "ansServiceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service key used for authentication against SAP Alert Notification Service for SAP BTP"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of your SAP BTP region, e.g. cf-eu10,cf-eu20"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "User ID or email of a Cloud Foundry technical user"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used  By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section."
+        }
+      },
+      "outputKeys": {
+        "eventId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The identifier of the event sent towards SAP Alert Notification service"
+        }
+      },
+      "tags": {
+        "feature:logs": "",
+        "feature:priority": "medium"
+      }
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "spaceMemory": "$(.calculateAppMemory.output.outputs | map({desiredState: .desiredState, name: .desiredStateData.name, memory: .memory, instances: .stateData.instances}) | [.[] | {desiredState,name, memory, instances} | select(.desiredState != \"STOPPED\")] | map(.memory * .instances) | add)"
+        },
+        "executors": [
+          {
+            "execute": "utils-sapcp:ForEach:1",
+            "input": {
+              "inputs": "$(.execution.input.appResources)",
+              "defaultValues": "$(.execution.input.defaultCfCredentials)",
+              "command": "applm-sapcp:GetCfAppState:1"
+            },
+            "alias": "calculateAppMemory",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:GetCfAppsDetails:1",
+      "name": "GetCfAppsDetails",
+      "description": null,
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "defaultCfCredentials": {
+          "type": "object",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Credentials need to authenticate against Cloud Foundry"
+        },
+        "appResources": {
+          "type": "array",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Aplications data in the Cloud Foundry space"
+        }
+      },
+      "outputKeys": {
+        "spaceMemory": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Total memory used by all started applications in the Cloud Foundry space"
+        }
+      },
+      "tags": {
+        "feature:logs": "",
+        "feature:priority": "medium"
+      }
+    }
+  ]
+}

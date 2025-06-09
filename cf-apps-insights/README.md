@@ -13,7 +13,7 @@ Effortlessly identify the state of your Cloud Foundry applications using **Cloud
 Gain valuable insights into the health and performance of each of your CF applications. Verify their state and receive short summary, empowering you to take proactive measures and maintain optimal functionality.
 
 
-Leveraging the capabilities of `gpt4-32k`, this command provides insights and useful suggestions for critical actions such as application restarts, instances increase, quota adjustments and e.g.
+Leveraging the capabilities of `gpt4o`, this command provides insights and useful suggestions for critical actions such as application restarts, instances increase, quota adjustments and e.g.
 
 Here are example Cloud Foundry Apps Insights:
 
@@ -56,7 +56,7 @@ To use this example you'll need the following:
 * Technical user with *Space Developer* role
 * Ai Core service instance with service key for authentication 
 * SAP AI Launchpad application 
-* Deployment for `gpt4-32k`
+* Deployment for `gpt4o`
 
 Check out the following resources for more information:
 * [SAP AI Core Initial Setup](https://help.sap.com/docs/sap-ai-core/sap-ai-core-service-guide/initial-setup?locale=en-US)
@@ -70,7 +70,7 @@ Import the content of [examples catalog](catalog.json) in your Automation Pilot 
 
 You'll need to provide values for the following input keys:
 
-* *deploymentId* - ID of the deployment for gpt4-32k which will execute the query
+* *deploymentId* - ID of the deployment for gpt4о which will execute the query
 * *serviceKey* - Service key for the SAP AI Core service
 * *region* - Technical name of your SAP BTP region, e.g. cf-eu10, cf-us20
 * *subAccount* - Name of your Cloud Foundry organization
@@ -81,4 +81,6 @@ You'll need to provide values for the following input keys:
 
 :information_source: Some of the needed information is available in your subaccount's *Overview* page under *Cloud Foundry Environment*.
 
-:information_source:  **CloudFoundryAppsInsights** example uses model `gpt4-32k` and with small changes the insights can be modified in the prompt
+:information_source:  **CloudFoundryAppsInsights** example uses model `gpt4o` and with small changes the insights can be modified in the prompt. 
+
+:warning: Using a subaccount with fewer applications and instances enhances the accuracy of GPT model responses.
