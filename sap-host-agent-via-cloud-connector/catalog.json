@@ -467,7 +467,6 @@
             "configuration": {
                 "values": [],
                 "output": {
-                    "test": "$(.void.output.message)",
                     "rawResult": "$(.ExecuteRequest.output.body)",
                     "operationId": "$(.ExecuteRequest.output.body | fromXml | .Envelope.Body.ExecuteOperationResponse.result.mOperationID)"
                 },
@@ -620,11 +619,6 @@
                 }
             },
             "outputKeys": {
-                "test": {
-                    "type": "string",
-                    "sensitive": false,
-                    "description": null
-                },
                 "rawResult": {
                     "type": "string",
                     "sensitive": false,
