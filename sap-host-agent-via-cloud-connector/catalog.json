@@ -1,0 +1,643 @@
+{
+    "id": "examples-<<<TENANT_ID>>>",
+    "technicalName": "examples",
+    "name": "Automation Pilot Examples",
+    "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+    "owner": "<<<TENANT_ID>>>",
+    "inputs": [],
+    "commands": [
+        {
+            "configuration": {
+                "values": [],
+                "output": {
+                    "result": "$(.GetResult.output.body | fromXml)",
+                    "isOperationSuccessful": "$(.GetResult.output.body | fromXml | .Envelope.Body.Fault.faultstring | length == 0)",
+                    "exitCode": "$(.GetResult.output.body | fromXml | .Envelope.Body.Fault.detail.OperationException.mResponseMessages.item | filter(.mMessageKey == \"exitcode\") | .[-1].mMessageValue)",
+                    "isOperationFinished": "$(.Poll.output.body)"
+                },
+                "executors": [
+                    {
+                        "execute": "http-sapcp:HttpRequest:1",
+                        "input": {
+                            "headers": "{\"Content-Type\":\"text/xml; charset=utf-8\"}",
+                            "responseBodyTransformer": ". | fromXml | .Envelope.Body.IsOperationFinishedResponse.IsFinished",
+                            "password": "$(.execution.input.password)",
+                            "method": "POST",
+                            "sccLocationId": "$(.execution.input.locationId)",
+                            "body": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:urn=\"urn:SAPHostControl\">\n   <soapenv:Header/>\n   <soapenv:Body>\n      <urn:IsOperationFinished>\n         <!--Optional:-->\n         <aOperationID>$(.execution.input.operationId)</aOperationID>\n      </urn:IsOperationFinished>\n   </soapenv:Body>\n</soapenv:Envelope>",
+                            "user": "$(.execution.input.user)",
+                            "url": "https://$(.execution.input.server):1129/saphostagent/services/SAPHostControl",
+                            "timeout": "10",
+                            "sccEnabled": "true"
+                        },
+                        "alias": "Poll",
+                        "description": null,
+                        "progressMessage": null,
+                        "initialDelay": null,
+                        "pause": null,
+                        "when": null,
+                        "validate": null,
+                        "autoRetry": null,
+                        "repeat": null,
+                        "errorMessages": [],
+                        "dryRun": null
+                    },
+                    {
+                        "execute": "http-sapcp:HttpRequest:1",
+                        "input": {
+                            "headers": "{\"Content-Type\":\"text/xml; charset=utf-8\"}",
+                            "password": "$(.execution.input.password)",
+                            "method": "POST",
+                            "sccLocationId": "$(.execution.input.locationId)",
+                            "body": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"\n  xmlns:urn=\"urn:SAPHostControl\">\n  <soapenv:Header />\n  <soapenv:Body>\n    <urn:GetOperationResults> <!--Optional:-->\n      <aOperationID>$(.execution.input.operationId)</aOperationID>\n      <aOptions>\n        <mTimeout>0</mTimeout>\n      </aOptions>\n    </urn:GetOperationResults>\n  </soapenv:Body>\n</soapenv:Envelope>",
+                            "successResponseCodes": "[\"2xx\",\"500\"]",
+                            "user": "$(.execution.input.user)",
+                            "url": "https://$(.execution.input.server):1129/saphostagent/services/SAPHostControl",
+                            "timeout": "10",
+                            "sccEnabled": "true"
+                        },
+                        "alias": "GetResult",
+                        "description": null,
+                        "progressMessage": null,
+                        "initialDelay": null,
+                        "pause": null,
+                        "when": {
+                            "semantic": "OR",
+                            "conditions": [
+                                {
+                                    "semantic": "OR",
+                                    "cases": [
+                                        {
+                                            "expression": "$(.Poll.output.body | toBoolean)",
+                                            "operator": "EQUALS",
+                                            "semantic": "OR",
+                                            "values": [
+                                                "true"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "validate": {
+                            "semantic": "OR",
+                            "conditions": [
+                                {
+                                    "semantic": "OR",
+                                    "cases": [
+                                        {
+                                            "expression": "$(if .GetResult.output.status == 500 then (.GetResult.output.body | fromXml | .Envelope.Body.Fault.faultstring == \"Command execution failed.\") else true end)",
+                                            "operator": "EQUALS",
+                                            "semantic": "OR",
+                                            "values": [
+                                                "true"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "autoRetry": null,
+                        "repeat": null,
+                        "errorMessages": [],
+                        "dryRun": null
+                    }
+                ],
+                "listeners": []
+            },
+            "id": "examples-<<<TENANT_ID>>>:PollOperationViaScc:1",
+            "name": "PollOperationViaScc",
+            "description": "Poll the execution of a custom SAP Host Agent operation",
+            "catalog": "examples-<<<TENANT_ID>>>",
+            "version": 1,
+            "inputKeys": {
+                "server": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": true,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "password": {
+                    "type": "string",
+                    "sensitive": true,
+                    "required": false,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "locationId": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": false,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "operationId": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": false,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "user": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": false,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                }
+            },
+            "outputKeys": {
+                "result": {
+                    "type": "object",
+                    "sensitive": false,
+                    "description": null
+                },
+                "isOperationSuccessful": {
+                    "type": "boolean",
+                    "sensitive": false,
+                    "description": null
+                },
+                "exitCode": {
+                    "type": "number",
+                    "sensitive": false,
+                    "description": "The exit code of a non-successful operation"
+                },
+                "isOperationFinished": {
+                    "type": "boolean",
+                    "sensitive": false,
+                    "description": null
+                }
+            },
+            "tags": {},
+            "issues": []
+        },
+        {
+            "configuration": {
+                "values": [],
+                "output": {
+                    "result": "$(.PollOperation.output.result)"
+                },
+                "executors": [
+                    {
+                        "execute": "examples-<<<TENANT_ID>>>:TriggerOperationViaScc:1",
+                        "input": {
+                            "server": "$(.execution.input.server)",
+                            "clientCert": "$(.execution.input.clientCert)",
+                            "sensitiveArguments": "$(.execution.input.sensitiveArguments)",
+                            "password": "$(.execution.input.password)",
+                            "locationId": "$(.execution.input.locationId)",
+                            "name": "$(.execution.input.name)",
+                            "arguments": "$(.execution.input.arguments)",
+                            "user": "$(.execution.input.user)"
+                        },
+                        "alias": "TriggerOperation",
+                        "description": null,
+                        "progressMessage": null,
+                        "initialDelay": null,
+                        "pause": null,
+                        "when": null,
+                        "validate": null,
+                        "autoRetry": null,
+                        "repeat": null,
+                        "errorMessages": [],
+                        "dryRun": null
+                    },
+                    {
+                        "execute": "examples-<<<TENANT_ID>>>:PollOperationViaScc:1",
+                        "input": {
+                            "server": "$(.execution.input.server)",
+                            "clientCert": "$(.execution.input.clientCert)",
+                            "password": "$(.execution.input.password)",
+                            "locationId": "$(.execution.input.locationId)",
+                            "operationId": "$(.TriggerOperation.output.operationId)",
+                            "user": "$(.execution.input.user)"
+                        },
+                        "alias": "PollOperation",
+                        "description": null,
+                        "progressMessage": null,
+                        "initialDelay": null,
+                        "pause": null,
+                        "when": null,
+                        "validate": {
+                            "semantic": "OR",
+                            "conditions": [
+                                {
+                                    "semantic": "OR",
+                                    "cases": [
+                                        {
+                                            "expression": "$(.PollOperation.output.isOperationSuccessful)",
+                                            "operator": "EQUALS",
+                                            "semantic": "OR",
+                                            "values": [
+                                                "true"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        "autoRetry": null,
+                        "repeat": {
+                            "maxCount": 600,
+                            "until": {
+                                "semantic": "OR",
+                                "conditions": [
+                                    {
+                                        "semantic": "OR",
+                                        "cases": [
+                                            {
+                                                "expression": "$(.PollOperation.output.isOperationFinished)",
+                                                "operator": "EQUALS",
+                                                "semantic": "OR",
+                                                "values": [
+                                                    "true"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            "delay": "10s",
+                            "failOnMaxCount": true
+                        },
+                        "errorMessages": [
+                            {
+                                "message": "SAP Host Agent Operation execution not successful - exitCode: $(.PollOperation.output.exitCode)$(\"\\n\")$(.PollOperation.output.result)",
+                                "when": {
+                                    "semantic": "OR",
+                                    "conditions": [
+                                        {
+                                            "semantic": "OR",
+                                            "cases": [
+                                                {
+                                                    "expression": "$(.PollOperation.output.isOperationSuccessful)",
+                                                    "operator": "EQUALS",
+                                                    "semantic": "OR",
+                                                    "values": [
+                                                        "false"
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        ],
+                        "dryRun": null
+                    }
+                ],
+                "listeners": []
+            },
+            "id": "examples-<<<TENANT_ID>>>:RunOperationViaScc:1",
+            "name": "RunOperationViaScc",
+            "description": "Trigger an execution of a SAP Host Agent custom operation and wait for it to finish",
+            "catalog": "examples-<<<TENANT_ID>>>",
+            "version": 1,
+            "inputKeys": {
+                "server": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": true,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "sensitiveArguments": {
+                    "type": "object",
+                    "sensitive": true,
+                    "required": false,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "password": {
+                    "type": "string",
+                    "sensitive": true,
+                    "required": false,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "locationId": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": false,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "name": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": true,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "arguments": {
+                    "type": "object",
+                    "sensitive": false,
+                    "required": true,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "user": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": false,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                }
+            },
+            "outputKeys": {
+                "result": {
+                    "type": "string",
+                    "sensitive": false,
+                    "description": null
+                }
+            },
+            "tags": {},
+            "issues": []
+        },
+        {
+            "configuration": {
+                "values": [],
+                "output": {
+                    "test": "$(.void.output.message)",
+                    "rawResult": "$(.ExecuteRequest.output.body)",
+                    "operationId": "$(.ExecuteRequest.output.body | fromXml | .Envelope.Body.ExecuteOperationResponse.result.mOperationID)"
+                },
+                "executors": [
+                    {
+                        "execute": "http-sapcp:HttpRequest:1",
+                        "input": {
+                            "headers": "{\"Content-Type\":\"text/xml; charset=utf-8\"}",
+                            "password": "$(.execution.input.password)",
+                            "method": "POST",
+                            "sccLocationId": "$(.execution.input.locationId)",
+                            "body": "<soapenv:Envelope\n  xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\"\n  xmlns:urn=\"urn:SAPHostControl\"\n>\n  <soapenv:Header />\n  <soapenv:Body>\n    <urn:ExecuteOperation>\n      <!--Optional:-->\n      <aOperation>$(.execution.input.name)</aOperation>\n      <aArguments>\n        <!--0 to 100000 repetitions:-->\n        $(.execution.input.arguments + .execution.input.sensitiveArguments | to_entries | map(\"<item> <mKey>\\(.key)</mKey><mValue><![CDATA[\\(.value)]]></mValue></item>\") | join(\"\\n\"))\n      </aArguments>\n    </urn:ExecuteOperation>\n  </soapenv:Body>\n</soapenv:Envelope>\n",
+                            "user": "$(.execution.input.user)",
+                            "url": "https://$(.execution.input.server):1129/saphostagent/services/SAPHostControl",
+                            "timeout": "10",
+                            "sccEnabled": "true"
+                        },
+                        "alias": "ExecuteRequest",
+                        "description": null,
+                        "progressMessage": null,
+                        "initialDelay": null,
+                        "pause": null,
+                        "when": null,
+                        "validate": null,
+                        "autoRetry": null,
+                        "repeat": null,
+                        "errorMessages": [],
+                        "dryRun": null
+                    }
+                ],
+                "listeners": []
+            },
+            "id": "examples-<<<TENANT_ID>>>:TriggerOperationViaScc:1",
+            "name": "TriggerOperationViaScc",
+            "description": "Trigger the execution of a custom SAP Host Agent operation",
+            "catalog": "examples-<<<TENANT_ID>>>",
+            "version": 1,
+            "inputKeys": {
+                "server": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": true,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "sensitiveArguments": {
+                    "type": "object",
+                    "sensitive": true,
+                    "required": false,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "password": {
+                    "type": "string",
+                    "sensitive": true,
+                    "required": false,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "locationId": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": true,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "name": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": true,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                },
+                "arguments": {
+                    "type": "object",
+                    "sensitive": false,
+                    "required": true,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": "Keys and values that will be used as arguments for the operation for the SHA request"
+                },
+                "user": {
+                    "type": "string",
+                    "sensitive": false,
+                    "required": false,
+                    "minSize": null,
+                    "maxSize": null,
+                    "minValue": null,
+                    "maxValue": null,
+                    "allowedValues": null,
+                    "allowedValuesFromInputKeys": null,
+                    "suggestedValues": null,
+                    "suggestedValuesFromInputKeys": null,
+                    "defaultValue": null,
+                    "defaultValueFromInput": null,
+                    "description": null
+                }
+            },
+            "outputKeys": {
+                "test": {
+                    "type": "string",
+                    "sensitive": false,
+                    "description": null
+                },
+                "rawResult": {
+                    "type": "string",
+                    "sensitive": false,
+                    "description": null
+                },
+                "operationId": {
+                    "type": "string",
+                    "sensitive": false,
+                    "description": null
+                }
+            },
+            "tags": {},
+            "issues": []
+        }
+    ]
+}
