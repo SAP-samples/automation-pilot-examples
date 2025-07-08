@@ -1,0 +1,1267 @@
+{
+  "id": "hanacloud-<<<TENANT_ID>>>",
+  "technicalName": "hanacloud",
+  "name": "ECN HANA Cloud Other Environment",
+  "description": "",
+  "owner": "<<<TENANT_ID>>>",
+  "inputs": [
+    {
+      "id": "hanacloud-<<<TENANT_ID>>>:HanaCloudOtherEnvironments:1",
+      "name": "HanaCloudOtherEnvironments",
+      "description": null,
+      "catalog": "hanacloud-<<<TENANT_ID>>>",
+      "owner": null,
+      "version": 1,
+      "keys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        },
+        "dbUser": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        },
+        "connectionUrl": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "description": null
+        },
+        "dbPassword": {
+          "type": "string",
+          "sensitive": true,
+          "description": null
+        }
+      },
+      "values": {
+        "instanceId": "31c625d7-f65a-488e-ae58-da5d52e00949",
+        "dbUser": "DBADMIN",
+        "connectionUrl": "jdbc:sap://31c625d7-f65a-488e-ae58-da5d52e00949.hana.prod-ap10.hanacloud.ondemand.com:443?encrypt=true&validateCertificate=true",
+        "serviceKey": "",
+        "dbPassword": ""
+      },
+      "tags": {}
+    },
+    {
+      "id": "hanacloud-<<<TENANT_ID>>>:HanaCloudServiceKey:1",
+      "name": "HanaCloudServiceKey",
+      "description": null,
+      "catalog": "hanacloud-<<<TENANT_ID>>>",
+      "owner": null,
+      "version": 1,
+      "keys": {
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "description": null
+        }
+      },
+      "values": {
+        "serviceKey": ""
+      },
+      "tags": {}
+    }
+  ],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {},
+        "executors": [
+          {
+            "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.dbPassword)",
+              "statement": "ALTER WORKLOAD CLASS \"ECN_WLC\" DISABLE;",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.dbUser)"
+            },
+            "alias": "DisableWorkloadClass",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "clientId": "$(.execution.input.serviceKey.uaa.clientid)",
+              "tokenUrl": "$(.execution.input.serviceKey.uaa.url)/oauth/token",
+              "method": "DELETE",
+              "clientSecret": "$(.execution.input.serviceKey.uaa.clientsecret)",
+              "url": "https://api.gateway.orchestration.$(.execution.input.serviceKey.url | gsub(\"jdbc:sap://(.*?)\\\\.(.*?)\\\\.(?<host>.*):443(.*)\"; \"\\(.host)\"))/compute/v1/serviceInstances/$(.execution.input.instanceId)/nodes/$(.execution.input.nodeName)"
+            },
+            "alias": "TriggerDeprovision",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "[$(.TriggerDeprovision.output.body | toObject.error.code)] $(.TriggerDeprovision.output.body | toObject.error.message)",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "1",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "1"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "clientId": "$(.execution.input.serviceKey.uaa.clientid)",
+              "tokenUrl": "$(.execution.input.serviceKey.uaa.url)/oauth/token",
+              "method": "GET",
+              "clientSecret": "$(.execution.input.serviceKey.uaa.clientsecret)",
+              "successResponseCodes": "[\"200\",\"404\"]",
+              "url": "https://api.gateway.orchestration.$(.execution.input.serviceKey.url | gsub(\"jdbc:sap://(.*?)\\\\.(.*?)\\\\.(?<host>.*):443(.*)\"; \"\\(.host)\"))/compute/v1/serviceInstances/$(.execution.input.instanceId)/nodes/$(.execution.input.nodeName)"
+            },
+            "alias": "WaitDeprovision",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": null
+            },
+            "repeat": {
+              "maxCount": 100,
+              "until": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.WaitDeprovision.output.status)",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "404"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "delay": "15s",
+              "failOnMaxCount": true
+            },
+            "errorMessages": [
+              {
+                "message": "[$(.WaitDeprovision.output.body | toObject.error.code)] $(.WaitDeprovision.output.body | toObject.error.message)",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "1",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "1"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanacloud-<<<TENANT_ID>>>:DeprovisionHanaCloudElasticComputeNode:1",
+      "name": "DeprovisionHanaCloudElasticComputeNode",
+      "description": null,
+      "catalog": "hanacloud-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "nodeName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the Elastic Compute Node"
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "hanacloud-<<<TENANT_ID>>>:HanaCloudOtherEnvironments:1",
+            "inputKey": "instanceId"
+          },
+          "description": "ID of the HANA Cloud instance"
+        },
+        "dbUser": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "hanacloud-<<<TENANT_ID>>>:HanaCloudOtherEnvironments:1",
+            "inputKey": "dbUser"
+          },
+          "description": null
+        },
+        "connectionUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "hanacloud-<<<TENANT_ID>>>:HanaCloudOtherEnvironments:1",
+            "inputKey": "connectionUrl"
+          },
+          "description": null
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "hanacloud-<<<TENANT_ID>>>:HanaCloudOtherEnvironments:1",
+            "inputKey": "serviceKey"
+          },
+          "description": "Service Key for SAP HANA Cloud"
+        },
+        "dbPassword": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "hanacloud-<<<TENANT_ID>>>:HanaCloudOtherEnvironments:1",
+            "inputKey": "dbPassword"
+          },
+          "description": null
+        }
+      },
+      "outputKeys": {},
+      "tags": {
+        "ecn": ""
+      },
+      "issues": []
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "memory": "$(.GetNodeStatus.output.body | toObject.plan.memorySizeGiB)",
+          "ready": "$(.GetNodeStatus.output.body | toObject.status.ready)",
+          "cpu": "$(.GetNodeStatus.output.body | toObject.plan.vCPUs)",
+          "storage": "$(.GetNodeStatus.output.body | toObject.plan.storageSizeGiB)"
+        },
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "clientId": "$(.execution.input.serviceKey.uaa.clientid)",
+              "tokenUrl": "$(.execution.input.serviceKey.uaa.url)/oauth/token",
+              "method": "GET",
+              "clientSecret": "$(.execution.input.serviceKey.uaa.clientsecret)",
+              "url": "https://api.gateway.orchestration.$(.execution.input.serviceKey.url | gsub(\"jdbc:sap://(.*?)\\\\.(.*?)\\\\.(?<host>.*):443(.*)\"; \"\\(.host)\"))/compute/v1/serviceInstances/$(.execution.input.instanceId)/nodes/$(.execution.input.nodeName)"
+            },
+            "alias": "GetNodeStatus",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": null
+            },
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "[$(.GetNodeStatus.output.body | toObject.error.code)] $(.GetNodeStatus.output.body | toObject.error.message)",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "1",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "1"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanacloud-<<<TENANT_ID>>>:GetHanaCloudElasticComputeNodeStatus:1",
+      "name": "GetHanaCloudElasticComputeNodeStatus",
+      "description": null,
+      "catalog": "hanacloud-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "nodeName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": null
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ID of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Key for SAP HANA Cloud"
+        }
+      },
+      "outputKeys": {
+        "memory": {
+          "type": "number",
+          "sensitive": false,
+          "description": null
+        },
+        "ready": {
+          "type": "boolean",
+          "sensitive": false,
+          "description": null
+        },
+        "cpu": {
+          "type": "number",
+          "sensitive": false,
+          "description": null
+        },
+        "storage": {
+          "type": "number",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {
+        "ecn": ""
+      },
+      "issues": []
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "plans": "$(.ListSizes.output.body | toObject.plans)",
+          "maxNodeCount": "$(.ListSizes.output.body | toObject.maxNodeCount)",
+          "availabilityZones": "$(.ListSizes.output.body | toObject.availabilityZones)"
+        },
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "clientId": "$(.execution.input.serviceKey.uaa.clientid)",
+              "tokenUrl": "$(.execution.input.serviceKey.uaa.url)/oauth/token",
+              "method": "GET",
+              "clientSecret": "$(.execution.input.serviceKey.uaa.clientsecret)",
+              "url": "https://api.gateway.orchestration.$(.execution.input.serviceKey.url | gsub(\"jdbc:sap://(.*?)\\\\.(.*?)\\\\.(?<host>.*):443(.*)\"; \"\\(.host)\"))/compute/v1/plans"
+            },
+            "alias": "ListSizes",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": null
+            },
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "[$(.ListSizes.output.body | toObject.error.code)] $(.ListSizes.output.body | toObject.error.message)",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "1",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "1"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanacloud-<<<TENANT_ID>>>:ListHanaCloudElasticComputeNodeSizes:1",
+      "name": "ListHanaCloudElasticComputeNodeSizes",
+      "description": null,
+      "catalog": "hanacloud-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ID of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Key for SAP HANA Cloud"
+        }
+      },
+      "outputKeys": {
+        "plans": {
+          "type": "array",
+          "sensitive": false,
+          "description": null
+        },
+        "maxNodeCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": null
+        },
+        "availabilityZones": {
+          "type": "array",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {
+        "ecn": ""
+      },
+      "issues": []
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "nodes": "$(.ListNodes.output.body | toObject.data)",
+          "maxNodeCount": "$(.ListNodes.output.body | toObject.maxNodeCount)"
+        },
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "clientId": "$(.execution.input.serviceKey.uaa.clientid)",
+              "tokenUrl": "$(.execution.input.serviceKey.uaa.url)/oauth/token",
+              "method": "GET",
+              "clientSecret": "$(.execution.input.serviceKey.uaa.clientsecret)",
+              "url": "https://api.gateway.orchestration.$(.execution.input.serviceKey.url | gsub(\"jdbc:sap://(.*?)\\\\.(.*?)\\\\.(?<host>.*):443(.*)\"; \"\\(.host)\"))/compute/v1/serviceInstances/$(.execution.input.instanceId)/nodes"
+            },
+            "alias": "ListNodes",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": null
+            },
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "[$(.ListNodes.output.body | toObject.error.code)] $(.ListNodes.output.body | toObject.error.message)",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "1",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "1"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanacloud-<<<TENANT_ID>>>:ListHanaCloudElasticComputeNodes:1",
+      "name": "ListHanaCloudElasticComputeNodes",
+      "description": null,
+      "catalog": "hanacloud-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ID of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Key for SAP HANA Cloud"
+        }
+      },
+      "outputKeys": {
+        "nodes": {
+          "type": "array",
+          "sensitive": false,
+          "description": null
+        },
+        "maxNodeCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {
+        "ecn": ""
+      },
+      "issues": []
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "waitEcnProvisioned": "$(.WaitProvision.output.body)",
+          "ecnProvisioned": "$(.TriggerProvision.output.status)"
+        },
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"content-type\":\"application/json\"}",
+              "clientId": "$(.execution.input.serviceKey.uaa.clientid)",
+              "tokenUrl": "$(.execution.input.serviceKey.uaa.url)/oauth/token",
+              "method": "POST",
+              "clientSecret": "$(.execution.input.serviceKey.uaa.clientsecret)",
+              "body": "{\n  \"name\": \"$(.execution.input.nodeName)\",\n  \"plan\": {\n    \"vCPUs\": $(.execution.input.cpu),\n    \"memorySizeGiB\": $(.execution.input.memory),\n    \"storageSizeGiB\": $(.execution.input.storage)\n  }\n}",
+              "contentType": "application/json",
+              "url": "https://api.gateway.orchestration.$(.execution.input.serviceKey.url | gsub(\"jdbc:sap://(.*?)\\\\.(.*?)\\\\.(?<host>.*):443(.*)\"; \"\\(.host)\"))/compute/v1/serviceInstances/$(.execution.input.instanceId)/nodes"
+            },
+            "alias": "TriggerProvision",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "clientId": "$(.execution.input.serviceKey.uaa.clientid)",
+              "tokenUrl": "$(.execution.input.serviceKey.uaa.url)/oauth/token",
+              "method": "GET",
+              "clientSecret": "$(.execution.input.serviceKey.uaa.clientsecret)",
+              "url": "https://api.gateway.orchestration.$(.execution.input.serviceKey.url | gsub(\"jdbc:sap://(.*?)\\\\.(.*?)\\\\.(?<host>.*):443(.*)\"; \"\\(.host)\"))$(.TriggerProvision.output.headers.location)"
+            },
+            "alias": "WaitProvision",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": null
+            },
+            "repeat": {
+              "maxCount": 100,
+              "until": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.WaitProvision.output.body | toObject.status.ready)",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "delay": "15s",
+              "failOnMaxCount": true
+            },
+            "errorMessages": [
+              {
+                "message": "[$(.WaitProvision.output.body | toObject.error.code)] $(.WaitProvision.output.body | toObject.error.message)",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "1",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "1"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          },
+          {
+            "execute": "sql-sapcp:ExecuteHanaCloudSqlStatement:1",
+            "input": {
+              "password": "$(.execution.input.dbPassword)",
+              "statement": "ALTER WORKLOAD CLASS \"ECN_WLC\" ENABLE;",
+              "connectionUrl": "$(.execution.input.connectionUrl)",
+              "user": "$(.execution.input.dbUser)"
+            },
+            "alias": "EnableWorkloadClass",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanacloud-<<<TENANT_ID>>>:ProvisionHanaCloudElasticComputeNode:1",
+      "name": "ProvisionHanaCloudElasticComputeNode",
+      "description": null,
+      "catalog": "hanacloud-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "nodeName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the Elastic Compute Node"
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "hanacloud-<<<TENANT_ID>>>:HanaCloudOtherEnvironments:1",
+            "inputKey": "instanceId"
+          },
+          "description": "ID of the HANA Cloud instance"
+        },
+        "memory": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Memory size in GiB"
+        },
+        "dbUser": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "hanacloud-<<<TENANT_ID>>>:HanaCloudOtherEnvironments:1",
+            "inputKey": "dbUser"
+          },
+          "description": null
+        },
+        "cpu": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Number of vCPUs"
+        },
+        "connectionUrl": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "hanacloud-<<<TENANT_ID>>>:HanaCloudOtherEnvironments:1",
+            "inputKey": "connectionUrl"
+          },
+          "description": null
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "hanacloud-<<<TENANT_ID>>>:HanaCloudOtherEnvironments:1",
+            "inputKey": "serviceKey"
+          },
+          "description": "Service Key for SAP HANA Cloud"
+        },
+        "storage": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Storage size in GiB"
+        },
+        "dbPassword": {
+          "type": "string",
+          "sensitive": true,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": {
+            "inputReference": "hanacloud-<<<TENANT_ID>>>:HanaCloudOtherEnvironments:1",
+            "inputKey": "dbPassword"
+          },
+          "description": null
+        }
+      },
+      "outputKeys": {
+        "waitEcnProvisioned": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        },
+        "ecnProvisioned": {
+          "type": "string",
+          "sensitive": false,
+          "description": null
+        }
+      },
+      "tags": {
+        "ecn": "",
+        "feature:logs": "",
+        "feature:priority": "medium"
+      },
+      "issues": []
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {},
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"content-type\":\"application/json\"}",
+              "clientId": "$(.execution.input.serviceKey.uaa.clientid)",
+              "tokenUrl": "$(.execution.input.serviceKey.uaa.url)/oauth/token",
+              "method": "PUT",
+              "clientSecret": "$(.execution.input.serviceKey.uaa.clientsecret)",
+              "body": "{\n  \"plan\": {\n    \"vCPUs\": $(.execution.input.cpu),\n    \"memorySizeGiB\": $(.execution.input.memory),\n    \"storageSizeGiB\": $(.execution.input.storage)\n  }\n}",
+              "contentType": "application/json",
+              "url": "https://api.gateway.orchestration.$(.execution.input.serviceKey.url | gsub(\"jdbc:sap://(.*?)\\\\.(.*?)\\\\.(?<host>.*):443(.*)\"; \"\\(.host)\"))/compute/v1/serviceInstances/$(.execution.input.instanceId)/nodes/$(.execution.input.nodeName)"
+            },
+            "alias": "UpdateNode",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "[$(.UpdateNode.output.body | toObject.error.code)] $(.UpdateNode.output.body | toObject.error.message)",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "1",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "1"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "clientId": "$(.execution.input.serviceKey.uaa.clientid)",
+              "tokenUrl": "$(.execution.input.serviceKey.uaa.url)/oauth/token",
+              "method": "GET",
+              "clientSecret": "$(.execution.input.serviceKey.uaa.clientsecret)",
+              "url": "https://api.gateway.orchestration.$(.execution.input.serviceKey.url | gsub(\"jdbc:sap://(.*?)\\\\.(.*?)\\\\.(?<host>.*):443(.*)\"; \"\\(.host)\"))$(.UpdateNode.output.headers.Location)"
+            },
+            "alias": "WaitUpdate",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": null
+            },
+            "repeat": {
+              "maxCount": 100,
+              "until": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.WaitUpdate.output.body | toObject.status.ready)",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              "delay": "15s",
+              "failOnMaxCount": true
+            },
+            "errorMessages": [
+              {
+                "message": "[$(.WaitProvision.output.body | toObject.error.code)] $(.WaitProvision.output.body | toObject.error.message)",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "1",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "1"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanacloud-<<<TENANT_ID>>>:UpdateHanaCloudElasticComputeNode:1",
+      "name": "UpdateHanaCloudElasticComputeNode",
+      "description": null,
+      "catalog": "hanacloud-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "nodeName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the Elastic Compute Node"
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "ID of the HANA Cloud instance"
+        },
+        "memory": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Memory size in GiB"
+        },
+        "cpu": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Number of vCPUs"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Key for SAP HANA Cloud"
+        },
+        "storage": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Storage size in GiB"
+        }
+      },
+      "outputKeys": {},
+      "tags": {
+        "ecn": ""
+      },
+      "issues": []
+    }
+  ]
+}
