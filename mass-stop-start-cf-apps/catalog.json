@@ -53,10 +53,10 @@
             "dryRun": null
           },
           {
-            "execute": "utils-sapcp:ForEach:1",
+            "execute": "utils-sapcp:ForEach:2",
             "input": {
-              "inputs": "$(.FilteredSpaces.output.message | toArray | map({ resourceGroup: . }))",
-              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\", \"excludedLabels\": \"$(.execution.input.excludedLabels | toEscapedJson)\"}",
+              "inputMapping": "{\"resourceGroup\":\"$(.StartApps.current.item)\",\"password\":\"$(.execution.input.password)\",\"excludedLabels\":\"$(.execution.input.excludedLabels)\",\"region\":\"$(.execution.input.region)\",\"user\":\"$(.execution.input.user)\",\"subAccount\":\"$(.execution.input.subAccount)\",\"identityProvider\":\"$(.execution.input.identityProvider)\"}",
+              "inputs": "$(.FilteredSpaces.output.message | toArray)",
               "command": "examples-<<<TENANT_ID>>>:MassStartCfAppsInSpace:1"
             },
             "alias": "StartApps",
@@ -202,7 +202,8 @@
           "description": "Applications which were started"
         }
       },
-      "tags": {}
+      "tags": {},
+      "issues": []
     },
     {
       "configuration": {
@@ -216,6 +217,7 @@
             "input": {
               "resourceGroup": "$(.execution.input.resourceGroup)",
               "password": "$(.execution.input.password)",
+              "pageSize": "100",
               "region": "$(.execution.input.region)",
               "user": "$(.execution.input.user)",
               "subAccount": "$(.execution.input.subAccount)",
@@ -234,10 +236,10 @@
             "dryRun": null
           },
           {
-            "execute": "utils-sapcp:ForEach:1",
+            "execute": "utils-sapcp:ForEach:2",
             "input": {
-              "inputs": "$(.ListApps.output.appData.resources | filter(.state == \"STOPPED\") | filter(.metadata.labels as $l | $.execution.input.excludedLabels | to_entries | all($l[.key] != .value)) | map({ resourceName: .guid }))",
-              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"resourceGroup\": \"$(.execution.input.resourceGroup)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\"}",
+              "inputMapping": "{\"resourceGroup\":\"$(.execution.input.resourceGroup)\",\"password\":\"$(.execution.input.password)\",\"resourceName\":\"$(.StartApps.current.item.guid)\",\"region\":\"$(.execution.input.region)\",\"user\":\"$(.execution.input.user)\",\"subAccount\":\"$(.execution.input.subAccount)\",\"identityProvider\":\"$(.execution.input.identityProvider)\"}",
+              "inputs": "$(.ListApps.output.appData.resources | filter(.state == \"STOPPED\") | filter(.metadata.labels as $l | $.execution.input.excludedLabels | to_entries | all($l[.key] != .value)))",
               "command": "applm-sapcp:StartCfApp:1"
             },
             "alias": "StartApps",
@@ -383,7 +385,8 @@
           "description": "Summary of the Cloud Foundry applications which were started"
         }
       },
-      "tags": {}
+      "tags": {},
+      "issues": []
     },
     {
       "configuration": {
@@ -432,10 +435,10 @@
             "dryRun": null
           },
           {
-            "execute": "utils-sapcp:ForEach:1",
+            "execute": "utils-sapcp:ForEach:2",
             "input": {
-              "inputs": "$(.FilteredSpaces.output.message | toArray | map({ resourceGroup: . }))",
-              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\", \"excludedLabels\": \"$(.execution.input.excludedLabels | toEscapedJson)\"}",
+              "inputMapping": "{\"resourceGroup\":\"$(.StopApps.current.item)\",\"password\":\"$(.execution.input.password)\",\"excludedLabels\":\"$(.execution.input.excludedLabels)\",\"region\":\"$(.execution.input.region)\",\"user\":\"$(.execution.input.user)\",\"subAccount\":\"$(.execution.input.subAccount)\",\"identityProvider\":\"$(.execution.input.identityProvider)\"}",
+              "inputs": "$(.FilteredSpaces.output.message | toArray)",
               "command": "examples-<<<TENANT_ID>>>:MassStopCfAppsInSpace:1"
             },
             "alias": "StopApps",
@@ -581,7 +584,8 @@
           "description": "Applications which were stopped"
         }
       },
-      "tags": {}
+      "tags": {},
+      "issues": []
     },
     {
       "configuration": {
@@ -614,10 +618,10 @@
             "dryRun": null
           },
           {
-            "execute": "utils-sapcp:ForEach:1",
+            "execute": "utils-sapcp:ForEach:2",
             "input": {
-              "inputs": "$(.ListApps.output.appData.resources | filter(.state != \"STOPPED\") | filter(.metadata.labels as $l | $.execution.input.excludedLabels | to_entries | all($l[.key] != .value)) | map({ resourceName: .guid }))",
-              "defaultValues": "{\"region\": \"$(.execution.input.region)\", \"subAccount\": \"$(.execution.input.subAccount)\", \"resourceGroup\": \"$(.execution.input.resourceGroup)\", \"user\": \"$(.execution.input.user)\", \"password\": \"$(.execution.input.password | toEscapedJson)\", \"identityProvider\": \"$(.execution.input.identityProvider)\"}",
+              "inputMapping": "{\"resourceGroup\":\"$(.execution.input.resourceGroup)\",\"password\":\"$(.execution.input.password)\",\"resourceName\":\"$(.StopApps.current.item.guid)\",\"region\":\"$(.execution.input.region)\",\"user\":\"$(.execution.input.user)\",\"subAccount\":\"$(.execution.input.subAccount)\",\"identityProvider\":\"$(.execution.input.identityProvider)\"}",
+              "inputs": "$(.ListApps.output.appData.resources | filter(.state != \"STOPPED\") | filter(.metadata.labels as $l | $.execution.input.excludedLabels | to_entries | all($l[.key] != .value)))",
               "command": "applm-sapcp:StopCfApp:1"
             },
             "alias": "StopApps",
@@ -763,7 +767,8 @@
           "description": "Summary of the Cloud Foundry applications which were stopped"
         }
       },
-      "tags": {}
+      "tags": {},
+      "issues": []
     }
   ]
 }
