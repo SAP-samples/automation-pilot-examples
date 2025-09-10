@@ -8,9 +8,9 @@
 
 Table of Contents
 
-* [Description](#description)
-* [Requirements](#requirements)
-* [How to use](#how-to-use)
+* [About SAP Automation Pilot](#about-sap-automation-pilot)
+* [About This Repository](#about-this-repository)
+* [Getting Started](#getting-started)
 * [Examples](#examples)
   * [HANA Cloud](#hana-cloud)
   * [BTP Management](#btp-management)
@@ -27,48 +27,88 @@ Table of Contents
 * [Contributing](#contributing)
 * [License](#license)
 
-## Description
+## About SAP Automation Pilot
 
-SAP Automation Pilot is a low-code/no-code automation engine that's part of the SAP Business Technology Platform. It's goal is to simplify and automate complex manual processes in order to minimize the operational effort behind any cloud solution in the SAP BTP.
+SAP Automation Pilot is a low-code/no-code automation service that's part of the SAP Business Technology Platform (BTP). As a cloud-native automation engine, it empowers customers to independently automate various scenarios, reducing manual effort and operational complexity across their SAP landscape.
 
-This repository contains example Automation Pilot commands which demonstrate the automation of various scenarios such as:
+SAP Automation Pilot is designed to:
+
+* Automate complex manual processes with an intuitive, visual interface
+* Minimize the time and resources needed to manage cloud solutions
+* Allow customers to create and customize automation workflows themselves
+* Provide consistent, repeatable execution of critical operational tasks
+* Connect with various SAP and third-party services for comprehensive automation scenarios
+* Deliver **over 300 built-in automations** supported by SAP for HANA Cloud, Cloud Foundry, cTMS, BTP management, and more
+* Enable serverless execution of HTTP requests, SQL statements, and custom scripts (Python, Node.js, Shell)
+
+## About This Repository
+
+This repository contains a curated collection of example Automation Pilot commands that demonstrate the automation of various real-world scenarios relevant to SAP customers, including:
 
 * Remediation & maintenance procedures
-* Health checking
+* Health checking and monitoring
 * Root cause analysis
-* Mass operations
-* And many more...
+* Mass operations and bulk management
+* Integration scenarios
+* And many more operational use cases
 
-These examples can be used with little to no changes or they can be modified to better fit the user's scenarios.
+These examples serve as starting points and learning resources for customers looking to implement automation in their own environments. They showcase best practices and common patterns while demonstrating the versatility and power of SAP Automation Pilot.
 
-:clapper: SAP Automation Pilot - Introduction
+### Important Disclaimer
 
-[![Introduction Video](https://img.youtube.com/vi/BIS_OK1ZNXI/hqdefault.jpg)](https://www.youtube.com/watch?v=BIS_OK1ZNXI)
+**Please note**: The examples provided in this repository are for **illustrative purposes** and are designed to help you understand the capabilities of SAP Automation Pilot. While these examples can be used in productive environments, it is the user's responsibility to:
 
-## Requirements
+* **Review and validate** each automation thoroughly before using it
+* **Enhance and customize** the examples to fit your specific environment and requirements
+* **Test extensively** in non-productive environments before applying to production systems
 
-To use the examples in this repository, you'll need SAP Automation Pilot tenant. The easiest way to get one is with SAP BTP trial:
+These examples are provided **as-is**. Support is available through the community for questions, additional functionalities, and bug fixes. Users should exercise due diligence when implementing these automations in their production environments.
+
+## Learning Resources
+
+To use the examples in this repository, you'll need access to SAP Automation Pilot. Here are the different ways to get started:
 
 * [Tutorial: Get a Free Account on SAP BTP Trial](https://developers.sap.com/tutorials/hcp-create-trial-account.html)
 * [Tutorial: Setup Automation Pilot in SAP BTP](https://blogs.sap.com/2023/01/09/setup-configuration-of-automation-pilot-in-btp-cockpit/)
-* [Automation Pilot Initial Setup Documentation](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/76e77c4563d042b2b46f6c622be3a091.html)
+* [Official Documentation](https://help.sap.com/docs/AUTOMATION_PILOT?locale=en-US)
+* [Discovery Center Overview](https://discovery-center.cloud.sap/serviceCatalog/automation-pilot)
+* [API Reference](https://api.sap.com/package/SAPCloudPlatformAutomationPilot/overview)
+* [Interactive Tutorials](https://developers.sap.com/tutorial-navigator.html?tag=software-product%3Atechnology-platform%2Fsap-business-technology-platform%2Fsap-automation-pilot)
+* [YouTube: Automation Pilot Overview](https://www.youtube.com/live/SpitmcdQVGU)
+* [YouTube: HANA Cloud Automation](https://www.youtube.com/watch?v=JD16pX1-kzc)
+* [YouTube: Technical Ops Automations](https://www.youtube.com/watch?v=dDoU2oVBgg0)
+* [Community Blog Posts](https://blogs.sap.com/tags/73554900100800002433/)
 
-:information_source: Each example might have additional requirements. They will described in details in the example's README.
+## Getting Started
 
-## How to use
+### Importing Examples into SAP Automation Pilot
 
-Each example consists of a `catalog.json` file. To get started, you'll need to import the contents of this file in your SAP Automation Pilot tenant by performing the following steps:
+Each example in this repository is packaged as a `catalog.json` file that contains all the necessary automation commands and configurations. Follow these steps to import and use any example:
 
-* Copy the content of the `catalog.json` file for the example that you want to use
-* Go to your SAP Automation Pilot tenant and navigate to `My Catalogs`
-* Click on `Import` in the upper right corner
-* Paste the catalog's content and import it
+#### Step 1: Choose Your Example
 
-More information on how to import a catalog can be found in the [documentation](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/48ee09640e094bcb9601d845f316f773.html).
+Browse through the [Examples](#examples) section below and select the automation scenario that fits your needs.
 
-After importing, you'll see a new catalog tile - **Automation Pilot Examples**. From there, you can navigate to all commands and inputs which are part of the catalog.
+#### Step 2: Import the Catalog
 
-:information_source: All examples in this repository are part of the **Automation Pilot Examples** catalog.
+1. Navigate to the example folder and copy the entire content of the `catalog.json` file
+2. Open your Automation Pilot service
+3. In the Automation Pilot interface, go to the `My Catalogs` section
+4. Import the catalog:
+   * Click on `Import` in the upper right corner
+   * Paste the copied catalog content into the import dialog
+   * Click `Import` to add the catalog to your tenant
+
+#### Step 3: Access Your Imported Examples
+
+After successful import, you'll see a new catalog tile labeled **"Automation Pilot Examples"** in your catalogs overview.
+
+### Additional Resources
+
+* [Official documentation on importing catalogs](https://help.sap.com/docs/automation-pilot/automation-pilot/managing-catalogs?locale=en-US)
+* [Learn how to execute commands](https://help.sap.com/docs/automation-pilot/automation-pilot/managing-commands?locale=en-US)
+
+:information_source: **Note**: All examples in this repository are part of the **"Automation Pilot Examples"** catalog. You only need to import each example's `catalog.json` once to access all its commands.
 
 ## Examples
 
@@ -147,20 +187,6 @@ After importing, you'll see a new catalog tile - **Automation Pilot Examples**. 
 | Example | Description |
 |---------|-------------|
 | [Advanced Availability Check](advanced-availability-check) | Enables comprehensive monitoring, tracking of Service Level Agreements (SLAs) and data visualization within the Dynatrace platform. |
-
-## Resources
-
-Check out the following resources if you want to get familiar with Automation Pilot:
-
-* [Discovery Center](https://discovery-center.cloud.sap/serviceCatalog/automation-pilot)
-* [Official Documentation](https://help.sap.com/docs/AUTOMATION_PILOT)
-* [API Business Hub](https://api.sap.com/package/SAPCloudPlatformAutomationPilot/overview)
-* [Blog Posts](https://blogs.sap.com/tags/73554900100800002433/)
-* [Tutorials](https://developers.sap.com/tutorial-navigator.html?search=automation+pilot)
-
-## Known Issues
-
-No known issues.
 
 ## How to obtain support
 
