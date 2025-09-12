@@ -14,6 +14,7 @@ Table of Contents
 * [Examples](#examples)
   * [HANA Cloud](#hana-cloud)
   * [BTP Management](#btp-management)
+  * [SAP Cloud ALM](#sap-cloud-alm)
   * [Cloud Foundry](#cloud-foundry)
   * [Kubernetes](#kubernetes)
   * [Neo](#neo)
@@ -21,8 +22,7 @@ Table of Contents
   * [Scripting](#scripting)
   * [Utility Commands](#utility-commands)
   * [Availability Check](#availability-check)
-* [Resources](#resources)
-* [Known Issues](#known-issues)
+* [Learning Resources](#learning-resources)
 * [How to obtain support](#how-to-obtain-support)
 * [Contributing](#contributing)
 * [License](#license)
@@ -133,6 +133,12 @@ After successful import, you'll see a new catalog tile labeled **"Automation Pil
 | [Grant Privileges](grant-privileges) | Grant privileges to users on subaccount, organization and space level |
 | [Reassign Identity Provider](reassign-identity-provider) | Migrate all users on BTP subaccount level from one identity provider to another |
 | [Remove Inactive Subaccount Users](remove-inactive-subaccount-users) | Identify and remove inactive users from a BTP subaccount |
+
+### SAP Cloud ALM
+
+| Example | Description |
+|---------|-------------|
+| [SAP Cloud Connector Connection Status](scc-connection-status) | Monitor and push on-premise endpoint connectivity status via SAP Cloud Connector to Cloud ALM Health Monitoring (includes scheduling guidance) |
 
 ### Cloud Foundry
 
