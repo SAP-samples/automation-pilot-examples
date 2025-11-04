@@ -8,7 +8,7 @@
     {
       "id": "examples-<<<TENANT_ID>>>:CloudAlmCredentials:1",
       "name": "CloudAlmCredentials",
-  "description": "Cloud ALM service key container. Used for authenticated metric publishing to Health Monitoring.",
+      "description": "Cloud ALM service key container. Used for authenticated metric publishing to Health Monitoring.",
       "catalog": "examples-<<<TENANT_ID>>>",
       "owner": null,
       "version": 1,
@@ -56,13 +56,14 @@
             "dryRun": null
           },
           {
-            "execute": "examples-<<<TENANT_ID>>>:PushCloudAlmStatus:1",
+            "execute": "calmhm-sapcp:PushCloudAlmStatusMetric:1",
             "input": {
+              "severity": "$(if .Probe.output.status == .execution.input.expectedStatus then \"ok\" else \"critical\" end)",
               "metricName": "$(.execution.input.metricName)",
+              "attributes": "$({ path: .execution.input.path, host: .execution.input.virtualHost })",
               "serviceKey": "$(.execution.input.serviceKey)",
-              "serviceId": "$(.execution.input.serviceId)",
               "message": "$(if .Probe.output.status == .execution.input.expectedStatus then \"Endpoint reachable via SCC\" else \"Error: \\(.Probe.output.body)\" end)",
-              "status": "$(if .Probe.output.status == .execution.input.expectedStatus then \"ok\" else \"critical\" end)"
+              "serviceId": "$(.execution.input.serviceId)"
             },
             "alias": "PushStatus",
             "description": null,
@@ -81,7 +82,7 @@
       },
       "id": "examples-<<<TENANT_ID>>>:CheckCloudConnectorStatus:1",
       "name": "CheckCloudConnectorStatus",
-  "description": "Probes an on-premise HTTP endpoint via SAP Cloud Connector and publishes a status metric (OK or Critical) to Cloud ALM Health Monitoring",
+      "description": "Probes an on-premise HTTP endpoint via SAP Cloud Connector and publishes a status metric (OK or Critical) to Cloud ALM Health Monitoring",
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
@@ -238,184 +239,6 @@
           "type": "number",
           "sensitive": false,
           "description": "Actual HTTP status returned (or -1 for transport failure)."
-        }
-      },
-      "tags": {},
-      "issues": []
-    },
-    {
-      "configuration": {
-        "values": [],
-        "output": {
-          "response": "$(.PushStatus.output.body)"
-        },
-        "executors": [
-          {
-            "execute": "http-sapcp:HttpRequest:1",
-            "input": {
-              "headers": "{\"content-type\":\"application/json\"}",
-              "clientId": "$(.execution.input.serviceKey.uaa.clientid)",
-              "tokenUrl": "$(.execution.input.serviceKey.uaa.url)/oauth/token",
-              "method": "POST",
-              "clientSecret": "$(.execution.input.serviceKey.uaa.clientsecret)",
-              "body": "{\n    \"resourceMetrics\": [\n        {\n            \"resource\": {},\n            \"scopeMetrics\": [\n                {\n                    \"metrics\": [\n                        {\n                            \"name\": \"$(.execution.input.metricName | toEscapedJson)\",\n                            \"description\": \"$(.execution.input.message | toEscapedJson)\",\n                            \"gauge\": {\n                                \"dataPoints\": [\n                                    {\n                                        \"asDouble\": 1,\n                                        \"attributes\": [\n                                            {\n                                                \"key\": \"sap.calm.hm.metric.type\",\n                                                \"value\": {\n                                                    \"stringValue\": \"status\"\n                                                }\n                                            },\n                                            {\n                                                \"key\": \"sap.calm.hm.metric.rating\",\n                                                \"value\": {\n                                                    \"stringValue\": \"$(.execution.input.status)\"\n                                                }\n                                            }\n                                        ]\n                                    }\n                                ]\n                            }\n                        }\n                    ]\n                }\n            ]\n        }\n    ]\n}",
-              "contentType": "application/json",
-              "url": "$(.execution.input.serviceKey.endpoints.Api)/calm-metrics/v1/metrics?useCase=hm&serviceId=$(.execution.input.serviceId)&dev=$(.execution.input.devMode)",
-              "timeout": "10"
-            },
-            "alias": "PushStatus",
-            "description": null,
-            "progressMessage": null,
-            "initialDelay": null,
-            "pause": null,
-            "when": null,
-            "validate": null,
-            "autoRetry": {
-              "maxCount": 3,
-              "delay": "5s",
-              "logic": "INCREMENTAL",
-              "applyOnValidation": false,
-              "when": {
-                "semantic": "OR",
-                "conditions": [
-                  {
-                    "semantic": "OR",
-                    "cases": [
-                      {
-                        "expression": "$(.PushStatus.output.status | valueIn([ 429, 500, 502, 503, 504 ]))",
-                        "operator": "EQUALS",
-                        "semantic": "OR",
-                        "values": [
-                          "true"
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            },
-            "repeat": null,
-            "errorMessages": [],
-            "dryRun": null
-          }
-        ],
-        "listeners": []
-      },
-      "id": "examples-<<<TENANT_ID>>>:PushCloudAlmStatus:1",
-      "name": "PushCloudAlmStatus",
-  "description": "Publishes a status metric to Cloud ALM Health Monitoring",
-      "catalog": "examples-<<<TENANT_ID>>>",
-      "version": 1,
-      "inputKeys": {
-        "metricName": {
-          "type": "string",
-          "sensitive": false,
-          "required": true,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "Name of the metric to publish."
-        },
-        "devMode": {
-          "type": "boolean",
-          "sensitive": false,
-          "required": false,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": "false",
-          "defaultValueFromInput": null,
-          "description": "When true, synchronous dev mode returns ingestion response immediately (for testing only)."
-        },
-        "serviceKey": {
-          "type": "object",
-          "sensitive": true,
-          "required": true,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "Cloud ALM service key used for OAuth-based metric ingestion."
-        },
-        "message": {
-          "type": "string",
-          "sensitive": false,
-          "required": true,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "Human-readable context message."
-        },
-        "serviceId": {
-          "type": "string",
-          "sensitive": false,
-          "required": true,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "Cloud ALM service ID linking the metric to a managed entity."
-        },
-        "status": {
-          "type": "string",
-          "sensitive": false,
-          "required": true,
-          "minSize": null,
-          "maxSize": null,
-          "minValue": null,
-          "maxValue": null,
-          "allowedValues": [
-            "ok",
-            "warning",
-            "error",
-            "critical",
-            "fatal",
-            "info"
-          ],
-          "allowedValuesFromInputKeys": null,
-          "suggestedValues": null,
-          "suggestedValuesFromInputKeys": null,
-          "defaultValue": null,
-          "defaultValueFromInput": null,
-          "description": "Health rating reported."
-        }
-      },
-      "outputKeys": {
-        "response": {
-          "type": "object",
-          "sensitive": false,
-          "description": "Cloud ALM ingestion response (only populated when devMode=true)."
         }
       },
       "tags": {},
