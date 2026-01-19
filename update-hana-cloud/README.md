@@ -67,11 +67,25 @@ You'll need to provide values for the following input keys:
 * *user* - Email or ID of your technical user
 * *password* - Password of your technical user
 * *identityProvider* - Optional: origin key of your identity provider. Defaults to sap.ids
+* *makeSnapshotBeforeUpdate* - Optional: Whether to make a snapshot of the HANA instance before updating. If there is existing snapshot you will be asked if you want to delete it. Note there can be only one snapshot and it gets deleted in 14 days. Defaults to false
 * *shouldConfirmBeforeUpdate* - Optional: whether to require confirmation before starting the update, if there's one available. Defaults to true
+* *shouldConfirmSnapshotDelete* - Does nothing if *makeSnapshotBeforeUpdate* is set to false. Whether to pause the execution when creating snapshot and another one already exists. If set to false no confirmation will be required to delete existing snapshot.
 
 :warning: Make sure that you using the correct *region* value by verifying it in the BTP Cockpit Overview page. For example, the region shown below is *cf-eu10-004*:
 
 ![BTP Cockpit Overview](assets/btp-cloud-foundry-env.png)
+
+#### In case of failure and if you have a snapshot to revert to you can use the *RevertHanaToSnapshotCF* command to revert to your available snapshot.
+
+You'll need to provide values for the following input keys:
+
+* *region* - Technical name of your SAP BTP region, e.g. cf-eu10, cf-us20, cf-eu10-004
+* *org* - Name of your Cloud Foundry organization
+* *space* - Name of your Cloud Foundry space
+* *hanaCloudInstance* - Name of your HANA Cloud service instance
+* *user* - Email or ID of your technical user
+* *password* - Password of your technical user
+* *identityProvider* - Optional: origin key of your identity provider. Defaults to sap.ids
 
 ### Other Environment (Subaccount level)
 
@@ -82,7 +96,16 @@ You'll need to provide values for the following input keys:
 * *updateStrategy* - Update strategies that allow you to update in a variety of ways depending on your needs (latest patch version, next QRC version, latest QRC version)
 * *hanaCloudInstance* - Name of your HANA Cloud service instance
 * *serviceKey* - Service key to the SAP Service Manager, plan subaccount-admin
+* *makeSnapshotBeforeUpdate* - Optional: Whether to make a snapshot of the HANA instance before updating. If there is existing snapshot you will be asked if you want to delete it. Note there can be only one snapshot and it gets deleted in 14 days. Defaults to false
 * *shouldConfirmBeforeUpdate* - Optional: whether to require confirmation before starting the update, if there's one available. Defaults to true
+* *shouldConfirmSnapshotDelete* - Does nothing if *makeSnapshotBeforeUpdate* is set to false. Whether to pause the execution when creating snapshot and another one already exists. If set to false no confirmation will be required to delete existing snapshot.
+
+#### In case of failure and if you have a snapshot to revert to you can use the *RevertHanaToSnapshotOtherEnv* command to revert to your available snapshot.
+
+You'll need to provide values for the following input keys:
+
+* *hanaCloudInstance* - Name of your HANA Cloud service instance
+* *serviceKey* - Service key to the SAP Service Manager, plan subaccount-admin
 
 ### Scheduling
 
@@ -96,11 +119,21 @@ Let's execute the *UpdateHanaCloudDatabaseCF* command on a HANA Cloud database w
 
 ![HANA Cloud Available Versions](assets/hana-with-available-versions.png)
 
+We'll trigger it with *makeSnapshotBeforeUpdate=true* abd *updateStrategy=next QRC version*. After finding that there is an existing snapshot for our HANA Cloud database, the execution halts:
+
+![Make Snapshot User Choice](assets/make-snapshot-user-choice.png)
+
+:information_source: The existing snapshot deletion confirmation can be disabled by triggering the command with `shouldConfirmSnapshotDelete=false`. This way the update can be performed completely automatically.
+
+Clicking on the *Confirm* button will present us with a dialog. We'll need to decide whether we want to delete the existing snapshot and make a new one or abort it. For the sake of the demonstration, we'll confirm it:
+
+![Make Snapshot Confirmation Dialog](assets/make-snapshot-user-choice-dialog.png)
+
 We'll trigger it with *updateStrategy=next QRC version*. After finding the available QRC version, the execution halts:
 
 ![Paused Execution](assets/paused-execution.png)
 
-:information_source: The update confirmation can be disabled by triggering the command with `shouldConfirmBeforeUpdate=false`. This way the update will be performed completely automatically.
+:information_source: The update confirmation can be disabled by triggering the command with `shouldConfirmBeforeUpdate=false`. This way the update can be performed completely automatically.
 
 Clicking on the *Confirm* button will present us with a dialog. We'll need to decide whether we want to continue with the update or abort it. For the sake of the demonstration, we'll confirm it:
 
