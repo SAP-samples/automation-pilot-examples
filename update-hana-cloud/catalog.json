@@ -4,8 +4,1014 @@
   "name": "Automation Pilot Examples",
   "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
   "owner": "<<<TENANT_ID>>>",
+  "tags": {},
   "inputs": [],
   "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "snapshotId": "$(.getCreatedSnapshot.output.parameters.storageSnapshots[0].snapshotId)"
+        },
+        "executors": [
+          {
+            "execute": "cf-sapcp:GetCfServiceInstance:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.org)",
+              "serviceInstance": "$(.execution.input.hanaCloudInstance)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "includeParameters": "true",
+              "space": "$(.execution.input.space)"
+            },
+            "alias": "getSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.getSnapshot.output.parameters.storageSnapshots[0].snapshotId)"
+            },
+            "alias": "resolveSnapshotId",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:GetUserChoice:1",
+            "input": {
+              "options": "{\"true\":\"Delete existing snapshot\",\"false\":\"Keep existing snapshot and fail\"}",
+              "title": "There is already snapshot for your Hana Instance ($(.execution.input.hanaCloudInstance)). Do you wish to delete it and create a new one?"
+            },
+            "alias": "shouldDeleteSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "AND",
+                  "cases": [
+                    {
+                      "expression": "$(.resolveSnapshotId.output.message | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    },
+                    {
+                      "expression": "$(.execution.input.shouldAskForDelete)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "cf-sapcp:UpdateCfServiceInstance:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.org)",
+              "serviceInstance": "$(.execution.input.hanaCloudInstance)",
+              "region": "$(.execution.input.region)",
+              "deadline": "180",
+              "user": "$(.execution.input.user)",
+              "parameters": "{   \"data\": {     \"requestedOperation\": {       \"name\": \"REMOVE_SNAPSHOT_FOR_FALLBACK\",       \"arguments\": {         \"snapshot_id\": \"$(.resolveSnapshotId.output.message)\"       }     }   } }",
+              "space": "$(.execution.input.space)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "deleteSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.shouldDeleteSnapshot.output.selection)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    },
+                    {
+                      "expression": "$(.execution.input.shouldAskForDelete)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "false"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "cf-sapcp:UpdateCfServiceInstance:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.org)",
+              "serviceInstance": "$(.execution.input.hanaCloudInstance)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "parameters": "{   \"data\": {     \"requestedOperation\": {       \"name\": \"TAKE_SNAPSHOT_FOR_FALLBACK\"     }   } }",
+              "space": "$(.execution.input.space)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "createSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.resolveSnapshotId.output.message | length)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    },
+                    {
+                      "expression": "$(.deleteSnapshot.executed)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "cf-sapcp:GetCfServiceInstance:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.org)",
+              "serviceInstance": "$(.execution.input.hanaCloudInstance)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "includeParameters": "true",
+              "space": "$(.execution.input.space)"
+            },
+            "alias": "getCreatedSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.createSnapshot.executed)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:CreateHanaSnapshotCF:1",
+      "name": "CreateHanaSnapshotCF",
+      "description": "Create snapshot of your HANA Cloud databases on Cloud Foundry. The command checks for existing snapshot and asks if you want to delete it and make a new one.",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry user's password"
+        },
+        "org": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry Orgranization, e.g., my-org-name-1."
+        },
+        "hanaCloudInstance": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name or ID of a HANA Cloud instance"
+        },
+        "shouldAskForDelete": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "true",
+          "defaultValueFromInput": null,
+          "description": "Whether the command will ask for user choice when there is an existing snapshot. If set to false the command will delete the existing snapshot without confirmation."
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry region (as defined in CfRegionData), e.g., cf-eu10, cf-br10, etc."
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
+        },
+        "space": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry Space, e.g., my-space-demo-1."
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section."
+        }
+      },
+      "outputKeys": {
+        "snapshotId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The ID of the created snapshot."
+        }
+      },
+      "tags": {},
+      "issues": []
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "snapshotId": "$(.createSnapshot.output.parameters.storageSnapshots[0].snapshotId)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.execution.input.hanaCloudInstance)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.getSnapshot.output.parameters.storageSnapshots[0].snapshotId)"
+            },
+            "alias": "resolveSnapshotId",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:GetUserChoice:1",
+            "input": {
+              "options": "{\"true\":\"Delete existing snapshot\",\"false\":\"Keep existing snapshot and fail\"}",
+              "title": "There is already snapshot for your Hana Instance ($(.execution.input.hanaCloudInstance)). Do you wish to delete it and create a new one?"
+            },
+            "alias": "shouldDeleteSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "AND",
+                  "cases": [
+                    {
+                      "expression": "$(.resolveSnapshotId.output.message | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    },
+                    {
+                      "expression": "$(.execution.input.shouldAskForDelete)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.hanaCloudInstance)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "180",
+              "parameters": "{   \"data\": {     \"requestedOperation\": {       \"name\": \"REMOVE_SNAPSHOT_FOR_FALLBACK\",       \"arguments\": {         \"snapshot_id\": \"$(.resolveSnapshotId.output.message)\"       }     }   } }"
+            },
+            "alias": "deleteSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.shouldDeleteSnapshot.output.selection)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    },
+                    {
+                      "expression": "$(.execution.input.shouldAskForDelete)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "false"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.hanaCloudInstance)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "180",
+              "parameters": "{   \"data\": {     \"requestedOperation\": {       \"name\": \"TAKE_SNAPSHOT_FOR_FALLBACK\"     }   } }"
+            },
+            "alias": "createSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.resolveSnapshotId.output.message | length)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    },
+                    {
+                      "expression": "$(.deleteSnapshot.executed)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:CreateHanaSnapshotOtherEnv:1",
+      "name": "CreateHanaSnapshotOtherEnv",
+      "description": "Create snapshot of your HANA Cloud databases on Other Env (Subaccount level). The command checks for existing snapshot and asks if you want to delete it and make a new one.",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "hanaCloudInstance": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name or ID of a HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service key to the SAP Service Manager"
+        },
+        "shouldAskForDelete": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "true",
+          "defaultValueFromInput": null,
+          "description": "Whether the command will ask for user choice when there is an existing snapshot. If set to false the command will delete the existing snapshot without confirmation."
+        }
+      },
+      "outputKeys": {
+        "snapshotId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The ID of the created snapshot."
+        }
+      },
+      "tags": {},
+      "issues": []
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {},
+        "executors": [
+          {
+            "execute": "cf-sapcp:GetCfServiceInstance:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.org)",
+              "serviceInstance": "$(.execution.input.hanaCloudInstance)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "includeParameters": "true",
+              "space": "$(.execution.input.space)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "getSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.getSnapshot.output.parameters.storageSnapshots[0].snapshotId)"
+            },
+            "alias": "resolveSnapshotId",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.resolveSnapshotId.output.message | length)",
+                      "operator": "NOT_EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "There is no existing snapshot to restore from.",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "$(.resolveSnapshotId.output.message | length)",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          },
+          {
+            "execute": "cf-sapcp:UpdateCfServiceInstance:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.org)",
+              "serviceInstance": "$(.execution.input.hanaCloudInstance)",
+              "region": "$(.execution.input.region)",
+              "deadline": "180",
+              "user": "$(.execution.input.user)",
+              "parameters": "{ \"data\": { \"requestedOperation\": { \"name\": \"FALLBACK_TO_SNAPSHOT\", \"arguments\": { \"snapshot_id\": \"$(.resolveSnapshotId.output.message)\" } } } }",
+              "space": "$(.execution.input.space)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "restoreFromSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:RevertHanaToSnapshotCF:1",
+      "name": "RevertHanaToSnapshotCF",
+      "description": "Revert your HANA Cloud databases on Cloud Foundry to the currently available snapshot. This process deletes your snapshot.",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry user's password"
+        },
+        "org": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry Orgranization, e.g., my-org-name-1."
+        },
+        "hanaCloudInstance": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name or ID of a HANA Cloud instance"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry region (as defined in CfRegionData), e.g., cf-eu10, cf-br10, etc."
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email of the Cloud Foundry user which will be used for authentication"
+        },
+        "space": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name of a Cloud Foundry Space, e.g., my-space-demo-1."
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider to be used. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter origin key from the CF Org/Space members section."
+        }
+      },
+      "outputKeys": {},
+      "tags": {},
+      "issues": []
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {},
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.execution.input.hanaCloudInstance)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.getSnapshot.output.parameters.storageSnapshots[0].snapshotId)"
+            },
+            "alias": "resolveSnapshotId",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.resolveSnapshotId.output.message | length)",
+                      "operator": "NOT_EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "There is no existing snapshot to restore from.",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "$(.resolveSnapshotId.output.message | length)",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.hanaCloudInstance)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "180",
+              "parameters": "{   \"data\": {     \"requestedOperation\": {       \"name\": \"FALLBACK_TO_SNAPSHOT\",       \"arguments\": {         \"snapshot_id\": \"$(.resolveSnapshotId.output.message)\"       }     }   } }"
+            },
+            "alias": "restoreFromSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:RevertHanaToSnapshotOtherEnv:1",
+      "name": "RevertHanaToSnapshotOtherEnv",
+      "description": "Revert your HANA Cloud databases on Other Env (Subaccount level) to the currently available snapshot. This process deletes your snapshot.",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "hanaCloudInstance": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Technical name or ID of a HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service key to the SAP Service Manager"
+        }
+      },
+      "outputKeys": {},
+      "tags": {},
+      "issues": []
+    },
     {
       "configuration": {
         "values": [],
@@ -25,6 +1031,7 @@
               "identityProvider": "$(.execution.input.identityProvider)"
             },
             "alias": "GetAvailableVersions",
+            "description": null,
             "progressMessage": "The following available versions were detected: $(.GetAvailableVersions.output.availableVersions | map(.version) | join(\", \"))",
             "initialDelay": null,
             "pause": null,
@@ -32,7 +1039,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -40,6 +1048,7 @@
               "message": "$(.GetAvailableVersions.output.availableVersions | sortBy(.releaseTrack | split(\".\") | map(toNumber)) | filter(.releaseCycle == $.GetAvailableVersions.output.currentVersion.releaseCycle))"
             },
             "alias": "SortVersions",
+            "description": null,
             "progressMessage": "The versions were sorted in ascending order by their release track",
             "initialDelay": null,
             "pause": null,
@@ -47,7 +1056,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -55,6 +1065,7 @@
               "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack != $.GetAvailableVersions.output.currentVersion.releaseTrack)[0])"
             },
             "alias": "FindNextQRC",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -79,7 +1090,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -87,6 +1099,7 @@
               "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack != $.GetAvailableVersions.output.currentVersion.releaseTrack)[-1])"
             },
             "alias": "FindLatestQRC",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -111,7 +1124,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -119,6 +1133,7 @@
               "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack == $.GetAvailableVersions.output.currentVersion.releaseTrack)[0])"
             },
             "alias": "FindPatch",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -143,7 +1158,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -151,6 +1167,7 @@
               "message": "$(.FindNextQRC.output.message)$(.FindLatestQRC.output.message)$(.FindPatch.output.message)"
             },
             "alias": "DetermineVersion",
+            "description": null,
             "progressMessage": "The following version was selected, based on the update strategy: $(.DetermineVersion.output.message | toObject.version // \"No version matches the update strategy\")",
             "initialDelay": null,
             "pause": null,
@@ -158,7 +1175,49 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "examples-<<<TENANT_ID>>>:CreateHanaSnapshotCF:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.org)",
+              "hanaCloudInstance": "$(.execution.input.hanaCloudInstance)",
+              "shouldAskForDelete": "$(.execution.input.shouldConfirmSnapshotDelete)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "space": "$(.execution.input.space)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "makeSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.makeSnapshotBeforeUpdate)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:GetUserChoice:1",
@@ -167,6 +1226,7 @@
               "title": "Update database '$(.execution.input.hanaCloudInstance)' from version $(.GetAvailableVersions.output.currentVersion.version) to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)?"
             },
             "alias": "ConfirmUpdate",
+            "description": null,
             "progressMessage": "The user $(if .ConfirmUpdate.output.selection == \"CONFIRMED\" then \"confirmed\" else \"CANCELED\" end) an update to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)",
             "initialDelay": null,
             "pause": null,
@@ -199,7 +1259,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "dblm-sapcp:UpdateHanaCloudInstance:1",
@@ -217,6 +1278,7 @@
               "identityProvider": "$(.execution.input.identityProvider)"
             },
             "alias": "Update",
+            "description": null,
             "progressMessage": "The HANA Cloud database was successfully updated to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)",
             "initialDelay": null,
             "pause": null,
@@ -262,7 +1324,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           }
         ],
         "listeners": []
@@ -341,6 +1404,38 @@
           "defaultValueFromInput": null,
           "description": "Technical name of a Cloud Foundry Orgranization, e.g., my-org-name-1."
         },
+        "shouldConfirmSnapshotDelete": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "true",
+          "defaultValueFromInput": null,
+          "description": "Does nothing if makeSnapshotBeforeUpdate is set to false. Whether to pause the execution when creating snapshot and another one already exists. If set to false no confirmation will be required to delete existing snapshot."
+        },
+        "makeSnapshotBeforeUpdate": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "false",
+          "defaultValueFromInput": null,
+          "description": "Whether to make a snapshot of the HANA instance before updating. If there is existing snapshot you will be asked if you want to delete it. Note there can be only one snapshot and it gets deleted in 14 days."
+        },
         "region": {
           "type": "string",
           "sensitive": false,
@@ -350,7 +1445,9 @@
           "minValue": null,
           "maxValue": null,
           "allowedValues": null,
-          "allowedValuesFromInputKeys": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
           "suggestedValues": null,
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
@@ -432,7 +1529,8 @@
       "tags": {
         "feature:logs": "",
         "env": "cf"
-      }
+      },
+      "issues": []
     },
     {
       "configuration": {
@@ -448,6 +1546,7 @@
               "serviceKey": "$(.execution.input.serviceKey)"
             },
             "alias": "GetAvailableVersions",
+            "description": null,
             "progressMessage": "The following available versions were detected: $(.GetAvailableVersions.output.parameters.availableUpgradeVersions | map(.id) | join(\", \"))",
             "initialDelay": null,
             "pause": null,
@@ -455,7 +1554,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -463,6 +1563,7 @@
               "message": "$(.GetAvailableVersions.output.parameters.availableUpgradeVersions | sortBy(.track | split(\".\") | map(toNumber)) | filter(.releaseCycle == $.GetAvailableVersions.output.parameters.currentProductVersion.releaseCycle) | map({ releaseCycle: .releaseCycle, releaseTrack: .track, version: .id}))"
             },
             "alias": "SortVersions",
+            "description": null,
             "progressMessage": "The versions were sorted in ascending order by their release track",
             "initialDelay": null,
             "pause": null,
@@ -470,7 +1571,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -478,6 +1580,7 @@
               "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack != $.GetAvailableVersions.output.parameters.currentProductVersion.track)[0])"
             },
             "alias": "FindNextQRC",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -502,7 +1605,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -510,6 +1614,7 @@
               "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack != $.GetAvailableVersions.output.parameters.currentProductVersion.track)[-1])"
             },
             "alias": "FindLatestQRC",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -534,7 +1639,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -542,6 +1648,7 @@
               "message": "$(.SortVersions.output.message | toArray | filter(.releaseTrack == $.GetAvailableVersions.output.parameters.currentProductVersion.track)[0])"
             },
             "alias": "FindPatch",
+            "description": null,
             "progressMessage": null,
             "initialDelay": null,
             "pause": null,
@@ -566,7 +1673,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:Void:1",
@@ -574,6 +1682,7 @@
               "message": "$(.FindNextQRC.output.message)$(.FindLatestQRC.output.message)$(.FindPatch.output.message)"
             },
             "alias": "DetermineVersion",
+            "description": null,
             "progressMessage": "The following version was selected, based on the update strategy: $(.DetermineVersion.output.message | toObject.version // \"No version matches the update strategy\")",
             "initialDelay": null,
             "pause": null,
@@ -581,7 +1690,44 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "examples-<<<TENANT_ID>>>:CreateHanaSnapshotOtherEnv:1",
+            "input": {
+              "hanaCloudInstance": "$(.execution.input.hanaCloudInstance)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "shouldAskForDelete": "$(.execution.input.shouldConfirmSnapshotDelete)"
+            },
+            "alias": "makeSnapshot",
+            "description": "",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.makeSnapshotBeforeUpdate)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "utils-sapcp:GetUserChoice:1",
@@ -590,6 +1736,7 @@
               "title": "Update database '$(.execution.input.hanaCloudInstance)' from version $(.GetAvailableVersions.output.parameters.currentProductVersion.id) to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)?"
             },
             "alias": "ConfirmUpdate",
+            "description": null,
             "progressMessage": "The user $(if .ConfirmUpdate.output.selection == \"CONFIRMED\" then \"confirmed\" else \"CANCELED\" end) an update to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)",
             "initialDelay": null,
             "pause": null,
@@ -622,7 +1769,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           },
           {
             "execute": "sm-sapcp:UpdateServiceInstance:1",
@@ -633,6 +1781,7 @@
               "parameters": "{\"data\":{\"productVersion\":{\"releaseCycle\":\"$(.DetermineVersion.output.message | toObject.releaseCycle)\",\"track\":\"$(.DetermineVersion.output.message | toObject.releaseTrack)\",\"id\":\"$(.DetermineVersion.output.message | toObject.version)\"}}}"
             },
             "alias": "Update",
+            "description": null,
             "progressMessage": "The HANA Cloud database was successfully updated to the $(.execution.input.updateStrategy) $(.DetermineVersion.output.message | toObject.version)",
             "initialDelay": null,
             "pause": null,
@@ -678,7 +1827,8 @@
             "validate": null,
             "autoRetry": null,
             "repeat": null,
-            "errorMessages": []
+            "errorMessages": [],
+            "dryRun": null
           }
         ],
         "listeners": []
@@ -725,6 +1875,38 @@
           "defaultValueFromInput": null,
           "description": "Technical name or ID of a HANA Cloud instance"
         },
+        "shouldConfirmSnapshotDelete": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "true",
+          "defaultValueFromInput": null,
+          "description": "Does nothing if makeSnapshotBeforeUpdate is set to false. Whether to pause the execution when creating snapshot and another one already exists. If set to false no confirmation will be required to delete existing snapshot."
+        },
+        "makeSnapshotBeforeUpdate": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "false",
+          "defaultValueFromInput": null,
+          "description": "Whether to make a snapshot of the HANA instance before updating. If there is existing snapshot you will be asked if you want to delete it. Note there can be only one snapshot and it gets deleted in 14 days."
+        },
         "serviceKey": {
           "type": "object",
           "sensitive": true,
@@ -768,7 +1950,8 @@
       "tags": {
         "feature:logs": "",
         "env": "cf"
-      }
+      },
+      "issues": []
     }
   ]
 }
