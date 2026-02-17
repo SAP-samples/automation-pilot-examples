@@ -148,6 +148,7 @@ After successful import, you'll see a new catalog tile labeled **"Automation Pil
 | [Mass Restart CF Apps](mass-restart-cf-apps) | Restart all applications in a given Cloud Foundry space |
 | [Mass Stop/Start CF Apps](mass-stop-start-cf-apps) | Stop or start all Cloud Foundry applications across your entire BTP account |
 | [CF resource quota notifications](check-cf-space-quota-utilization) | Get insights about Cloud Foundry resource usage via Alert Notification service |
+| [Check CF Certificate Expiration](check-cf-certificate-expiration) | Monitor certificate expiration in Cloud Foundry service bindings to prevent outages |
 
 ### Kubernetes
 

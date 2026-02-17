@@ -1,0 +1,749 @@
+{
+  "id": "examples-<<<TENANT_ID>>>",
+  "technicalName": "examples",
+  "name": "Automation Pilot Examples",
+  "description": "Source: https://github.com/SAP-samples/automation-pilot-examples",
+  "owner": "<<<TENANT_ID>>>",
+  "tags": {},
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "app": "$(.execution.input.app)",
+          "certificates": "$(.checkCertificates.output.output[0] // [])"
+        },
+        "executors": [
+          {
+            "execute": "cf-sapcp:GetCfAppServiceBindings:1",
+            "input": {
+              "resourceGroup": "$(.execution.input.space)",
+              "password": "$(.execution.input.password)",
+              "resourceName": "$(.execution.input.app)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "bindingsNumber": "100",
+              "subAccount": "$(.execution.input.org)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "getBindings",
+            "description": "Get service bindings for the application",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:2",
+            "input": {
+              "inputMapping": "{\"password\":\"$(.execution.input.password)\",\"bindingId\":\"$(.getBindingCredentials.current.item.id)\",\"instanceName\":\"$(.getBindingCredentials.current.item.instanceName)\",\"region\":\"$(.execution.input.region)\",\"user\":\"$(.execution.input.user)\",\"identityProvider\":\"$(.execution.input.identityProvider)\"}",
+              "inputs": "$(.getBindings.output.bindings)",
+              "command": "examples-<<<TENANT_ID>>>:GetCfServiceBindingDetails:1"
+            },
+            "alias": "getBindingCredentials",
+            "description": "Get credentials for each service binding",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.getBindingCredentials.output.outputs\n   | map({ id: .bindingId, instanceName: .instanceName, certificate: .credentials.certificate // .credentials.clientcert // .credentials.sslcert // .credentials.uaa.certificate // .credentials.x509.certificate })\n   | filter(.certificate != null)\n)"
+            },
+            "alias": "extractCertificates",
+            "description": "Extract certificates from binding credentials",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "scripts-sapcp:ExecuteScript:2",
+            "input": {
+              "environment": "{\"CERTS\":\"$(.extractCertificates.output.message | toEscapedJson)\",\"THRESHOLD\":\"$(.execution.input.expirationThreshold)\"}",
+              "script": "#!/usr/bin/env bash\nset -euo pipefail\n\nnow_epoch=$(date +%s)\nthreshold=${THRESHOLD:-30}\n\necho \"$CERTS\" | jq -c '.[]' | while IFS= read -r entry; do\n    id=$(echo \"$entry\" | jq -r '.id')\n    instanceName=$(echo \"$entry\" | jq -r '.instanceName')\n    cert=$(echo \"$entry\" | jq -r '.certificate')\n\n    # Detect if the certificate is PKCS7/CMS or standard X.509\n    if echo \"$cert\" | grep -qE \"BEGIN (PKCS7|CMS)\"; then\n        # Extract certs from PKCS7, then grab the enddate of the first cert\n        ENDDATE=$(echo \"$cert\" | openssl pkcs7 -print_certs | openssl x509 -noout -enddate | sed -e 's#notAfter=##')\n    else\n        # Process as a standard X.509 certificate\n        ENDDATE=$(echo \"$cert\" | openssl x509 -noout -enddate | sed -e 's#notAfter=##')\n    fi\n\n    # Extract expiration date and calculate days remaining\n    expiry_epoch=$(date -d \"$ENDDATE\" +%s)\n    days_left=$(( (expiry_epoch - now_epoch) / 86400 ))\n\n    # Only output certificates expiring within the threshold\n    if [ \"$days_left\" -le \"$threshold\" ]; then\n        jq -n --arg id \"$id\" --arg instanceName \"$instanceName\" --argjson days \"$days_left\" '{id: $id, instanceName: $instanceName, daysLeft: $days}'\n    fi\ndone | jq -sc '.'",
+              "timeout": "300"
+            },
+            "alias": "checkCertificates",
+            "description": "Check certificate expiration dates",
+            "progressMessage": "Checking application '$(.execution.input.app)'...",
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.extractCertificates.output.message | toArray | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:CheckAppCertificates:1",
+      "name": "CheckAppCertificates",
+      "description": "Checks certificate expiration for all service bindings of a Cloud Foundry application",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "app": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry application name or ID"
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the Cloud Foundry user"
+        },
+        "org": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry organization name or ID"
+        },
+        "expirationThreshold": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 365,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "30",
+          "defaultValueFromInput": null,
+          "description": "Report certificates expiring within this many days"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry region (e.g., cf-eu10, cf-eu20)"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email for the Cloud Foundry user"
+        },
+        "space": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry space name or ID"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider origin key (default: sap.ids)"
+        }
+      },
+      "outputKeys": {
+        "app": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Application name"
+        },
+        "certificates": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Certificates expiring within threshold"
+        }
+      },
+      "tags": {
+        "env": "cf"
+      },
+      "issues": []
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "results": "$(.checkApps.output.outputs)",
+          "space": "$(.execution.input.space)"
+        },
+        "executors": [
+          {
+            "execute": "applm-sapcp:ListCfApps:1",
+            "input": {
+              "resourceGroup": "$(.execution.input.space)",
+              "password": "$(.execution.input.password)",
+              "pageSize": "100",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "subAccount": "$(.execution.input.org)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "getApps",
+            "description": "Get applications in the space",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.apps | length)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:2",
+            "input": {
+              "inputMapping": "{\"app\":\"$(.checkApps.current.item)\",\"password\":\"$(.execution.input.password)\",\"org\":\"$(.execution.input.org)\",\"expirationThreshold\":\"$(.execution.input.expirationThreshold)\",\"region\":\"$(.execution.input.region)\",\"user\":\"$(.execution.input.user)\",\"space\":\"$(.execution.input.space)\",\"identityProvider\":\"$(.execution.input.identityProvider)\"}",
+              "inputs": "$(if .execution.input.apps | length > 0 then .execution.input.apps else .getApps.output.resourceNames end)",
+              "command": "examples-<<<TENANT_ID>>>:CheckAppCertificates:1"
+            },
+            "alias": "checkApps",
+            "description": "Check certificates for each application",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "ans-sapcp:SendAnsEvent:1",
+            "input": {
+              "severity": "WARNING",
+              "subject": "Certificate Expiration Check - Space: $(.execution.input.space)",
+              "resourceName": "$(.execution.input.space)",
+              "detailsLink": "$(.execution.metadata.autoPiTenantUrl)/#/executions/$(.execution.metadata.executionId)",
+              "eventType": "CertificateExpirationCheck",
+              "serviceKey": "$(.execution.input.ansServiceKey)",
+              "body": "Certificate check completed for space '$(.execution.input.space)'. Found $(.checkApps.output.outputs | map(.certificates | length) | add) certificate(s) expiring within $(.execution.input.expirationThreshold) days.$(\"\\n\\n\")$(.checkApps.output.outputs | filter(.certificates | length > 0) | map(\"App: \\(.app)\\n\\(.certificates | map(\"- \\(.instanceName) (\\(.daysLeft) days left)\") | join(\"\\n\"))\") | join(\"\\n\\n\"))",
+              "category": "ALERT",
+              "resourceType": "space"
+            },
+            "alias": "sendAnsEvent",
+            "description": "Send ANS event with certificate check summary",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.checkApps.output.outputs | map(.certificates | length) | add))",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:CheckSpaceCertificates:1",
+      "name": "CheckSpaceCertificates",
+      "description": "Checks certificate expiration for all applications in a Cloud Foundry space",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the Cloud Foundry user"
+        },
+        "org": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry organization name or ID"
+        },
+        "expirationThreshold": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 365,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "30",
+          "defaultValueFromInput": null,
+          "description": "Report certificates expiring within this many days"
+        },
+        "ansServiceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "SAP Alert Notification Service credentials. If provided, sends summary event after check completes."
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry region (e.g., cf-eu10, cf-eu20)"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email for the Cloud Foundry user"
+        },
+        "space": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry space name or ID"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider origin key (default: sap.ids)"
+        },
+        "apps": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[]",
+          "defaultValueFromInput": null,
+          "description": "List of specific application names to check. If not provided, all applications in the space will be checked."
+        }
+      },
+      "outputKeys": {
+        "results": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Certificate check results per application"
+        },
+        "space": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Space name"
+        }
+      },
+      "tags": {
+        "env": "cf"
+      },
+      "issues": []
+    },
+    {
+      "configuration": {
+        "values": [
+          {
+            "alias": "regionData",
+            "valueFrom": {
+              "inputReference": "metadata-sapcp:CfRegionData:1",
+              "inputKey": "$(.execution.input.region)"
+            }
+          }
+        ],
+        "output": {
+          "credentials": "$(.getBindingDetails.output.body | toObject.credentials)",
+          "instanceName": "$(.execution.input.instanceName)",
+          "bindingId": "$(.execution.input.bindingId)"
+        },
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"Accept\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({\"origin\": .execution.input.identityProvider} | toUrlEncoded)",
+              "method": "GET",
+              "sccTechnicalUserPropagation": "false",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_credential_bindings/$(.execution.input.bindingId | toUrlEncoded)/details",
+              "timeout": "10"
+            },
+            "alias": "getBindingDetails",
+            "description": "Get service binding credentials",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.getBindingDetails.output.status | valueIn([408, 429, 500, 502, 503, 504, -1]))",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "examples-<<<TENANT_ID>>>:GetCfServiceBindingDetails:1",
+      "name": "GetCfServiceBindingDetails",
+      "description": "Retrieves credentials for a Cloud Foundry service binding",
+      "catalog": "examples-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Password for the Cloud Foundry user"
+        },
+        "instanceName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service instance name"
+        },
+        "bindingId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service binding GUID"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Cloud Foundry region (e.g., cf-eu10, cf-eu20)"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "UserID/Email for the Cloud Foundry user"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider origin key (default: sap.ids)"
+        }
+      },
+      "outputKeys": {
+        "credentials": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Service binding credentials"
+        },
+        "instanceName": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Service instance name"
+        },
+        "bindingId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Service binding GUID"
+        }
+      },
+      "tags": {
+        "env": "cf"
+      },
+      "issues": []
+    }
+  ]
+}
