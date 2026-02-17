@@ -128,13 +128,26 @@
                       "values": [
                         "true"
                       ]
-                    },
+                    }
+                  ]
+                },
+                {
+                  "semantic": "AND",
+                  "cases": [
                     {
                       "expression": "$(.execution.input.shouldAskForDelete)",
                       "operator": "EQUALS",
                       "semantic": "OR",
                       "values": [
                         "false"
+                      ]
+                    },
+                    {
+                      "expression": "$(.resolveSnapshotId.output.message | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
                       ]
                     }
                   ]
@@ -497,13 +510,26 @@
                       "values": [
                         "true"
                       ]
-                    },
+                    }
+                  ]
+                },
+                {
+                  "semantic": "AND",
+                  "cases": [
                     {
                       "expression": "$(.execution.input.shouldAskForDelete)",
                       "operator": "EQUALS",
                       "semantic": "OR",
                       "values": [
                         "false"
+                      ]
+                    },
+                    {
+                      "expression": "$(.resolveSnapshotId.output.message | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
                       ]
                     }
                   ]
