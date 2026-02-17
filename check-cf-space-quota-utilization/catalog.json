@@ -4,6 +4,7 @@
   "name": "Automation Pilot Examples",
   "description": "",
   "owner": "<<<TENANT_ID>>>",
+  "tags": {},
   "inputs": [],
   "commands": [
     {
@@ -401,21 +402,22 @@
       "tags": {
         "feature:logs": "",
         "feature:priority": "medium"
-      }
+      },
+      "issues": []
     },
     {
       "configuration": {
         "values": [],
         "output": {
-          "spaceMemory": "$(.calculateAppMemory.output.outputs | map({desiredState: .desiredState, name: .desiredStateData.name, memory: .memory, instances: .stateData.instances}) | [.[] | {desiredState,name, memory, instances} | select(.desiredState != \"STOPPED\")] | map(.memory * .instances) | add)"
+          "spaceMemory": "$(.calculateAppMemory.output.outputs | filter(.desiredState != \"STOPPED\") | map(.memory * (.resourceInstances | length)) | add)"
         },
         "executors": [
           {
-            "execute": "utils-sapcp:ForEach:1",
+            "execute": "utils-sapcp:ForEach:2",
             "input": {
+              "inputMapping": "{\"resourceGroup\":\"$(.execution.input.defaultCfCredentials.resourceGroup)\",\"password\":\"$(.execution.input.defaultCfCredentials.password)\",\"resourceName\":\"$(.calculateAppMemory.current.item.resourceName)\",\"region\":\"$(.execution.input.defaultCfCredentials.region)\",\"user\":\"$(.execution.input.defaultCfCredentials.user)\",\"subAccount\":\"$(.execution.input.defaultCfCredentials.subAccount)\",\"identityProvider\":\"$(.execution.input.defaultCfCredentials.identityProvider)\"}",
               "inputs": "$(.execution.input.appResources)",
-              "defaultValues": "$(.execution.input.defaultCfCredentials)",
-              "command": "applm-sapcp:GetCfAppState:1"
+              "command": "applm-sapcp:GetCfAppState:2"
             },
             "alias": "calculateAppMemory",
             "description": null,
@@ -481,7 +483,8 @@
       "tags": {
         "feature:logs": "",
         "feature:priority": "medium"
-      }
+      },
+      "issues": []
     }
   ]
 }
