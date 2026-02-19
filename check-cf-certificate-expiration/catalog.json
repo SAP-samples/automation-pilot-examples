@@ -61,7 +61,7 @@
           {
             "execute": "utils-sapcp:Void:1",
             "input": {
-              "message": "$(.getBindingCredentials.output.outputs\n   | map({ id: .bindingId, instanceName: .instanceName, certificate: .credentials.certificate // .credentials.clientcert // .credentials.sslcert // .credentials.uaa.certificate // .credentials.x509.certificate })\n   | filter(.certificate != null)\n)"
+              "message": "$(.getBindingCredentials.output.outputs\n   | map({ id: .bindingId, instanceName: .instanceName, certificate: .credentials.certificate // .credentials.clientcert // .credentials.sslcert // .credentials.uaa.certificate // .credentials.x509.certificate // .credentials.oauth.certificate })\n   | filter(.certificate != null)\n)"
             },
             "alias": "extractCertificates",
             "description": "Extract certificates from binding credentials",
