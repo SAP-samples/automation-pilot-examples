@@ -89,7 +89,7 @@
           "suggestedValuesFromInputKeys": null,
           "defaultValue": null,
           "defaultValueFromInput": null,
-          "description": "A JQ expression to transform the response body with. The format must follow the one described in https://github.com/stedolan/jq"
+          "description": "A JQ expression to transform the response body with. The format must follow the one described in https://github.com/jqlang/jq"
         },
         "method": {
           "type": "string",
