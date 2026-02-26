@@ -44,7 +44,7 @@ To use this example you'll need the following:
       }
   }
   ```
-* **Cloud Connector Setup in Cloud ALM**: Configure your Cloud Connector in Cloud ALM by following this [guide](https://support.sap.com/en/alm/sap-cloud-alm/operations/expert-portal/setup-managed-services/setup-cloud-connector.html?anchorId=section_369985517_co).
+* **Cloud Connector Setup in Cloud ALM**: Configure your Cloud Connector in Cloud ALM by following this [guide](https://help.sap.com/docs/cloud-alm/setup-administration/cloud-connector?locale=en-US).
   * Once configured, use the resulting service ID from Landscape Management.
   * ![Cloud ALM Landscape Management service ID highlight](./assets/calm-service-id.png)
 

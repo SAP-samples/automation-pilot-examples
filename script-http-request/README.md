@@ -19,7 +19,7 @@ Automation Pilot enables such scenarios with the [*ExecuteScript*](https://help.
 
 The supported runtimes include bash, python, node.js and provides access to popular CLI tools including curl, jq, and git.
 
-This example command has very similar contract to the original *HttpRequest*. However, its implementation is base entirely on *ExecuteScript* by utilizing [curl](https://curl.se/) and [jq](https://stedolan.github.io/jq/). It could be used to send requests to slow synchronous APIs and to work with larger response bodies.
+This example command has very similar contract to the original *HttpRequest*. However, its implementation is base entirely on *ExecuteScript* by utilizing [curl](https://curl.se/) and [jq](https://github.com/jqlang/jq/). It could be used to send requests to slow synchronous APIs and to work with larger response bodies.
 
 :warning: *ExecuteScript* has [some limitations](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/d0854dbb80d84946bb57791db94b7e20.html) described in the documentation. They also apply to this example command.
 
@@ -41,7 +41,7 @@ You'll need to provide values for the following input keys:
 * *user* - Optional: User name to use for server authentication
 * *password* - Optional: Password to use for server authentication
 * *authorizationHeader* - Optional: Explicit value for the HTTP authorization header. Overwrites all other forms of authentication
-* *responseBodyTransformer* - Optional: JQ expression to transform the response body with. The format must follow the one described in <https://github.com/stedolan/jq>
+* *responseBodyTransformer* - Optional: JQ expression to transform the response body with. The format must follow the one described in <https://github.com/jqlang/jq>
 
 ## Expected result
 

@@ -32,9 +32,9 @@ To use this example you'll need the following:
 
 Check out the following resources for more information:
 
-* [Create a GitHub repository](https://docs.github.com/en/get-started/quickstart/create-a-repo)
+* [Create a GitHub repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/quickstart-for-repositories)
 * [Managing teams and people with access to your GitHub repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-teams-and-people-with-access-to-your-repository)
-* [Creating a GitHub personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+* [Creating a GitHub personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
 * [Managing Automation Pilot Service Accounts](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/91713d7e71624dbf92ea43f5faf810e5.html)
 
 ## How to use

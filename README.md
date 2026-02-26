@@ -69,7 +69,7 @@ These examples are provided **as-is**. Support is available through the communit
 To use the examples in this repository, you'll need access to SAP Automation Pilot. Here are the different ways to get started:
 
 * [Tutorial: Get a Free Account on SAP BTP Trial](https://developers.sap.com/tutorials/hcp-create-trial-account.html)
-* [Tutorial: Setup Automation Pilot in SAP BTP](https://blogs.sap.com/2023/01/09/setup-configuration-of-automation-pilot-in-btp-cockpit/)
+* [Tutorial: Setup Automation Pilot in SAP BTP](https://help.sap.com/docs/automation-pilot/automation-pilot/initial-setup?locale=en-US&version=Cloud)
 * [Official Documentation](https://help.sap.com/docs/AUTOMATION_PILOT?locale=en-US)
 * [Discovery Center Overview](https://discovery-center.cloud.sap/serviceCatalog/automation-pilot)
 * [API Reference](https://api.sap.com/package/SAPCloudPlatformAutomationPilot/overview)
@@ -77,7 +77,7 @@ To use the examples in this repository, you'll need access to SAP Automation Pil
 * [YouTube: Automation Pilot Overview](https://www.youtube.com/live/SpitmcdQVGU)
 * [YouTube: HANA Cloud Automation](https://www.youtube.com/watch?v=JD16pX1-kzc)
 * [YouTube: Technical Ops Automations](https://www.youtube.com/watch?v=dDoU2oVBgg0)
-* [Community Blog Posts](https://blogs.sap.com/tags/73554900100800002433/)
+* [Community Blog Posts](https://community.sap.com/t5/c-khhcw49343/SAP+Automation+Pilot/pd-p/73554900100800002433)
 
 ## Getting Started
 
@@ -116,6 +116,7 @@ After successful import, you'll see a new catalog tile labeled **"Automation Pil
 
 | Example | Description |
 |---------|-------------|
+| [HANA Cloud Lifecycle Management](hana-lifecycle-management) | Comprehensive lifecycle management for HANA Cloud instances in the Other Environment (subaccount level) with 31 commands covering instance operations, backup & recovery, snapshots, configuration, upgrades, and Elastic Compute Nodes (ECN) |
 | [Update HANA Cloud](update-hana-cloud) | Automatically update the HANA Cloud database to the latest patch version, to the next or most recent QRC version |
 | [Mass Stop/Start HANA Cloud](mass-stop-start-hana-cloud) | Stop or start all HANA Cloud databases across your entire BTP account |
 | [Check HANA Cloud Backup](check-hana-cloud-backup) | Check regularly whether there was a recent backup of a SAP HANA Cloud database |
@@ -199,7 +200,7 @@ After successful import, you'll see a new catalog tile labeled **"Automation Pil
 
 [Create an issue](https://github.com/SAP-samples/automation-pilot-examples/issues) in this repository if you find a bug or have questions about the content.
 
-For additional support, [ask a question in SAP Community](https://answers.sap.com/questions/ask.html).
+For additional support, [ask a question in SAP Community](https://community.sap.com/t5/forums/postpage/category-id/products/choose-node/true).
 
 ## Contributing
 
