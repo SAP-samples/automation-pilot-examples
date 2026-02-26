@@ -1,0 +1,4298 @@
+{
+  "id": "hanalm-<<<TENANT_ID>>>",
+  "technicalName": "hanalm",
+  "name": "SAP HANA Cloud Lifecycle Management",
+  "description": "Lifecycle management commands for SAP HANA Cloud instances in Other Environment using Service Manager",
+  "owner": "<<<TENANT_ID>>>",
+  "tags": {},
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "targetTimestamp": "$(.execution.input.targetTimestamp)",
+          "targetInstanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "sourceInstanceId": "$(.execution.input.sourceInstanceId)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.targetInstanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "$(.execution.input.deadline)",
+              "parameters": "$({data: {requestedOperation: {name: \"SYSTEM_COPY\", arguments: {target_timestamp: .execution.input.targetTimestamp, source_instance_id: .execution.input.sourceInstanceId}}}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:CopyHanaCloudInstance:1",
+      "name": "CopyHanaCloudInstance",
+      "description": "Creates a copy of a HANA Cloud database instance at a given point in time to a new HANA Cloud database instance. Both instances will have the same software version. The source instance can be in the same or different subaccount. Note: Deleted instances can only be copied if both source and target are in the same subaccount. To copy to a different subaccount, you must provide the source instance UID.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "targetTimestamp": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The point-in-time timestamp to restore data from the source instance. Format: YYYY-MM-DD HH:MM:SS (e.g., 2025-05-25 16:13:43)"
+        },
+        "targetInstanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the target HANA Cloud instance that will receive the copy"
+        },
+        "sourceInstanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The identifier of the source HANA Cloud instance to copy from. Can be either the instance name or ID (GUID) when copying within the same subaccount. MUST be the ID (GUID/UID) when copying cross-subaccount"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "60",
+          "defaultValueFromInput": null,
+          "description": "Maximum time in minutes to wait for the copy operation to complete (default: 60, min: 1, max: 1440)"
+        }
+      },
+      "outputKeys": {
+        "targetTimestamp": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The point-in-time timestamp that was used to restore the data"
+        },
+        "targetInstanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the target instance that received the copy"
+        },
+        "sourceInstanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID/UID) of the source instance that was copied"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the target instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "ecnName": "$(.execution.input.ecnName)",
+          "memory": "$(.execution.input.memory)",
+          "vcpu": "$(.execution.input.vcpu)",
+          "storage": "$(.execution.input.storage)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getInstanceParameters",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "30",
+              "parameters": "$({data: {computeNodes: ((.getInstanceParameters.output.parameters.computeNodes // []) + [{name: .execution.input.ecnName, vcpu: .execution.input.vcpu, memory: .execution.input.memory, storage: .execution.input.storage}])}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:CreateHanaCloudECN:1",
+      "name": "CreateHanaCloudECN",
+      "description": "Creates a single Elastic Compute Node (ECN) for a HANA Cloud database instance. ECNs provide additional compute resources for query processing.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "ecnName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": 1,
+          "maxSize": 9,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Unique ECN name (1-9 chars, lowercase alphanumeric, must start with letter). Used for defining workergroups for table placement and query routing"
+        },
+        "memory": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 32,
+          "maxValue": 6144,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Memory in GB for the ECN. Available in 15 GB increments from 32 GB to 6 TB (max depends on cloud provider)"
+        },
+        "vcpu": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 120,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Number of virtual CPUs for the ECN (max depends on cloud provider: Azure/AWS 120, GCP 84)"
+        },
+        "storage": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Storage size in GB for the ECN"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "ecnName": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The name of the created ECN"
+        },
+        "memory": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Memory in GB allocated to the ECN"
+        },
+        "vcpu": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Number of vCPUs allocated to the ECN"
+        },
+        "storage": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Storage in GB allocated to the ECN"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.createInstance.output.instanceId)",
+          "instanceName": "$(.createInstance.output.serviceInstance.name)",
+          "serviceInstance": "$(.createInstance.output.serviceInstance)",
+          "parameters": "$(.createInstance.output.parameters)",
+          "status": "$(.createInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:CreateServiceInstance:1",
+            "input": {
+              "service": "hana-cloud",
+              "displayName": "$(.execution.input.instanceName)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "$(.execution.input.deadline)",
+              "parameters": "$({data: ({memory: .execution.input.memory, slaLevel: .execution.input.slaLevel, storage: .execution.input.storage, systempassword: .execution.input.systemPassword, vcpu: .execution.input.vcpu, whitelistIPs: .execution.input.whitelistIPs} + (.execution.input.additionalParameters // {}))})",
+              "plan": "$(.execution.input.plan)",
+              "labels": "$(.execution.input.labels)"
+            },
+            "alias": "createInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:CreateHanaCloudInstance:1",
+      "name": "CreateHanaCloudInstance",
+      "description": "Provisions a new SAP HANA Cloud Database instance through Service Manager with the specified configuration including memory, storage, and network access settings.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "slaLevel": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": [
+            "standard",
+            "elevated"
+          ],
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "standard",
+          "defaultValueFromInput": null,
+          "description": "Service Level Agreement for the HANA Cloud instance. Determines availability guarantees and support level."
+        },
+        "memory": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 30,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Memory allocation in GB (minimum 30 GB). Common values: 30, 60, 120, 240, 480."
+        },
+        "systemPassword": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": 8,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "DBADMIN password for the HANA Cloud instance. Must be at least 8 characters with 1 uppercase, 2 lowercase, and 1 number."
+        },
+        "instanceName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The display name to assign to the HANA Cloud instance. Must be unique within the subaccount."
+        },
+        "vcpu": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 2,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Number of virtual CPUs to allocate (minimum 2). Typically calculated as memory/15 rounded up."
+        },
+        "whitelistIPs": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "[ ]",
+          "defaultValueFromInput": null,
+          "description": "Array of IP filter ranges in CIDR notation (e.g., ['203.0.113.0/24', '198.51.100.50/32']). Maximum 250 entries. Use empty array [] to allow access only from Cloud Foundry in the same region."
+        },
+        "additionalParameters": {
+          "type": "object",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "{ }",
+          "defaultValueFromInput": null,
+          "description": "Additional HANA Cloud configuration parameters to merge with core settings. Can include: edition (default 'cloud'), enabledservices (object), and other advanced configuration options."
+        },
+        "storage": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 120,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Storage allocation in GB (minimum 120 GB). Must be at least 4x the memory allocation."
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "30",
+          "defaultValueFromInput": null,
+          "description": "Maximum time in minutes to wait for instance creation to complete (default: 30, min: 1, max: 1440)"
+        },
+        "plan": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": [
+            "hana",
+            "hana-free"
+          ],
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "hana",
+          "defaultValueFromInput": null,
+          "description": "The service plan for the HANA Cloud instance. Determines the instance capabilities and pricing."
+        },
+        "labels": {
+          "type": "object",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Optional labels to attach to the instance for organization and filtering"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the created HANA Cloud service instance"
+        },
+        "instanceName": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The display name of the created HANA Cloud instance"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Complete Service Manager service instance object"
+        },
+        "parameters": {
+          "type": "object",
+          "sensitive": false,
+          "description": "The configuration parameters applied to the instance"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "createdAt": "$(.updateInstance.output.serviceInstance.updated_at)",
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "snapshotId": "$(.updateInstance.output.parameters.storageSnapshots[-1].snapshotId)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "$(.execution.input.deadline)",
+              "parameters": "{\"data\":{\"requestedOperation\":{\"name\":\"TAKE_SNAPSHOT_FOR_FALLBACK\"}}}"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:CreateHanaCloudSnapshot:1",
+      "name": "CreateHanaCloudSnapshot",
+      "description": "Creates a snapshot of the current HANA Cloud instance state, enabling rollback to this exact version before future upgrades. Snapshots are used exclusively for version rollback. Only one snapshot can exist per instance. The snapshot is automatically deleted after 14 days or when a rollback is performed. Snapshots incur additional storage costs.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "30",
+          "defaultValueFromInput": null,
+          "description": "Maximum time in minutes to wait for snapshot creation to complete (default: 30, min: 1, max: 1440)"
+        }
+      },
+      "outputKeys": {
+        "createdAt": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Timestamp when the snapshot was created"
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "snapshotId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier of the created snapshot"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "totalCreated": "$(.execution.input.ecns | length)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "createdECNs": "$(.execution.input.ecns)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getInstanceParameters",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "30",
+              "parameters": "$({data: {computeNodes: ((.getInstanceParameters.output.parameters.data.computeNodes // []) + .execution.input.ecns)}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:CreateMultipleHanaCloudECNs:1",
+      "name": "CreateMultipleHanaCloudECNs",
+      "description": "Creates multiple Elastic Compute Nodes (ECNs) for a HANA Cloud database instance in a single operation.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "ecns": {
+          "type": "array",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Array of ECN objects to create. Each object must have: name (string, 1-9 chars), vcpu (number), memory (number, GB), storage (number, GB). Example: [{\"name\": \"ecn1\", \"vcpu\": 4, \"memory\": 120, \"storage\": 360}]"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "totalCreated": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Total number of ECNs created in this operation"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "createdECNs": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Array of ECN objects that were created"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "deletedCount": "$(.getInstanceParameters.output.parameters.data.computeNodes // [] | length)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getInstanceParameters",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "30",
+              "parameters": "$({data: {computeNodes: []}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:DeleteAllHanaCloudECNs:1",
+      "name": "DeleteAllHanaCloudECNs",
+      "description": "Deletes all Elastic Compute Nodes (ECNs) from a HANA Cloud database instance. Use with caution as this operation cannot be undone.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "deletedCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Total number of ECNs that were deleted"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "remainingECNs": "$(.getInstanceParameters.output.parameters.data.computeNodes | filter(.name != $.execution.input.ecnName))",
+          "deletedECNName": "$(.execution.input.ecnName)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getInstanceParameters",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(\n    .getInstanceParameters.output.parameters.data.computeNodes\n    | filter(.name == $.execution.input.ecnName)\n    | .[-1].name\n)"
+            },
+            "alias": "validateECNExists",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.validateECNExists.output.message | length)",
+                      "operator": "NOT_EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "ECN with name '$(.execution.input.ecnName)' does not exist on this instance",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "$(.validateECNExists.output.message | length)",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "30",
+              "parameters": "$({data: {computeNodes: (.getInstanceParameters.output.parameters.data.computeNodes | filter(.name != $.execution.input.ecnName))}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:DeleteHanaCloudECN:1",
+      "name": "DeleteHanaCloudECN",
+      "description": "Deletes a specific Elastic Compute Node (ECN) from a HANA Cloud database instance by name. All other ECNs remain active.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "ecnName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": 1,
+          "maxSize": 9,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the ECN to delete"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "remainingECNs": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Array of remaining ECN objects after deletion"
+        },
+        "deletedECNName": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Name of the ECN that was deleted"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "deletedInstanceId": "$(.deleteInstance.output.instanceId)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:DeleteServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "30"
+            },
+            "alias": "deleteInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:DeleteHanaCloudInstance:1",
+      "name": "DeleteHanaCloudInstance",
+      "description": "Permanently deletes a HANA Cloud instance and all its data. This operation is irreversible. Backups are retained according to the configured retention policy.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "deletedInstanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the deleted instance"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "deletedSnapshotId": "$(.execution.input.snapshotId)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "10",
+              "parameters": "$({data: {requestedOperation: {name: \"REMOVE_SNAPSHOT_FOR_FALLBACK\", arguments: {snapshot_id: .execution.input.snapshotId}}}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:DeleteHanaCloudSnapshot:1",
+      "name": "DeleteHanaCloudSnapshot",
+      "description": "Deletes a specific storage snapshot from a HANA Cloud instance. Snapshots are used for version rollback and are automatically deleted after 14 days. This command allows manual deletion of snapshots before the automatic expiration. Only one snapshot can exist per instance at a time.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "snapshotId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier of the snapshot to delete"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "deletedSnapshotId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier of the deleted snapshot"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "deletedSnapshotTimestamp": "$(.listSnapshots.output.snapshots | sort_by(.snapshotTimestamp) | .[0].snapshotTimestamp)",
+          "instanceId": "$(.deleteSnapshot.output.instanceId)",
+          "deletedSnapshotId": "$(.deleteSnapshot.output.deletedSnapshotId)",
+          "status": "$(.deleteSnapshot.output.status)"
+        },
+        "executors": [
+          {
+            "execute": "hanalm-<<<TENANT_ID>>>:ListHanaCloudSnapshots:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "listSnapshots",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "hanalm-<<<TENANT_ID>>>:DeleteHanaCloudSnapshot:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "snapshotId": "$(.listSnapshots.output.snapshots | sort_by(.snapshotTimestamp) | .[0].snapshotId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "10"
+            },
+            "alias": "deleteSnapshot",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.listSnapshots.output.totalCount)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:DeleteOldestHanaCloudSnapshot:1",
+      "name": "DeleteOldestHanaCloudSnapshot",
+      "description": "Deletes the oldest storage snapshot from a HANA Cloud instance based on the snapshot creation timestamp. This command retrieves all available snapshots, sorts them by timestamp, and removes the oldest one. Useful for managing storage costs by removing outdated snapshots while keeping more recent ones for version rollback.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "deletedSnapshotTimestamp": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The creation timestamp of the deleted snapshot"
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "deletedSnapshotId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier of the deleted snapshot"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "enabledServices": "$(.updateInstance.output.parameters.data.enabledservices)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "30",
+              "parameters": "$({ data: { enabledservices: ({ scriptserver: .execution.input.scriptserver, docstore: .execution.input.docstore, dpserver: .execution.input.dpserver, pal: .execution.input.pal, nlp: .execution.input.nlp, triplestore: .execution.input.triplestore } | filter(. != null)) }})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:EnableHanaCloudCapabilities:1",
+      "name": "EnableHanaCloudCapabilities",
+      "description": "Enables or disables additional capabilities for a HANA Cloud database instance including scriptserver (for AFL execution), docstore (JSON document store), dpserver (Data Provisioning Server), pal (Predictive Analysis Library for Free Tier), nlp (text analysis and vector embeddings), and triplestore (RDF knowledge graphs). Note: scriptserver, docstore, and triplestore each require additional 16 GB memory.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "scriptserver": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Enable script server for Application Function Libraries (AFL) execution. Requires additional 16 GB memory. Used for PAL, APL, and product-specific AFLs"
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "nlp": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Enable text analysis and vector embedding functions to convert documents to dense embedding vectors"
+        },
+        "docstore": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Enable document store for native JSON data storage and processing. Requires additional 16 GB memory. Cannot be disabled via CLI (requires service request)"
+        },
+        "pal": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Enable limited Predictive Analysis Library (PAL) functionalities. Available for Free Tier instances only. When upgrading to Paid Tier, automatically adds script server (typically 3 vCPUs)"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "triplestore": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Enable triple store for RDF knowledge graph storage and processing. Requires additional 16 GB memory"
+        },
+        "dpserver": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Enable Data Provisioning Server for native connectivity to many sources and Data Provisioning Agent. Runs as an index server variant in the HANA cluster"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "enabledServices": {
+          "type": "object",
+          "sensitive": false,
+          "description": "The updated configuration of enabled capabilities"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "whitelistIPs": "$(.execution.input.whitelistIPs)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "enabled": "$(.execution.input.enabled)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "10",
+              "parameters": "$({data: {extensionservices: [{name: \"ConnectivityProxy\", enabled: .execution.input.enabled, whitelistIPs: .execution.input.whitelistIPs}]}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:EnableHanaCloudConnectivityProxy:1",
+      "name": "EnableHanaCloudConnectivityProxy",
+      "description": "Enables or disables the Cloud Connector (ConnectivityProxy) feature for a HANA Cloud instance, allowing on-premise SAP HANA databases to connect to the HANA Cloud database via Cloud Connector to replicate data from on-premise to cloud.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "whitelistIPs": {
+          "type": "array",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": 250,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Array of IP filter ranges in CIDR notation (e.g., ['10.0.0.0/8', '172.16.0.0/12']) defining which on-premise systems can access the HANA Cloud instance. Maximum 250 entries including both IP addresses and ranges. Recommended: limit and control access to specific IP addresses for security. Empty array restricts access."
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials (plan: subaccount-admin)"
+        },
+        "enabled": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Whether to enable (true) or disable (false) the Cloud Connector connectivity proxy to allow on-premise SAP HANA systems to connect to this HANA Cloud instance"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "whitelistIPs": {
+          "type": "array",
+          "sensitive": false,
+          "description": "The configured IP filter ranges in CIDR notation for on-premise system access"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "enabled": {
+          "type": "boolean",
+          "sensitive": false,
+          "description": "Whether the Cloud Connector connectivity proxy is enabled for on-premise to cloud connectivity"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(if .execution.input.instanceId | isGuid then .execution.input.instanceId else .getInstanceId.output.instanceId end)",
+          "instanceName": "$(.getServiceInstance.output.serviceInstance.name)",
+          "serviceInstance": "$(.getServiceInstance.output.serviceInstance)",
+          "dashboard_url": "$(.getServiceInstance.output.serviceInstance.dashboard_url)",
+          "parameters": "$(.getServiceInstanceParameters.output.parameters)",
+          "status": "$(.getServiceInstance.output.serviceInstance.last_operation.state)",
+          "labels": "$(.getServiceInstance.output.serviceInstance.labels)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getServiceInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getServiceInstanceParameters",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:GetHanaCloudInstance:1",
+      "name": "GetHanaCloudInstance",
+      "description": "Retrieves detailed information about a HANA Cloud instance including status, configuration parameters, labels, and connection details.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the HANA Cloud instance"
+        },
+        "instanceName": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The display name of the HANA Cloud instance"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Complete Service Manager service instance object"
+        },
+        "dashboard_url": {
+          "type": "string",
+          "sensitive": false,
+          "description": "URL to the HANA Cloud cockpit dashboard for this instance"
+        },
+        "parameters": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Instance configuration parameters including memory, storage, whitelistIPs, enabled services, etc."
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Current operational status (RUNNING, STOPPED, CREATING, UPDATING, DELETING, etc.)"
+        },
+        "labels": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Instance labels and tags"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "installedPlugins": "$(.updateInstance.output.parameters.data.plugins)",
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "30",
+              "parameters": "$({data: {plugins: (.execution.input.plugins | map({name: .}))}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:InstallHanaCloudPlugins:1",
+      "name": "InstallHanaCloudPlugins",
+      "description": "Installs plugins for a HANA Cloud database instance. Plugins extend the functionality of the database with additional capabilities.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "plugins": {
+          "type": "array",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Array of plugin names to install. Example: [\"document-filters-library-1.0.5\"]"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "installedPlugins": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Array of installed plugin objects"
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.getInstance.output.serviceInstance.id)",
+          "availableUpgradeVersions": "$(.getInstanceParameters.output.parameters.availableUpgradeVersions | map({ \"expiration-date\": .expiration-date, id, name, releaseCycle, track }))",
+          "currentVersion": "$(.getInstanceParameters.output.parameters.currentProductVersion | { \"expiration-date\": .expiration-date, id, name, releaseCycle, track })"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.getInstance.output.serviceInstance.id)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getInstanceParameters",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:ListHanaCloudAvailableUpgradeVersions:1",
+      "name": "ListHanaCloudAvailableUpgradeVersions",
+      "description": "Retrieves the current version and available upgrade versions for a HANA Cloud database instance. Use this command to check which versions you can upgrade to before performing an upgrade. The availableUpgradeVersions section shows eligible release cycles and tracks. Also returns maintenance status to indicate if current version is out of maintenance.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "availableUpgradeVersions": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Array of available upgrade versions with release cycle and track information"
+        },
+        "currentVersion": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Current product version object containing id, name, releaseCycle, track, and maintenance status"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.getInstance.output.instanceId)",
+          "totalECNs": "$(.getInstance.output.parameters.data.computeNodes // [] | length)",
+          "ecns": "$(.getInstance.output.parameters.data.computeNodes // [] | map({ name, memory, vcpu, storage }))"
+        },
+        "executors": [
+          {
+            "execute": "hanalm-<<<TENANT_ID>>>:GetHanaCloudInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:ListHanaCloudECNs:1",
+      "name": "ListHanaCloudECNs",
+      "description": "Retrieves all Elastic Compute Nodes (ECNs) configured for a HANA Cloud database instance. Returns ECN details including name, vCPU, memory, and storage configuration. ECNs provide additional compute resources for query processing.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "totalECNs": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Total number of ECNs configured for this instance"
+        },
+        "ecns": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Array of ECN objects, each containing name, vcpu, memory, and storage"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instances": "$(.listServiceInstances.output.serviceInstances)",
+          "nextPageToken": "$(.listServiceInstances.output.nextPageToken)",
+          "totalCount": "$(.listServiceInstances.output.totalResultsCount)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceDetails:1",
+            "input": {
+              "service": "hana-cloud",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "plan": "$(.execution.input.plan)"
+            },
+            "alias": "getHanaServiceDetails",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:ListServiceInstances:1",
+            "input": {
+              "pageSize": "$(.execution.input.pageSize)",
+              "fieldSelector": "service_plan_id eq '$(.getHanaServiceDetails.output.planId)'",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "pageToken": "$(.execution.input.pageToken)"
+            },
+            "alias": "listServiceInstances",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:ListHanaCloudInstances:1",
+      "name": "ListHanaCloudInstances",
+      "description": "Retrieves a list of all HANA Cloud service instances in the subaccount with their current status and basic metadata.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "pageSize": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1000,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "100",
+          "defaultValueFromInput": null,
+          "description": "The maximum number of instances to return per page (default: 100)"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "pageToken": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Page token for pagination. Leave empty to start from the beginning."
+        },
+        "plan": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": [
+            "hana",
+            "hana-free"
+          ],
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "hana",
+          "defaultValueFromInput": null,
+          "description": "The service plan to filter instances by. Only instances with this plan will be returned."
+        }
+      },
+      "outputKeys": {
+        "instances": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Array of HANA Cloud instance summaries. Each element contains instanceId, instanceName, status, plan, created_at, and updated_at."
+        },
+        "nextPageToken": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Token for retrieving the next page of results. Use this value as the pageToken input parameter in the next request. Empty if no more pages are available."
+        },
+        "totalCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Total number of HANA Cloud instances found in the subaccount"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.getInstance.output.instanceId)",
+          "plugins": "$(.getInstance.output.parameters.data.plugins // [])",
+          "totalPlugins": "$(.getInstance.output.parameters.data.plugins // [] | length)"
+        },
+        "executors": [
+          {
+            "execute": "hanalm-<<<TENANT_ID>>>:GetHanaCloudInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:ListHanaCloudPlugins:1",
+      "name": "ListHanaCloudPlugins",
+      "description": "Retrieves all installed plugins for a HANA Cloud database instance. Returns plugin details including name and status. Plugins extend the functionality of the database with additional capabilities.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "plugins": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Array of plugin objects, each containing name and other plugin details"
+        },
+        "totalPlugins": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Total number of plugins installed on this instance"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "snapshots": "$(.getInstanceParameters.output.parameters.storageSnapshots // [])",
+          "totalCount": "$(.getInstanceParameters.output.parameters.storageSnapshots // [] | length)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getInstanceParameters",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:ListHanaCloudSnapshots:1",
+      "name": "ListHanaCloudSnapshots",
+      "description": "Retrieves all available storage snapshots for a HANA Cloud instance. Snapshots are used for version rollback and are automatically deleted after 14 days or when a rollback is performed. Each snapshot contains information about the HANA storage size, product version, snapshot ID, and creation timestamp.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "snapshots": {
+          "type": "array",
+          "sensitive": false,
+          "description": "Array of available storage snapshots, each containing snapshotId, snapshotTimestamp, hanaStorage, and productVersion details"
+        },
+        "totalCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Total number of available snapshots"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "recoveryTimestamp": "$(.execution.input.targetTimestamp)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "$(.execution.input.deadline)",
+              "parameters": "{\"data\":{\"requestedOperation\":{\"name\":\"POINT_IN_TIME_RECOVERY\",\"arguments\":{\"target_timestamp\":\"$(.execution.input.targetTimestamp)\"}}}}"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:RecoverHanaCloudInstance:1",
+      "name": "RecoverHanaCloudInstance",
+      "description": "Restores a HANA Cloud instance to a specific point in time using available backups. HANA uses the most recent backup before the target timestamp and applies transaction logs to reach the exact recovery point.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "targetTimestamp": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Target recovery timestamp in format 'YYYY-MM-DD HH:MM:SS' (UTC). If you select a date in the future, then the database is restored to the latest available state."
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "60",
+          "defaultValueFromInput": null,
+          "description": "Maximum time in minutes to wait for recovery to complete (default: 60, min: 1, max: 1440)"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the recovered instance"
+        },
+        "recoveryTimestamp": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The timestamp to which the instance was recovered"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "targetAvailabilityZone": "$(.execution.input.targetAvailabilityZone)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "$(.execution.input.deadline)",
+              "parameters": "$(.execution.input.targetAvailabilityZone | if . then {data: {requestedOperation: {name: \"DISASTER_KEEP_AZ_RECOVERY\", arguments: {target_az: .}}}} else {data: {requestedOperation: {name: \"DISASTER_KEEP_AZ_RECOVERY\"}}} end)"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:RecreateHanaCloudInstanceFromBackup:1",
+      "name": "RecreateHanaCloudInstanceFromBackup",
+      "description": "Recreates a HANA Cloud database instance from its backup. This operation is used for disaster recovery scenarios. The instance can be recreated in the same availability zone as the original instance or in a different availability zone if specified.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "targetAvailabilityZone": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The logical availability zone name where the instance will be recreated (e.g., eu-central-1b). If not specified, the instance is recreated in the same zone as the original instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "60",
+          "defaultValueFromInput": null,
+          "description": "Maximum time in minutes to wait for the recreation operation to complete (default: 60, min: 1, max: 1440)"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the recreated instance"
+        },
+        "targetAvailabilityZone": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The availability zone where the instance was recreated (null if recreated in same zone as original)"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.startInstance.output.instanceId)",
+          "serviceInstance": "$(.startInstance.output.serviceInstance)",
+          "status": "$(.startInstance.output.status)"
+        },
+        "executors": [
+          {
+            "execute": "hanalm-<<<TENANT_ID>>>:StopHanaCloudInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "stopInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "hanalm-<<<TENANT_ID>>>:StartHanaCloudInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "startInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:RestartHanaCloudInstance:1",
+      "name": "RestartHanaCloudInstance",
+      "description": "Restarts a HANA Cloud instance by stopping it and then starting it again. This is useful for applying configuration changes or troubleshooting. The operation combines stop and start operations, typically taking 10-15 minutes total.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the HANA Cloud instance"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object after restart"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "restoredFrom": "$(.execution.input.snapshotId)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "$(.execution.input.deadline)",
+              "parameters": "{\"data\":{\"requestedOperation\":{\"name\":\"FALLBACK_TO_SNAPSHOT\",\"arguments\":{\"snapshot_id\":\"$(.execution.input.snapshotId)\"}}}}"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:RevertHanaCloudToSnapshot:1",
+      "name": "RevertHanaCloudToSnapshot",
+      "description": "Reverts a HANA Cloud instance to a previously created snapshot, effectively rolling back to the prior HANA version and data state. This operation is typically used after a version upgrade that causes issues. The revert operation requires instance downtime and is irreversible - all changes made after the snapshot was taken are lost. The snapshot is automatically deleted after successful revert. This operation typically takes 20-40 minutes.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "snapshotId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier of the snapshot to restore. Must be a valid snapshot for this instance."
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "60",
+          "defaultValueFromInput": null,
+          "description": "Maximum time in minutes to wait for the revert operation to complete (default: 60, min: 1, max: 1440)"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "restoredFrom": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The snapshot ID that was used for restoration"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "30",
+              "parameters": "{\"data\": {\"serviceStopped\": false}}"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:StartHanaCloudInstance:1",
+      "name": "StartHanaCloudInstance",
+      "description": "Starts a HANA Cloud instance that is currently in STOPPED state. The operation typically takes 5-10 minutes to complete.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the HANA Cloud instance"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "secondaryAvailabilityZone": "$(.execution.input.secondaryAvailabilityZone)",
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "takeoverType": "$(.execution.input.takeoverType)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "$(.execution.input.deadline)",
+              "parameters": "$(.execution.input.secondaryAvailabilityZone | if . then {data: {requestedOperation: {name: .execution.input.takeoverType, arguments: {secondary_az: .}}}} else {data: {requestedOperation: {name: .execution.input.takeoverType}}} end)"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:StartHanaCloudInstanceTakeover:1",
+      "name": "StartHanaCloudInstanceTakeover",
+      "description": "Starts takeover for a HANA Cloud database instance. Supports both synchronous replication takeover (for synchronous replicas in different availability zones) and disaster recovery takeover (for asynchronous replicas in different availability zones). Use this command to failover to a replica in case of primary instance failure.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "secondaryAvailabilityZone": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The logical availability zone of the asynchronous replica (e.g., eu-central-1b). Required only for disaster_recovery_takeover"
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "takeoverType": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": [
+            "synchronous_replication_takeover",
+            "disaster_recovery_takeover"
+          ],
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Type of takeover to perform. synchronous_replication_takeover: for synchronous replicas. disaster_recovery_takeover: for asynchronous replicas"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "30",
+          "defaultValueFromInput": null,
+          "description": "Maximum time in minutes to wait for the takeover operation to complete (default: 30, min: 1, max: 1440)"
+        }
+      },
+      "outputKeys": {
+        "secondaryAvailabilityZone": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The availability zone of the secondary replica (null if not applicable)"
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "takeoverType": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The type of takeover that was performed"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "30",
+              "parameters": "{\"data\": {\"serviceStopped\": true}}"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:StopHanaCloudInstance:1",
+      "name": "StopHanaCloudInstance",
+      "description": "Stops a HANA Cloud instance that is currently in RUNNING state. This gracefully shuts down the database. Stopping reduces costs while preserving all data and configuration. The operation typically takes 2-5 minutes to complete.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the HANA Cloud instance"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "retentionDays": "$(.updateInstance.output.parameters.data.backup.retentionDays)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "10",
+              "parameters": "{   \"data\": {     \"backup\": {       \"retentionDays\": $(.execution.input.retentionDays)     }   } }"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:UpdateHanaCloudBackupSettings:1",
+      "name": "UpdateHanaCloudBackupSettings",
+      "description": "Updates the backup retention policy for a HANA Cloud instance, specifying how many days backups should be retained before automatic deletion. The retention period affects storage costs and point-in-time recovery capabilities. Changes apply to future backups; existing backups retain their original expiration dates.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "retentionDays": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 215,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "14",
+          "defaultValueFromInput": null,
+          "description": "Number of days to retain backups before automatic deletion. Range: 1-215 days. Longer retention increases storage costs."
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "retentionDays": {
+          "type": "number",
+          "sensitive": false,
+          "description": "The configured backup retention period in days"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "ecnName": "$(.execution.input.ecnName)",
+          "memory": "$(.execution.input.memory)",
+          "vcpu": "$(.execution.input.vcpu)",
+          "storage": "$(.execution.input.storage)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getInstanceParameters",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(\n    .getInstanceParameters.output.parameters.data.computeNodes\n    | filter(.name == $.execution.input.ecnName)\n    | .[-1].name\n)"
+            },
+            "alias": "validateECNExists",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.validateECNExists.output.message | length)",
+                      "operator": "NOT_EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "ECN with name '$(.execution.input.ecnName)' does not exist on this instance",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "$(.validateECNExists.output.message | length)",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "30",
+              "parameters": "$({data: {computeNodes: (.getInstanceParameters.output.parameters.data.computeNodes | map(if .name == $.execution.input.ecnName then {name: $.execution.input.ecnName, vcpu: $.execution.input.vcpu, memory: $.execution.input.memory, storage: $.execution.input.storage} else . end))}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:UpdateHanaCloudECN:1",
+      "name": "UpdateHanaCloudECN",
+      "description": "Updates the configuration (vCPU, memory, storage) of an existing Elastic Compute Node (ECN) for a HANA Cloud database instance. This operation modifies the resource allocation for the specified ECN. Note that ECN names cannot be changed. Memory is available in 15 GB increments from 32 GB to 6 TB.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "ecnName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": 1,
+          "maxSize": 9,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the ECN to update (must match existing ECN name)"
+        },
+        "memory": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 32,
+          "maxValue": 6144,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "New memory in GB for the ECN. Available in 15 GB increments from 32 GB to 6 TB"
+        },
+        "vcpu": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 120,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "New number of virtual CPUs for the ECN (max depends on cloud provider: Azure/AWS 120, GCP 84)"
+        },
+        "storage": {
+          "type": "number",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "New storage size in GB for the ECN"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "ecnName": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The name of the updated ECN"
+        },
+        "memory": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Updated memory in GB for the ECN"
+        },
+        "vcpu": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Updated number of vCPUs for the ECN"
+        },
+        "storage": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Updated storage in GB for the ECN"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "whitelistIPs": "$(.updateInstance.output.parameters.data.whitelistIPs)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "10",
+              "parameters": "$({data: {whitelistIPs: .execution.input.whitelistIPs}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:UpdateHanaCloudInstanceAllowedConnections:1",
+      "name": "UpdateHanaCloudInstanceAllowedConnections",
+      "description": "Configures the IP filter rules that control which IP addresses and ranges can connect to the HANA Cloud instance. Changes take effect immediately without requiring instance restart. An empty whitelist allows access only from Cloud Foundry applications in the same region.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "whitelistIPs": {
+          "type": "array",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": 250,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Array of IP filter ranges in CIDR notation (e.g., ['203.0.113.0/24', '198.51.100.50/32']). Maximum 250 entries. Empty array restricts access to Cloud Foundry in same region only."
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the instance"
+        },
+        "whitelistIPs": {
+          "type": "array",
+          "sensitive": false,
+          "description": "The updated IP filter ranges in CIDR notation"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "memory": "$(.updateInstance.output.parameters.data.memory)",
+          "vcpu": "$(.updateInstance.output.parameters.data.vcpu)",
+          "storage": "$(.updateInstance.output.parameters.data.storage)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "$(.execution.input.deadline)",
+              "parameters": "$({ data: ({ memory: .execution.input.memory, vcpu: .execution.input.vcpu, storage: .execution.input.storage } | filter(. != null)) })"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:UpdateHanaCloudInstanceSize:1",
+      "name": "UpdateHanaCloudInstanceSize",
+      "description": "Modifies the compute and storage resources allocated to a HANA Cloud instance. Memory and vCPU changes require instance downtime (automatic restart). Storage can only be increased, never decreased. The operation typically takes 10-20 minutes to complete.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "memory": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "New memory allocation in GB (e.g., 30, 60, 120, 240). Requires instance restart."
+        },
+        "vcpu": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "New vCPU count. Requires instance restart."
+        },
+        "storage": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "New storage allocation in GB. Can only be increased, never decreased. Requires instance restart."
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "30",
+          "defaultValueFromInput": null,
+          "description": "Maximum time in minutes to wait for the resize operation to complete (default: 30, min: 1, max: 1440)"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the resized instance"
+        },
+        "memory": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Current memory allocation in GB"
+        },
+        "vcpu": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Current vCPU count"
+        },
+        "storage": {
+          "type": "number",
+          "sensitive": false,
+          "description": "Current storage allocation in GB"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "versionId": "$(.findApplicableVersion.output.message)",
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "track": "$(.execution.input.track)",
+          "releaseCycle": "$(.execution.input.releaseCycle)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:GetServiceInstanceParameters:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)"
+            },
+            "alias": "getInstanceParameters",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(\n    .getInstanceParameters.output.parameters.availableUpgradeVersions\n    | filter(.releaseCycle == $.execution.input.releaseCycle and .track == $.execution.input.track)\n    | .[-1].id\n)"
+            },
+            "alias": "findApplicableVersion",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.findApplicableVersion.output.message | length)",
+                      "operator": "NOT_EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [
+              {
+                "message": "No matching upgrade version found for releaseCycle '$(.execution.input.releaseCycle)' and track '$(.execution.input.track)'",
+                "when": {
+                  "semantic": "OR",
+                  "conditions": [
+                    {
+                      "semantic": "OR",
+                      "cases": [
+                        {
+                          "expression": "$(.findApplicableVersion.output.message | length)",
+                          "operator": "EQUALS",
+                          "semantic": "OR",
+                          "values": [
+                            "0"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "$(.execution.input.deadline)",
+              "parameters": "$({data: { update_strategy: .execution.input.updateStrategy, productVersion: {id: .findApplicableVersion.output.message, releaseCycle: .execution.input.releaseCycle, track: .execution.input.track}}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:UpgradeHanaCloudInstance:1",
+      "name": "UpgradeHanaCloudInstance",
+      "description": "Upgrades a HANA Cloud database instance to a newer version within a release cycle and track. The Quarterly Release Cycle (generally-available-quarterly) is the default option. New QRC versions are released every three months. You cannot downgrade after upgrade. Patches are provided for up to 7 months per QRC version. Instances on out-of-maintenance QRC versions will be automatically upgraded.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "updateStrategy": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": [
+            "with_restart",
+            "without_restart"
+          ],
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Upgrade strategy: with_restart requires instance restart during upgrade, without_restart performs upgrade with minimal downtime"
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the HANA Cloud instance"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "track": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The release track (version within release cycle) eligible for patches. Example: 2022.14 (QRC 2/2022). Check availableUpgradeVersions in instance parameters to see eligible tracks"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "60",
+          "defaultValueFromInput": null,
+          "description": "Maximum time in minutes to wait for the upgrade operation to complete (default: 60, min: 1, max: 1440)"
+        },
+        "releaseCycle": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The release cycle of the SAP HANA database. Example: generally-available-quarterly (default for most accounts). Availability depends on your account configuration"
+        }
+      },
+      "outputKeys": {
+        "versionId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The version ID that was used for the upgrade (resolved from releaseCycle and track)"
+        },
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the upgraded instance"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "track": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The release track (version) used for the upgrade"
+        },
+        "releaseCycle": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The release cycle used for the upgrade"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}
