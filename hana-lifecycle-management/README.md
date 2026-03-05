@@ -37,7 +37,7 @@ Check out the following resources for more information:
 
 ## Available Commands
 
-This catalog includes 31 commands for comprehensive HANA Cloud lifecycle management:
+This catalog includes 33 commands for comprehensive HANA Cloud lifecycle management:
 
 ### Instance Lifecycle Management
 
@@ -60,6 +60,13 @@ This catalog includes 31 commands for comprehensive HANA Cloud lifecycle managem
 | **RecreateHanaCloudInstanceFromBackup** | Recreates a HANA Cloud instance from backup for disaster recovery (same or different availability zone) |
 | **StartHanaCloudInstanceTakeover** | Initiates failover to a replica (supports synchronous replication or disaster recovery takeover) |
 | **UpdateHanaCloudBackupSettings** | Updates the backup retention policy (affects storage costs and point-in-time recovery capabilities) |
+
+### Clone Templates
+
+| Command | Description |
+|---------|-------------|
+| **CreateHanaCloudCloneTemplate** | Creates a cloning template backup of an existing HANA Cloud instance (including schema and data) to HDL Files storage |
+| **RecoverHanaCloudInstanceFromCloneTemplate** | Recovers an existing HANA Cloud instance from a previously created clone template (WARNING: failure results in CustomerInducedDowntime — instance must be deleted) |
 
 ### Snapshot Management
 
@@ -134,6 +141,18 @@ To copy a HANA Cloud instance to a new instance at a specific point in time, use
 * **targetInstanceId** - The unique identifier (GUID) or display name of the target HANA Cloud instance that will receive the copy
 * **sourceInstanceId** - The identifier of the source HANA Cloud instance (can be name or ID for same subaccount, must be GUID/UID for cross-subaccount)
 * **targetTimestamp** - The point-in-time timestamp to restore data from (format: YYYY-MM-DD HH:MM:SS)
+* **serviceKey** - Your Service Manager service key (object)
+* **deadline** - Optional: Maximum time to wait for the operation to complete
+
+### Example: Creating a Clone Template
+
+To create a cloning template backup of a HANA Cloud instance to HDL Files storage, use the *CreateHanaCloudCloneTemplate* command with:
+
+* **instanceId** - The ID or name of your source HANA Cloud instance
+* **templateName** - A name for the cloning template
+* **templateStorageEndpoint** - The HDL Files storage endpoint (format: hdlfs://...)
+* **hdlAccessToken** - HDL Files access token as a single string without line breaks: `<Client key><Client certificate><CA certificate>` (write permission required)
+* **backupEncryptionPassphrase** - Encryption passphrase for the backup (remember this for recovery)
 * **serviceKey** - Your Service Manager service key (object)
 * **deadline** - Optional: Maximum time to wait for the operation to complete
 

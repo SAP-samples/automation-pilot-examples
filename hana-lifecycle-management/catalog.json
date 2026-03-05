@@ -4293,6 +4293,400 @@
         }
       },
       "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "templateName": "$(.execution.input.templateName)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "$(.execution.input.deadline)",
+              "parameters": "$({data: {requestedOperation: {name: \"TEMPLATE_BACKUP\", arguments: ({template_name: .execution.input.templateName, template_storage_endpoint: .execution.input.templateStorageEndpoint, hdl_access_token: .execution.input.hdlAccessToken, backup_encryption_passphrase: .execution.input.backupEncryptionPassphrase, labels: (.execution.input.templateLabels // [])} + (if .execution.input.projectName then {project_name: .execution.input.projectName} else {} end))}}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:CreateHanaCloudCloneTemplate:1",
+      "name": "CreateHanaCloudCloneTemplate",
+      "description": "Creates a cloning template backup of an existing HANA Cloud database instance (including schema and data) to HDL Files storage. The template can later be used to recover an instance using the RecoverHanaCloudInstanceFromCloneTemplate command. Requires an HDL Files storage endpoint and access token.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the source HANA Cloud instance to create a template from"
+        },
+        "templateName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": 1000,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name for the cloning template (max 1000 characters)"
+        },
+        "templateStorageEndpoint": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "HDL Files storage endpoint for the template (format: hdlfs://...)"
+        },
+        "hdlAccessToken": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Access token for the HDL Files storage"
+        },
+        "backupEncryptionPassphrase": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Encryption passphrase for the backup. Must be remembered for recovery"
+        },
+        "projectName": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Optional project name for organizing templates"
+        },
+        "templateLabels": {
+          "type": "array",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Optional string labels to tag the template for identification"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "60",
+          "defaultValueFromInput": null,
+          "description": "Maximum time in minutes to wait for the template backup operation to complete (default: 60, min: 1, max: 1440)"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the source instance"
+        },
+        "templateName": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The name of the created cloning template"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "instanceId": "$(.updateInstance.output.serviceInstance.id)",
+          "serviceInstance": "$(.updateInstance.output.serviceInstance)",
+          "status": "$(.updateInstance.output.serviceInstance.last_operation.state)"
+        },
+        "executors": [
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.instanceId)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "$(.execution.input.deadline)",
+              "parameters": "$({data: {requestedOperation: {name: \"TEMPLATE_RECOVERY\", arguments: ({template_name: .execution.input.templateName, template_storage_endpoint: .execution.input.templateStorageEndpoint, hdl_access_token: .execution.input.hdlAccessToken, backup_encryption_passphrase: .execution.input.backupEncryptionPassphrase} + (if .execution.input.projectName then {project_name: .execution.input.projectName} else {} end))}}})"
+            },
+            "alias": "updateInstance",
+            "description": null,
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "hanalm-<<<TENANT_ID>>>:RecoverHanaCloudInstanceFromCloneTemplate:1",
+      "name": "RecoverHanaCloudInstanceFromCloneTemplate",
+      "description": "Recovers an existing HANA Cloud database instance from a previously created clone template stored in HDL Files. The target instance will be restored with the schema and data from the template. WARNING: If the recovery operation fails, the target instance enters the CustomerInducedDowntime state. A partly cloned instance cannot be repaired and must be deleted.",
+      "catalog": "hanalm-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The unique identifier (GUID) or display name of the target HANA Cloud instance to recover into"
+        },
+        "templateName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": 1000,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Name of the cloning template to recover from (max 1000 characters)"
+        },
+        "templateStorageEndpoint": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "HDL Files storage endpoint where the template is stored (format: hdlfs://...)"
+        },
+        "hdlAccessToken": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Access token for the HDL Files storage"
+        },
+        "backupEncryptionPassphrase": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Encryption passphrase used during template creation (must match the original passphrase)"
+        },
+        "projectName": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Optional project name (must match the one used during template creation if specified)"
+        },
+        "serviceKey": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "Service Manager service key containing authentication credentials"
+        },
+        "deadline": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 1440,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "60",
+          "defaultValueFromInput": null,
+          "description": "Maximum time in minutes to wait for the recovery operation to complete (default: 60, min: 1, max: 1440)"
+        }
+      },
+      "outputKeys": {
+        "instanceId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The unique identifier (GUID) of the recovered instance"
+        },
+        "serviceInstance": {
+          "type": "object",
+          "sensitive": false,
+          "description": "Updated Service Manager service instance object"
+        },
+        "status": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The operational status of the instance (should be 'succeeded' upon success)"
+        }
+      },
+      "tags": {}
     }
   ]
 }
