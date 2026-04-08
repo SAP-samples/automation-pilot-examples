@@ -1,0 +1,203 @@
+{
+  "name": "SAP HANA Cloud Lifecycle Management",
+  "enabled": true,
+  "instructions": "MCP server for managing SAP HANA Cloud database instances through the SAP Service Manager API. Provides comprehensive lifecycle management for HANA Cloud instances in the Other Environment (subaccount level).\n\nUse this server to:\n- **Instance Lifecycle**: Start, stop, restart, and get status of HANA Cloud instances\n- **Snapshots**: Create, list, delete, and revert to storage snapshots for version rollback\n- **Configuration**: Update instance size (memory/vCPU/storage) and enable capabilities (scriptserver, docstore, dpserver, PAL, NLP, triplestore)\n- **Upgrades**: Upgrade instances to newer versions, list available upgrade versions\n\nMost commands require an **instanceId** (GUID or display name of the HANA Cloud instance).",
+  "mcpTools": [
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:GetHanaCloudInstance:1",
+      "name": "get_instance",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "Get HANA Cloud Instance",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:ListHanaCloudInstances:1",
+      "name": "list_instances",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "List HANA Cloud Instances",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:ListHanaCloudSnapshots:1",
+      "name": "list_snapshots",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "List HANA Cloud Snapshots",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:ListHanaCloudAvailableUpgradeVersions:1",
+      "name": "list_available_upgrade_versions",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "List Available Upgrade Versions",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": true
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:StartHanaCloudInstance:1",
+      "name": "start_instance",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "Start HANA Cloud Instance",
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:StopHanaCloudInstance:1",
+      "name": "stop_instance",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "Stop HANA Cloud Instance",
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:RestartHanaCloudInstance:1",
+      "name": "restart_instance",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "Restart HANA Cloud Instance",
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:UpdateHanaCloudInstanceSize:1",
+      "name": "update_instance_size",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "Update HANA Cloud Instance Size",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:EnableHanaCloudCapabilities:1",
+      "name": "enable_capabilities",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "Enable HANA Cloud Capabilities",
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:CreateHanaCloudSnapshot:1",
+      "name": "create_snapshot",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "Create HANA Cloud Snapshot",
+      "destructiveHint": false,
+      "idempotentHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:DeleteHanaCloudSnapshot:1",
+      "name": "delete_snapshot",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "Delete HANA Cloud Snapshot",
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:DeleteOldestHanaCloudSnapshot:1",
+      "name": "delete_oldest_snapshot",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "Delete Oldest HANA Cloud Snapshot",
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:RevertHanaCloudToSnapshot:1",
+      "name": "revert_to_snapshot",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "Revert to Snapshot",
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    },
+    {
+      "commandId": "hanalm-<<<TENANT_ID>>>:UpgradeHanaCloudInstance:1",
+      "name": "upgrade_instance",
+      "enabled": true,
+      "inputReferences": [
+        "welcome-<<<TENANT_ID>>>:ServiceManager:1"
+      ],
+      "tags": {},
+      "title": "Upgrade HANA Cloud Instance",
+      "destructiveHint": true,
+      "idempotentHint": false,
+      "openWorldHint": true,
+      "readOnlyHint": false
+    }
+  ]
+}
