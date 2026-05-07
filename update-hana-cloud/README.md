@@ -19,10 +19,13 @@ The command in this example executes the following steps:
 
 * Checks if an update is available based on the chosen update strategy.
 * Optionally, pauses and awaits explicit confirmation before performing the update.
+* If enabled, configures the NZDM (Near Zero Downtime Maintenance) update strategy to perform the update without restart.
 * Executes the update to the available version.
 * If no suitable version is available, the execution terminates without proceeding any further.
 
-Typically, an update requires the database to restart, resulting in downtime. Given this, the command pauses prior to the update until explicit confirmation is received from your DevOps team. If downtime is not an issue, or the database is configured to be updated without a restart, this confirmation can be disabled. For more information, visit this page: [Upgrading Without Restart](https://help.sap.com/docs/HANA_CLOUD/9ae9104a46f74a6583ce5182e7fb20cb/c26e42e6a7a4411191441c8d48fd9b11.html)
+Typically, an update requires the database to restart, resulting in downtime. Given this, the command pauses prior to the update until explicit confirmation is received from your DevOps team. If downtime is not an issue, this confirmation can be disabled.
+
+Additionally, HANA Cloud databases support the NZDM (Near Zero Downtime Maintenance) option which performs the update without a restart. When enabled, a new replica is created on the fly to aid with the update, avoiding downtime. This can be activated by setting the *withoutRestart* input to *true*. For more information, visit this page: [Upgrading Without Restart](https://help.sap.com/docs/HANA_CLOUD/9ae9104a46f74a6583ce5182e7fb20cb/c26e42e6a7a4411191441c8d48fd9b11.html)
 
 :warning: Please note: It is not possible to revert to a previous version once the upgrade is complete. We strongly advise verifying everything works as expected on a test system prior to applying the update to the production environment.
 
@@ -68,6 +71,7 @@ You'll need to provide values for the following input keys:
 * *password* - Password of your technical user
 * *identityProvider* - Optional: origin key of your identity provider. Defaults to sap.ids
 * *makeSnapshotBeforeUpdate* - Optional: Whether to make a snapshot of the HANA instance before updating. If there is existing snapshot you will be asked if you want to delete it. Note there can be only one snapshot and it gets deleted in 14 days. Defaults to false
+* *withoutRestart* - Optional: Whether to update without restart (NZDM). When enabled, a new replica is created on the fly to aid with the update, avoiding downtime. Defaults to false
 * *shouldConfirmBeforeUpdate* - Optional: whether to require confirmation before starting the update, if there's one available. Defaults to true
 * *shouldConfirmSnapshotDelete* - Does nothing if *makeSnapshotBeforeUpdate* is set to false. Whether to pause the execution when creating snapshot and another one already exists. If set to false no confirmation will be required to delete existing snapshot.
 
@@ -97,6 +101,7 @@ You'll need to provide values for the following input keys:
 * *hanaCloudInstance* - Name of your HANA Cloud service instance
 * *serviceKey* - Service key to the SAP Service Manager, plan subaccount-admin
 * *makeSnapshotBeforeUpdate* - Optional: Whether to make a snapshot of the HANA instance before updating. If there is existing snapshot you will be asked if you want to delete it. Note there can be only one snapshot and it gets deleted in 14 days. Defaults to false
+* *withoutRestart* - Optional: Whether to update without restart (NZDM). When enabled, a new replica is created on the fly to aid with the update, avoiding downtime. Defaults to false
 * *shouldConfirmBeforeUpdate* - Optional: whether to require confirmation before starting the update, if there's one available. Defaults to true
 * *shouldConfirmSnapshotDelete* - Does nothing if *makeSnapshotBeforeUpdate* is set to false. Whether to pause the execution when creating snapshot and another one already exists. If set to false no confirmation will be required to delete existing snapshot.
 
