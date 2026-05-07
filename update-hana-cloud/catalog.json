@@ -396,8 +396,7 @@
           "description": "The ID of the created snapshot."
         }
       },
-      "tags": {},
-      "issues": []
+      "tags": {}
     },
     {
       "configuration": {
@@ -652,8 +651,7 @@
           "description": "The ID of the created snapshot."
         }
       },
-      "tags": {},
-      "issues": []
+      "tags": {}
     },
     {
       "configuration": {
@@ -890,8 +888,7 @@
         }
       },
       "outputKeys": {},
-      "tags": {},
-      "issues": []
+      "tags": {}
     },
     {
       "configuration": {
@@ -1035,8 +1032,7 @@
         }
       },
       "outputKeys": {},
-      "tags": {},
-      "issues": []
+      "tags": {}
     },
     {
       "configuration": {
@@ -1289,6 +1285,69 @@
             "dryRun": null
           },
           {
+            "execute": "cf-sapcp:UpdateCfServiceInstance:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.org)",
+              "serviceInstance": "$(.execution.input.hanaCloudInstance)",
+              "region": "$(.execution.input.region)",
+              "deadline": "180",
+              "user": "$(.execution.input.user)",
+              "parameters": "{\"data\":{\"update_strategy\":\"$(if .execution.input.withoutRestart then \"without_restart\" else \"with_restart\" end)\"}}",
+              "space": "$(.execution.input.space)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "ConfigureNZDM",
+            "description": null,
+            "progressMessage": "Configured NZDM (without restart) for the HANA Cloud database update",
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "AND",
+              "conditions": [
+                {
+                  "semantic": "AND",
+                  "cases": [
+                    {
+                      "expression": "$(.DetermineVersion.output.message | length)",
+                      "operator": "NOT_EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.ConfirmUpdate.output.selection)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "confirm"
+                      ]
+                    },
+                    {
+                      "expression": "$(.execution.input.shouldConfirmBeforeUpdate)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "false"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
             "execute": "dblm-sapcp:UpdateHanaCloudInstance:1",
             "input": {
               "resourceGroup": "$(.execution.input.space)",
@@ -1358,7 +1417,7 @@
       },
       "id": "examples-<<<TENANT_ID>>>:UpdateHanaCloudDatabaseCF:1",
       "name": "UpdateHanaCloudDatabaseCF",
-      "description": "Update your HANA Cloud databases on Cloud Foundry to either the next QRC, latest QRC, or the most recent patch version. The command automatically determines and applies the appropriate update based on user's selection.",
+      "description": "Update your HANA Cloud databases on Cloud Foundry to either the next QRC, latest QRC, or the most recent patch version. The command automatically determines and applies the appropriate update based on user's selection. Optionally supports NZDM (without restart) update strategy.",
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
@@ -1543,6 +1602,22 @@
           "defaultValue": "true",
           "defaultValueFromInput": null,
           "description": "Whether to require confirmation before starting the update, if there's one available"
+        },
+        "withoutRestart": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "false",
+          "defaultValueFromInput": null,
+          "description": "Whether to update without restart (NZDM). When enabled, a new replica is created on the fly to aid with the update, avoiding downtime."
         }
       },
       "outputKeys": {
@@ -1555,8 +1630,7 @@
       "tags": {
         "feature:logs": "",
         "env": "cf"
-      },
-      "issues": []
+      }
     },
     {
       "configuration": {
@@ -1804,6 +1878,64 @@
               "instanceId": "$(.execution.input.hanaCloudInstance)",
               "serviceKey": "$(.execution.input.serviceKey)",
               "deadline": "180",
+              "parameters": "{\"data\":{\"update_strategy\":\"$(if .execution.input.withoutRestart then \"without_restart\" else \"with_restart\" end)\"}}"
+            },
+            "alias": "ConfigureNZDM",
+            "description": null,
+            "progressMessage": "Configured NZDM (without restart) for the HANA Cloud database update",
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "AND",
+              "conditions": [
+                {
+                  "semantic": "AND",
+                  "cases": [
+                    {
+                      "expression": "$(.DetermineVersion.output.message | length)",
+                      "operator": "NOT_EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.ConfirmUpdate.output.selection)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "confirm"
+                      ]
+                    },
+                    {
+                      "expression": "$(.execution.input.shouldConfirmBeforeUpdate)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "false"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "sm-sapcp:UpdateServiceInstance:1",
+            "input": {
+              "instanceId": "$(.execution.input.hanaCloudInstance)",
+              "serviceKey": "$(.execution.input.serviceKey)",
+              "deadline": "180",
               "parameters": "{\"data\":{\"productVersion\":{\"releaseCycle\":\"$(.DetermineVersion.output.message | toObject.releaseCycle)\",\"track\":\"$(.DetermineVersion.output.message | toObject.releaseTrack)\",\"id\":\"$(.DetermineVersion.output.message | toObject.version)\"}}}"
             },
             "alias": "Update",
@@ -1861,7 +1993,7 @@
       },
       "id": "examples-<<<TENANT_ID>>>:UpdateHanaCloudDatabaseOtherEnv:1",
       "name": "UpdateHanaCloudDatabaseOtherEnv",
-      "description": "Update your HANA Cloud databases on Other Env (Subaccount level) to either the next QRC, latest QRC, or the most recent patch version. The command automatically determines and applies the appropriate update based on user's selection.",
+      "description": "Update your HANA Cloud databases on Other Env (Subaccount level) to either the next QRC, latest QRC, or the most recent patch version. The command automatically determines and applies the appropriate update based on user's selection. Optionally supports NZDM (without restart) update strategy.",
       "catalog": "examples-<<<TENANT_ID>>>",
       "version": 1,
       "inputKeys": {
@@ -1964,6 +2096,22 @@
           "defaultValue": "true",
           "defaultValueFromInput": null,
           "description": "Whether to require confirmation before starting the update, if there's one available"
+        },
+        "withoutRestart": {
+          "type": "boolean",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "false",
+          "defaultValueFromInput": null,
+          "description": "Whether to update without restart (NZDM). When enabled, a new replica is created on the fly to aid with the update, avoiding downtime."
         }
       },
       "outputKeys": {
@@ -1976,8 +2124,7 @@
       "tags": {
         "feature:logs": "",
         "env": "cf"
-      },
-      "issues": []
+      }
     }
   ]
 }
