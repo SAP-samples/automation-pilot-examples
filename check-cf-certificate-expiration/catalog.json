@@ -12,7 +12,7 @@
         "values": [],
         "output": {
           "app": "$(.execution.input.app)",
-          "certificates": "$(.checkCertificates.output.output[0] // [])"
+          "certificates": "$(.buildCertificateReport.output.message)"
         },
         "executors": [
           {
@@ -76,14 +76,14 @@
             "dryRun": null
           },
           {
-            "execute": "scripts-sapcp:ExecuteScript:2",
+            "execute": "utils-sapcp:ForEach:2",
             "input": {
-              "environment": "{\"CERTS\":\"$(.extractCertificates.output.message | toEscapedJson)\",\"THRESHOLD\":\"$(.execution.input.expirationThreshold)\"}",
-              "script": "#!/usr/bin/env bash\nset -euo pipefail\n\nnow_epoch=$(date +%s)\nthreshold=${THRESHOLD:-30}\n\necho \"$CERTS\" | jq -c '.[]' | while IFS= read -r entry; do\n    id=$(echo \"$entry\" | jq -r '.id')\n    instanceName=$(echo \"$entry\" | jq -r '.instanceName')\n    cert=$(echo \"$entry\" | jq -r '.certificate')\n\n    # Detect if the certificate is PKCS7/CMS or standard X.509\n    if echo \"$cert\" | grep -qE \"BEGIN (PKCS7|CMS)\"; then\n        # Extract certs from PKCS7, then grab the enddate of the first cert\n        ENDDATE=$(echo \"$cert\" | openssl pkcs7 -print_certs | openssl x509 -noout -enddate | sed -e 's#notAfter=##')\n    else\n        # Process as a standard X.509 certificate\n        ENDDATE=$(echo \"$cert\" | openssl x509 -noout -enddate | sed -e 's#notAfter=##')\n    fi\n\n    # Extract expiration date and calculate days remaining\n    expiry_epoch=$(date -d \"$ENDDATE\" +%s)\n    days_left=$(( (expiry_epoch - now_epoch) / 86400 ))\n\n    # Only output certificates expiring within the threshold\n    if [ \"$days_left\" -le \"$threshold\" ]; then\n        jq -n --arg id \"$id\" --arg instanceName \"$instanceName\" --argjson days \"$days_left\" '{id: $id, instanceName: $instanceName, daysLeft: $days}'\n    fi\ndone | jq -sc '.'",
-              "timeout": "300"
+              "inputMapping": "{\"certificate\":\"$(.checkCertificates.current.item.certificate)\"}",
+              "inputs": "$(.extractCertificates.output.message | toArray)",
+              "command": "utils-sapcp:ParseCertificate:1"
             },
             "alias": "checkCertificates",
-            "description": "Check certificate expiration dates",
+            "description": "Extract the metadata for each certificate from binding credentials",
             "progressMessage": "Checking application '$(.execution.input.app)'...",
             "initialDelay": null,
             "pause": null,
@@ -105,6 +105,40 @@
                 }
               ]
             },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(zip($.extractCertificates.output.message | toArray; $.checkCertificates.output.outputs | toArray)\n  | toArray\n  | map({ id: .[0].id, instanceName: .[0].instanceName, subjectDn: .[1].subjectDn, issuerDn: .[1].issuerDn, isExpired: .[1].isExpired, daysUntilExpiry: .[1].daysUntilExpiry, certificateChain: .[1].certificateChain})\n)"
+            },
+            "alias": "enrichCertificateResults",
+            "description": "Enrich the binding id, instance name with the certificate which belongs to them",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.enrichCertificateResults.output.message\n    | toArray \n    | filter(.isExpired == true or (.daysUntilExpiry != null and .daysUntilExpiry < $.execution.input.expirationThreshold))\n)"
+            },
+            "alias": "buildCertificateReport",
+            "description": "Filter only the certificate which are expiring less than the expiration threshold entered as input or have been already expired",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
             "validate": null,
             "autoRetry": null,
             "repeat": null,
@@ -265,8 +299,7 @@
       },
       "tags": {
         "env": "cf"
-      },
-      "issues": []
+      }
     },
     {
       "configuration": {
@@ -344,7 +377,7 @@
               "detailsLink": "$(.execution.metadata.autoPiTenantUrl)/#/executions/$(.execution.metadata.executionId)",
               "eventType": "CertificateExpirationCheck",
               "serviceKey": "$(.execution.input.ansServiceKey)",
-              "body": "Certificate check completed for space '$(.execution.input.space)'. Found $(.checkApps.output.outputs | map(.certificates | length) | add) certificate(s) expiring within $(.execution.input.expirationThreshold) days.$(\"\\n\\n\")$(.checkApps.output.outputs | filter(.certificates | length > 0) | map(\"App: \\(.app)\\n\\(.certificates | map(\"- \\(.instanceName) (\\(.daysLeft) days left)\") | join(\"\\n\"))\") | join(\"\\n\\n\"))",
+              "body": "Certificate check completed for space '$(.execution.input.space)'. Found $(.checkApps.output.outputs | map(.certificates | length) | add // 0) certificate(s) expiring within $(.execution.input.expirationThreshold) days.$(\"\\n\\n\")$(.checkApps.output.outputs | filter(.certificates | length > 0) | map(\"App: \\(.app)\\n\\(.certificates | map(\"- \\(.instanceName) (\\(.daysUntilExpiry // 0) days left)\") | join(\"\\n\"))\") | join(\"\\n\\n\"))",
               "category": "ALERT",
               "resourceType": "space"
             },
@@ -360,7 +393,7 @@
                   "semantic": "OR",
                   "cases": [
                     {
-                      "expression": "$(.checkApps.output.outputs | map(.certificates | length) | add))",
+                      "expression": "$(.checkApps.output.outputs | map(.certificates | length) | add // 0)",
                       "operator": "GREATER_THAN",
                       "semantic": "OR",
                       "values": [
@@ -547,8 +580,7 @@
       },
       "tags": {
         "env": "cf"
-      },
-      "issues": []
+      }
     },
     {
       "configuration": {
