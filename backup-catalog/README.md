@@ -9,7 +9,7 @@ Table of Contents
 
 ## Description
 
-Automation Pilot allows customers to create their own catalogs and populate them with custom commands and inputs which are based on the provided ones. Customers can [export](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/48ee09640e094bcb9601d845f316f773.html) these catalogs from the UI and store them somewhere as a backup. If needed, they could be imported back into the same or another Automation Pilot tenant.
+Automation Pilot allows customers to create their own catalogs and populate them with custom commands and inputs which are based on the provided ones. Customers can [export](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/2caaa4d01e074d26a3908ef9a39d19a5.html) these catalogs from the UI and store them somewhere as a backup. If needed, they could be imported back into the same or another Automation Pilot tenant.
 
 In this example, we'll look over a command that automates the Automation Pilot catalog backup process. This command utilizes the Automation Pilot and GitHub APIs to extend the service's functionality.
 
@@ -35,7 +35,7 @@ Check out the following resources for more information:
 * [Create a GitHub repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/quickstart-for-repositories)
 * [Managing teams and people with access to your GitHub repository](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/managing-repository-settings/managing-teams-and-people-with-access-to-your-repository)
 * [Creating a GitHub personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
-* [Managing Automation Pilot Service Accounts](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/91713d7e71624dbf92ea43f5faf810e5.html)
+* [Managing Automation Pilot Service Accounts](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/acf58b69e1484f8595e6b398687b08b3.html)
 
 ## How to use
 

@@ -105,7 +105,7 @@ After successful import, you'll see a new catalog tile labeled **"Automation Pil
 
 ### Additional Resources
 
-* [Official documentation on importing catalogs](https://help.sap.com/docs/automation-pilot/automation-pilot/managing-catalogs?locale=en-US)
+* [Official documentation on importing catalogs](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/2caaa4d01e074d26a3908ef9a39d19a5.html)
 * [Learn how to execute commands](https://help.sap.com/docs/automation-pilot/automation-pilot/managing-commands?locale=en-US)
 
 :information_source: **Note**: All examples in this repository are part of the **"Automation Pilot Examples"** catalog. You only need to import each example's `catalog.json` once to access all its commands.
