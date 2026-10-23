@@ -13,8 +13,8 @@ This example demonstrates how to convert a JSON array of objects into an HTML ta
 
 You can use the following approaches to send the HTML table via email:
 
-* Create an [Email Action](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/email-action-type?locale=en-US) with a custom template in the SAP Alert Notification service, and then send the HTML table using the [SendAnsEvent command](https://help.sap.com/docs/automation-pilot/automation-pilot/sendansevent?locale=en-US).
-* Directly send the HTML table using the [SendEmail command](https://help.sap.com/docs/automation-pilot/automation-pilot/sendemail-command?locale=en-US) with HTML formatting enabled.
+* Create an [Email Action](https://help.sap.com/docs/alert-notification/sap-alert-notification-for-sap-btp/email-action-type?locale=en-US) with a custom template in the SAP Alert Notification service, and then send the HTML table using the [SendAnsEvent command](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/a7846b6ac01e4a59b29e84b59a63ae84.html).
+* Directly send the HTML table using the [SendEmail command](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/9caa077062e644f6a456e46d56cc49ba.html) with HTML formatting enabled.
 
 ## Requirements
 

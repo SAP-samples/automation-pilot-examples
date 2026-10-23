@@ -17,7 +17,7 @@ This example demonstrates how to perform HTTP requests to endpoints that require
 
 Both scenarios target the [SAP Service Manager API](https://api.sap.com/api/APIServiceManager/path/getServiceOfferings), where authentication details are provided via a service key obtained from the SAP BTP cockpit. The service key contains all necessary information: client ID, authentication credentials (client secret or certificate/key), OAuth token URL, and the Service Manager API endpoint.
 
-SAP Automation Pilot's [HttpRequest](https://help.sap.com/docs/automation-pilot/automation-pilot/httprequest-command?locale=en-US) command supports multiple authentication mechanisms, including OAuth 2.0. It can transparently obtain and reuse OAuth tokens throughout the execution as long as they remain valid, and will automatically acquire a new token if the current one is about to expire. It is recommended to always let the `HttpRequest` command handle token acquisition.
+SAP Automation Pilot's [HttpRequest](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/9e305f5af47442caa675b905e1be3cbb.html) command supports multiple authentication mechanisms, including OAuth 2.0. It can transparently obtain and reuse OAuth tokens throughout the execution as long as they remain valid, and will automatically acquire a new token if the current one is about to expire. It is recommended to always let the `HttpRequest` command handle token acquisition.
 
 ## Requirements
 
