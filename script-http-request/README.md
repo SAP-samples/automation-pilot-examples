@@ -9,7 +9,7 @@ Table of Contents
 
 ## Description
 
-Automation Pilot provides the [*HttpRequest*](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/6ce1e04b7812411db04b80ea769ef46e.html) command which allows customers to perform arbitrary HTTP request to any public endpoint. Its flexibility and simplicity provides a way to use and automate most modern HTTP APIs.
+Automation Pilot provides the [*HttpRequest*](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/9e305f5af47442caa675b905e1be3cbb.html) command which allows customers to perform arbitrary HTTP request to any public endpoint. Its flexibility and simplicity provides a way to use and automate most modern HTTP APIs.
 
 To ensure scalability and optimal performance for all Automation Pilot customers, the *HttpRequest* command has a strict limit on the maximum time that each request can take, as well as limit on the response size.
 
@@ -21,7 +21,7 @@ The supported runtimes include bash, python, node.js and provides access to popu
 
 This example command has very similar contract to the original *HttpRequest*. However, its implementation is base entirely on *ExecuteScript* by utilizing [curl](https://curl.se/) and [jq](https://github.com/jqlang/jq/). It could be used to send requests to slow synchronous APIs and to work with larger response bodies.
 
-:warning: *ExecuteScript* has [some limitations](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/d0854dbb80d84946bb57791db94b7e20.html) described in the documentation. They also apply to this example command.
+:warning: *ExecuteScript* has some limitations described in the [documentation](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/6584da7c47bb4b12834e73eb68767ce0.html). They also apply to this example command.
 
 ## Requirements
 

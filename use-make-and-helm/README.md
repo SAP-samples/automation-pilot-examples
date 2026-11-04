@@ -20,7 +20,7 @@ DISCLAIMER: the **make** tool is restricted to the current user and all security
 
 DISCLAIMER: the script execution time is limited, so any long running jobs will not be able to finish.
 
-Please refer to the [documentation](https://help.sap.com/docs/automation-pilot/automation-pilot/executescript-version-2) for more details about the Execute Script functionality in Automation Pilot.
+Please refer to the [documentation](https://help.sap.com/docs/AUTOMATION_PILOT/de3900c419f5492a8802274c17e07049/6584da7c47bb4b12834e73eb68767ce0.html) for more details about the Execute Script functionality in Automation Pilot.
 
 ## Requirements
 
