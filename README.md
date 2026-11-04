@@ -150,6 +150,7 @@ After successful import, you'll see a new catalog tile labeled **"Automation Pil
 | [Mass Stop/Start CF Apps](mass-stop-start-cf-apps) | Stop or start all Cloud Foundry applications across your entire BTP account |
 | [CF resource quota notifications](check-cf-space-quota-utilization) | Get insights about Cloud Foundry resource usage via Alert Notification service |
 | [Check CF Certificate Expiration](check-cf-certificate-expiration) | Monitor certificate expiration in Cloud Foundry service bindings to prevent outages |
+| [Replicate CF Service Key Across Regions](replicate-cf-service-key) | Replicate and rotate a service key's credentials from a source CF region into user-provided services across multiple target regions, with zero-downtime certificate rotation |
 
 ### Kubernetes
 

@@ -1,0 +1,1916 @@
+{
+  "id": "skrepl-<<<TENANT_ID>>>",
+  "technicalName": "skrepl",
+  "name": "Service Key Replication",
+  "description": "Automate the replication and rotation of service credentials from a source Cloud Foundry region to multiple target CF regions, with the goal of preventing certificate expiration and avoiding manual user error.",
+  "owner": "<<<TENANT_ID>>>",
+  "tags": {},
+  "documentationUrl": null,
+  "inputs": [],
+  "commands": [
+    {
+      "configuration": {
+        "values": [
+          {
+            "alias": "regionData",
+            "valueFrom": {
+              "inputReference": "metadata-sapcp:CfRegionData:1",
+              "inputKey": "$(.execution.input.sourceRegion)"
+            }
+          }
+        ],
+        "output": {
+          "newServiceKeyName": "$(.rotate.output.newServiceKeyName)",
+          "rotated": "$(.rotate.executed)",
+          "daysLeft": "$(.parseCert.output.daysUntilExpiry // -1)"
+        },
+        "executors": [
+          {
+            "execute": "cf-sapcp:ResolveCfIds:1",
+            "input": {
+              "resourceGroup": "$(.execution.input.sourceSpace)",
+              "password": "$(.execution.input.password)",
+              "serviceInstance": "$(.execution.input.sourceServiceInstance)",
+              "region": "$(.execution.input.sourceRegion)",
+              "user": "$(.execution.input.user)",
+              "subAccount": "$(.execution.input.sourceOrg)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "resolveSource",
+            "description": "Resolve the source service instance GUID",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"Accept\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({\"origin\": .execution.input.identityProvider} | toUrlEncoded)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_credential_bindings?type=key&service_instance_guids=$(.resolveSource.output.serviceInstanceId | toUrlEncoded)&order_by=-created_at&per_page=5000",
+              "timeout": "30"
+            },
+            "alias": "listKeys",
+            "description": "List key-type bindings on the source instance, newest first",
+            "progressMessage": "Checking current service key for '$(.execution.input.sourceServiceInstance)'...",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.listKeys.output.status | valueIn([408, 429, 500, 502, 503, 504, -1]))",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:SensitiveHttpRequest:1",
+            "input": {
+              "headers": "{\"Accept\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({\"origin\": .execution.input.identityProvider} | toUrlEncoded)",
+              "method": "GET",
+              "omitBodyInErrorMessage": "true",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_credential_bindings/$(.listKeys.output.body | toObject.resources[0].guid | toUrlEncoded)/details",
+              "timeout": "30"
+            },
+            "alias": "keyDetails",
+            "description": "Read the current service key's credentials to inspect its certificate",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.listKeys.output.body | toObject.resources | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ParseCertificate:1",
+            "input": {
+              "certificate": "$(.keyDetails.output.body | toObject | (.credentials.certificate // .credentials.clientcert // .credentials.sslcert // .credentials.uaa.certificate // .credentials.x509.certificate // .credentials[\"ingest-mtls-cert\"] // .credentials[\"mtls-cert\"] // \"\"))"
+            },
+            "alias": "parseCert",
+            "description": "Parse the current service key's certificate to read its expiry (days remaining and expired flag); skipped when the key carries no certificate",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.keyDetails.output.body | toObject | (.credentials.certificate // .credentials.clientcert // .credentials.sslcert // .credentials.uaa.certificate // .credentials.x509.certificate // .credentials[\"ingest-mtls-cert\"] // .credentials[\"mtls-cert\"] // \"\") | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "skrepl-<<<TENANT_ID>>>:RotateServiceKey:1",
+            "input": {
+              "sourceSpace": "$(.execution.input.sourceSpace)",
+              "upsName": "$(.execution.input.upsName)",
+              "password": "$(.execution.input.password)",
+              "sourceServiceInstance": "$(.execution.input.sourceServiceInstance)",
+              "sourceRegion": "$(.execution.input.sourceRegion)",
+              "serviceKeyPrefix": "$(.execution.input.serviceKeyPrefix)",
+              "sourceOrg": "$(.execution.input.sourceOrg)",
+              "targets": "$(.execution.input.targets)",
+              "user": "$(.execution.input.user)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "rotate",
+            "description": "Rotate the service key and replicate the new credentials when rotation is due",
+            "progressMessage": "Rotating service key...",
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.listKeys.output.body | toObject.resources | length)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    },
+                    {
+                      "expression": "$(if ((.listKeys.output.body | toObject.resources | length) > 0) and (.parseCert.executed | not) then \"true\" else \"false\" end)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    },
+                    {
+                      "expression": "$(.parseCert.output.isExpired)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    },
+                    {
+                      "expression": "$(if .parseCert.executed and ((.parseCert.output.daysUntilExpiry // 999999) <= ($.execution.input.expirationThreshold | toNumber)) then \"true\" else \"false\" end)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "true"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "skrepl-<<<TENANT_ID>>>:CheckAndRotateServiceKey:1",
+      "name": "CheckAndRotateServiceKey",
+      "description": "Checks the certificate of the current source service key for upcoming expiration and, only when it expires within the configured threshold (or when no matching key exists yet), performs a zero-downtime rotation that creates a new key, replicates the new credentials into the user-provided service across all target landscapes, and deletes the old keys. Designed to be scheduled periodically so credentials are rotated before certificates expire.",
+      "catalog": "skrepl-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "sourceSpace": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source Cloud Foundry space."
+        },
+        "upsName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The consistent name of the user-provided service to update in every target landscape."
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The password of the provided user"
+        },
+        "sourceServiceInstance": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source service instance whose service key is checked and rotated."
+        },
+        "sourceRegion": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The technical name of the source Cloud Foundry region that holds the service instance. Example: cf-eu10, cf-eu10-002"
+        },
+        "serviceKeyPrefix": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name prefix shared by the rotating service keys. The newest key with this prefix is inspected; a rotation creates '<serviceKeyPrefix>-<timestamp>'. Example: mta-exporter-sk"
+        },
+        "expirationThreshold": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 1,
+          "maxValue": 365,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "30",
+          "defaultValueFromInput": null,
+          "description": "Rotate the service key when its certificate expires within this many days. Default: 30"
+        },
+        "sourceOrg": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source Cloud Foundry organization. Examples: my-org-name-1, 0ffeb410-5f78-0000-af5c-5b26baf46623"
+        },
+        "targets": {
+          "type": "array",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The list of target landscapes, as an array of objects each with 'region', 'org' and 'space' keys. Include the source landscape as one of the targets to keep the setup homogeneous. Example: [{\"region\":\"cf-eu10\",\"org\":\"my-org\",\"space\":\"my-space\"}]"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The user ID or the email of a Cloud Foundry user to be used for authentication. The same user must have permissions in the source and in all target landscapes."
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider origin key used for authentication. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter the origin key from the CF Org/Space members section."
+        }
+      },
+      "outputKeys": {
+        "newServiceKeyName": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The name of the newly created service key when a rotation occurred; empty otherwise."
+        },
+        "rotated": {
+          "type": "boolean",
+          "sensitive": false,
+          "description": "Whether a rotation was performed. True when the current key was expiring or absent; false when the current key is still valid."
+        },
+        "daysLeft": {
+          "type": "number",
+          "sensitive": false,
+          "description": "The number of days until the current service key's certificate expires. -1 when no current key exists."
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [
+          {
+            "alias": "regionData",
+            "valueFrom": {
+              "inputReference": "metadata-sapcp:CfRegionData:1",
+              "inputKey": "$(.execution.input.sourceRegion)"
+            }
+          }
+        ],
+        "output": {
+          "deletedKeyIds": "$((.selectDeletable.output.message | toArray) // [])",
+          "deletedCount": "$((.selectDeletable.output.message | toArray) // [] | length)",
+          "candidateCount": "$(.listKeys.output.body | toObject.resources | filter(.name | startsWith($.execution.input.serviceKeyPrefix)) | length)"
+        },
+        "executors": [
+          {
+            "execute": "cf-sapcp:ResolveCfIds:1",
+            "input": {
+              "resourceGroup": "$(.execution.input.sourceSpace)",
+              "password": "$(.execution.input.password)",
+              "serviceInstance": "$(.execution.input.sourceServiceInstance)",
+              "region": "$(.execution.input.sourceRegion)",
+              "user": "$(.execution.input.user)",
+              "subAccount": "$(.execution.input.sourceOrg)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "resolveSource",
+            "description": "Resolve the source service instance GUID",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"Accept\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({\"origin\": .execution.input.identityProvider} | toUrlEncoded)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_credential_bindings?type=key&service_instance_guids=$(.resolveSource.output.serviceInstanceId | toUrlEncoded)&order_by=-created_at&per_page=5000",
+              "timeout": "30"
+            },
+            "alias": "listKeys",
+            "description": "List key-type bindings on the source instance, newest first",
+            "progressMessage": "Listing service keys for '$(.execution.input.sourceServiceInstance)'...",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.listKeys.output.status | valueIn([408, 429, 500, 502, 503, 504, -1]))",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.listKeys.output.body | toObject.resources | filter(.name | startsWith($.execution.input.serviceKeyPrefix)) | sortBy(.created_at) | reverse | .[1:] | filter((.created_at | sub(\"\\\\.[0-9]+Z$\";\"Z\") | fromDate(\"yyyy-MM-dd'T'HH:mm:ss'Z'\")) < (nowMillis - (($.execution.input.minAgeDays | toNumber) * 86400000))) | map(.guid))"
+            },
+            "alias": "selectDeletable",
+            "description": "Select GUIDs of superseded prefix-matching keys older than the grace period, keeping the newest",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.listKeys.output.body | toObject.resources | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:2",
+            "input": {
+              "inputMapping": "{\"region\":\"$(.execution.input.sourceRegion)\",\"serviceKeyId\":\"$(.deleteKeys.current.item)\",\"user\":\"$(.execution.input.user)\",\"password\":\"$(.execution.input.password)\",\"identityProvider\":\"$(.execution.input.identityProvider)\"}",
+              "inputs": "$((.selectDeletable.output.message | toArray) // [])",
+              "command": "skrepl-<<<TENANT_ID>>>:DeleteCfServiceKey:1"
+            },
+            "alias": "deleteKeys",
+            "description": "Delete each superseded service key",
+            "progressMessage": "Deleting superseded service keys...",
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$((.selectDeletable.output.message | toArray) // [] | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "skrepl-<<<TENANT_ID>>>:CleanupExpiredServiceKeys:1",
+      "name": "CleanupExpiredServiceKeys",
+      "description": "Prunes old service keys on a source service instance that share a name prefix. It keeps the newest key and deletes the others once they are older than a configurable grace period (in days), which is a safe heuristic for removing superseded keys after running deployments have had time to pick up the rotated credentials. Intended to be scheduled or triggered manually as the cleanup step of the rotation lifecycle.",
+      "catalog": "skrepl-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "sourceSpace": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source Cloud Foundry space."
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The password of the provided user"
+        },
+        "sourceServiceInstance": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source service instance whose old service keys are pruned."
+        },
+        "sourceRegion": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The technical name of the source Cloud Foundry region that holds the service instance. Example: cf-eu10, cf-eu10-002"
+        },
+        "serviceKeyPrefix": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name prefix shared by the rotating service keys. Keys whose name starts with this prefix are candidates for cleanup. Example: mta-exporter-sk"
+        },
+        "minAgeDays": {
+          "type": "number",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": 0,
+          "maxValue": 365,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "1",
+          "defaultValueFromInput": null,
+          "description": "Only delete superseded keys older than this many days, giving running deployments time to adopt the rotated credentials. The newest key is always kept. Default: 1"
+        },
+        "sourceOrg": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source Cloud Foundry organization. Examples: my-org-name-1, 0ffeb410-5f78-0000-af5c-5b26baf46623"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The user ID or the email of a Cloud Foundry user to be used for authentication"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider origin key used for authentication. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter the origin key from the CF Org/Space members section."
+        }
+      },
+      "outputKeys": {
+        "deletedKeyIds": {
+          "type": "array",
+          "sensitive": false,
+          "description": "The GUIDs of the service keys that were deleted."
+        },
+        "deletedCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "The number of superseded service keys deleted."
+        },
+        "candidateCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "The number of prefix-matching service keys found on the instance."
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [
+          {
+            "alias": "regionData",
+            "valueFrom": {
+              "inputReference": "metadata-sapcp:CfRegionData:1",
+              "inputKey": "$(.execution.input.region)"
+            }
+          }
+        ],
+        "output": {
+          "serviceKeyId": "$(.execution.input.serviceKeyId)",
+          "status": "$(.deleteKey.output.status)"
+        },
+        "executors": [
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"Accept\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({\"origin\": .execution.input.identityProvider} | toUrlEncoded)",
+              "method": "DELETE",
+              "user": "$(.execution.input.user)",
+              "successResponseCodes": "[\"2xx\",\"404\"]",
+              "url": "$(.regionData.cfApiUrl)/v3/service_credential_bindings/$(.execution.input.serviceKeyId | toUrlEncoded)",
+              "timeout": "30"
+            },
+            "alias": "deleteKey",
+            "description": "Delete the service key binding by GUID (404 is treated as already deleted)",
+            "progressMessage": "Deleting service key '$(.execution.input.serviceKeyId)'...",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.deleteKey.output.status | valueIn([408, 429, 500, 502, 503, 504, -1]))",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "skrepl-<<<TENANT_ID>>>:DeleteCfServiceKey:1",
+      "name": "DeleteCfServiceKey",
+      "description": "Deletes a single Cloud Foundry service key (key-type service credential binding) by its GUID. A key that no longer exists is treated as already deleted. Used as the per-key worker when pruning old service keys during rotation or cleanup.",
+      "catalog": "skrepl-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "serviceKeyId": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The GUID of the service key (key-type service credential binding) to delete."
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The password of the provided user"
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The technical name of the Cloud Foundry region that holds the service key. Example: cf-eu10, cf-eu10-002"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The user ID or the email of a Cloud Foundry user to be used for authentication"
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider origin key used for authentication. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter the origin key from the CF Org/Space members section."
+        }
+      },
+      "outputKeys": {
+        "serviceKeyId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The GUID of the service key that was targeted for deletion."
+        },
+        "status": {
+          "type": "number",
+          "sensitive": false,
+          "description": "The status code of the delete response. Examples: 202, 404"
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [],
+        "output": {
+          "replicatedCount": "$(.replicateToTargets.output.outputs | length)",
+          "results": "$(.replicateToTargets.output.outputs // [])",
+          "serviceKeyBindingId": "$(.createKey.output.serviceBinding)"
+        },
+        "executors": [
+          {
+            "execute": "cf-sapcp:CreateCfServiceBinding:1",
+            "input": {
+              "password": "$(.execution.input.password)",
+              "org": "$(.execution.input.sourceOrg)",
+              "serviceInstance": "$(.execution.input.sourceServiceInstance)",
+              "region": "$(.execution.input.sourceRegion)",
+              "bindingName": "$(.execution.input.serviceKeyName)",
+              "user": "$(.execution.input.user)",
+              "space": "$(.execution.input.sourceSpace)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "createKey",
+            "description": "Create the service key on the source instance and read its credentials",
+            "progressMessage": "Creating service key '$(.execution.input.serviceKeyName)' on '$(.execution.input.sourceServiceInstance)'...",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:2",
+            "input": {
+              "inputMapping": "{\"region\":\"$(.replicateToTargets.current.item.region)\",\"org\":\"$(.replicateToTargets.current.item.org)\",\"space\":\"$(.replicateToTargets.current.item.space)\",\"upsName\":\"$(.execution.input.upsName)\",\"credentials\":\"$(.createKey.output.serviceKey)\",\"user\":\"$(.execution.input.user)\",\"password\":\"$(.execution.input.password)\",\"identityProvider\":\"$(.execution.input.identityProvider)\"}",
+              "inputs": "$(.execution.input.targets)",
+              "command": "skrepl-<<<TENANT_ID>>>:UpsertUserProvidedService:1"
+            },
+            "alias": "replicateToTargets",
+            "description": "Replicate the credentials into a user-provided service in each target landscape",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.execution.input.targets | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "skrepl-<<<TENANT_ID>>>:ReplicateServiceKey:1",
+      "name": "ReplicateServiceKey",
+      "description": "Reads the credentials of a service key on a source Cloud Foundry service instance and replicates them into a user-provided service (UPS) of a consistent name across a list of target Cloud Foundry landscapes. The source subaccount is treated as just another target, so a UPS with the same name is created or updated in every listed landscape, including the source. Each target carries its own region, org and space, so landscapes with differing org/space layouts are supported.",
+      "catalog": "skrepl-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "sourceSpace": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source Cloud Foundry space that holds the service instance."
+        },
+        "upsName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The consistent name of the user-provided service to create or update in every target landscape (including the source)."
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The password of the provided user"
+        },
+        "serviceKeyName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name of the service key (key-type service binding) to create on the source service instance and read credentials from. Use a template such as mta-exporter-sk-<timestamp> for zero-downtime rotation."
+        },
+        "sourceServiceInstance": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source service instance from which the service key is read."
+        },
+        "sourceRegion": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The technical name of the source Cloud Foundry region that holds the service instance. Example: cf-eu10, cf-eu10-002"
+        },
+        "sourceOrg": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source Cloud Foundry organization that holds the service instance. Examples: my-org-name-1, 0ffeb410-5f78-0000-af5c-5b26baf46623"
+        },
+        "targets": {
+          "type": "array",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The list of target landscapes to replicate the credentials into, as an array of objects each with 'region', 'org' and 'space' keys. To keep the setup homogeneous, include the source landscape as one of the targets. Example: [{\"region\":\"cf-eu10\",\"org\":\"my-org\",\"space\":\"my-space\"}]"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The user ID or the email of a Cloud Foundry user to be used for authentication. The same user must have permissions in the source and in all target landscapes."
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider origin key used for authentication. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter the origin key from the CF Org/Space members section."
+        }
+      },
+      "outputKeys": {
+        "replicatedCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "The number of target landscapes into which the credentials were replicated."
+        },
+        "results": {
+          "type": "array",
+          "sensitive": false,
+          "description": "The per-target outcome, one entry per target landscape, each with the user-provided service GUID and whether it was created or updated."
+        },
+        "serviceKeyBindingId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The GUID of the service key (key-type binding) created on the source service instance."
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [
+          {
+            "alias": "regionData",
+            "valueFrom": {
+              "inputReference": "metadata-sapcp:CfRegionData:1",
+              "inputKey": "$(.execution.input.sourceRegion)"
+            }
+          }
+        ],
+        "output": {
+          "newServiceKeyBindingId": "$(.replicate.output.serviceKeyBindingId)",
+          "newServiceKeyName": "$(.newKeyName.output.message)",
+          "replicatedCount": "$(.replicate.output.replicatedCount)",
+          "deletedKeyCount": "$(.deleteOldKeys.output.outputs | length)"
+        },
+        "executors": [
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(\"\\(.execution.input.serviceKeyPrefix)-\\(nowMillis)\")"
+            },
+            "alias": "newKeyName",
+            "description": "Build the timestamped name for the new service key",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "cf-sapcp:ResolveCfIds:1",
+            "input": {
+              "resourceGroup": "$(.execution.input.sourceSpace)",
+              "password": "$(.execution.input.password)",
+              "serviceInstance": "$(.execution.input.sourceServiceInstance)",
+              "region": "$(.execution.input.sourceRegion)",
+              "user": "$(.execution.input.user)",
+              "subAccount": "$(.execution.input.sourceOrg)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "resolveSource",
+            "description": "Resolve the source service instance GUID",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "skrepl-<<<TENANT_ID>>>:ReplicateServiceKey:1",
+            "input": {
+              "sourceSpace": "$(.execution.input.sourceSpace)",
+              "upsName": "$(.execution.input.upsName)",
+              "password": "$(.execution.input.password)",
+              "serviceKeyName": "$(.newKeyName.output.message)",
+              "sourceServiceInstance": "$(.execution.input.sourceServiceInstance)",
+              "sourceRegion": "$(.execution.input.sourceRegion)",
+              "sourceOrg": "$(.execution.input.sourceOrg)",
+              "targets": "$(.execution.input.targets)",
+              "user": "$(.execution.input.user)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "replicate",
+            "description": "Create the new service key and replicate it to every target landscape",
+            "progressMessage": "Creating and replicating new service key...",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"Accept\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({\"origin\": .execution.input.identityProvider} | toUrlEncoded)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_credential_bindings?type=key&service_instance_guids=$(.resolveSource.output.serviceInstanceId | toUrlEncoded)&per_page=5000",
+              "timeout": "30"
+            },
+            "alias": "listKeys",
+            "description": "List all key-type bindings on the source instance so older ones can be pruned",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.listKeys.output.status | valueIn([408, 429, 500, 502, 503, 504, -1]))",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:Void:1",
+            "input": {
+              "message": "$(.listKeys.output.body | toObject.resources | filter((.name | startsWith($.execution.input.serviceKeyPrefix)) and (.name != $.newKeyName.output.message)) | map(.guid))"
+            },
+            "alias": "oldKeyIds",
+            "description": "Select the GUIDs of the older service keys sharing the prefix, excluding the new one",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "utils-sapcp:ForEach:2",
+            "input": {
+              "inputMapping": "{\"region\":\"$(.execution.input.sourceRegion)\",\"serviceKeyId\":\"$(.deleteOldKeys.current.item)\",\"user\":\"$(.execution.input.user)\",\"password\":\"$(.execution.input.password)\",\"identityProvider\":\"$(.execution.input.identityProvider)\"}",
+              "inputs": "$(.oldKeyIds.output.message | toArray)",
+              "command": "skrepl-<<<TENANT_ID>>>:DeleteCfServiceKey:1"
+            },
+            "alias": "deleteOldKeys",
+            "description": "Delete each older service key now that replication has completed",
+            "progressMessage": "Deleting old service keys...",
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.oldKeyIds.output.message | toArray | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "skrepl-<<<TENANT_ID>>>:RotateServiceKey:1",
+      "name": "RotateServiceKey",
+      "description": "Performs a zero-downtime rotation of a source service key and its replicated user-provided services. It creates a new, timestamp-named service key on the source instance, replicates the new credentials into the user-provided service in every target landscape (including the source), and only then deletes the older service keys that share the same name prefix. Running deployments that still use the previous credentials keep working until the old keys are removed.",
+      "catalog": "skrepl-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "sourceSpace": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source Cloud Foundry space."
+        },
+        "upsName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The consistent name of the user-provided service to update in every target landscape."
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The password of the provided user"
+        },
+        "sourceServiceInstance": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source service instance whose service key is rotated."
+        },
+        "sourceRegion": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The technical name of the source Cloud Foundry region that holds the service instance. Example: cf-eu10, cf-eu10-002"
+        },
+        "serviceKeyPrefix": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name prefix shared by the rotating service keys. A new key named '<serviceKeyPrefix>-<timestamp>' is created, and older keys whose name starts with this prefix are deleted after replication. Example: mta-exporter-sk"
+        },
+        "sourceOrg": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the source Cloud Foundry organization. Examples: my-org-name-1, 0ffeb410-5f78-0000-af5c-5b26baf46623"
+        },
+        "targets": {
+          "type": "array",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The list of target landscapes, as an array of objects each with 'region', 'org' and 'space' keys. Include the source landscape as one of the targets to keep the setup homogeneous. Example: [{\"region\":\"cf-eu10\",\"org\":\"my-org\",\"space\":\"my-space\"}]"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The user ID or the email of a Cloud Foundry user to be used for authentication. The same user must have permissions in the source and in all target landscapes."
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider origin key used for authentication. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter the origin key from the CF Org/Space members section."
+        }
+      },
+      "outputKeys": {
+        "newServiceKeyBindingId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The GUID of the newly created service key on the source service instance."
+        },
+        "newServiceKeyName": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The name of the newly created service key. Shape: <serviceKeyPrefix>-<timestamp>"
+        },
+        "replicatedCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "The number of target landscapes updated with the new credentials."
+        },
+        "deletedKeyCount": {
+          "type": "number",
+          "sensitive": false,
+          "description": "The number of older service keys deleted after the replication completed."
+        }
+      },
+      "tags": {}
+    },
+    {
+      "configuration": {
+        "values": [
+          {
+            "alias": "regionData",
+            "valueFrom": {
+              "inputReference": "metadata-sapcp:CfRegionData:1",
+              "inputKey": "$(.execution.input.region)"
+            }
+          }
+        ],
+        "output": {
+          "upsId": "$(if (.listUps.output.body | toObject.resources | length) > 0 then (.patchUps.output.body | toObject.guid) else (.createUps.output.body | toObject.guid) end)",
+          "action": "$(if (.listUps.output.body | toObject.resources | length) > 0 then \"updated\" else \"created\" end)"
+        },
+        "executors": [
+          {
+            "execute": "cf-sapcp:ResolveCfIds:1",
+            "input": {
+              "resourceGroup": "$(.execution.input.space)",
+              "password": "$(.execution.input.password)",
+              "region": "$(.execution.input.region)",
+              "user": "$(.execution.input.user)",
+              "subAccount": "$(.execution.input.org)",
+              "identityProvider": "$(.execution.input.identityProvider)"
+            },
+            "alias": "resolveIds",
+            "description": "Resolve the Cloud Foundry space GUID",
+            "progressMessage": null,
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"Accept\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({\"origin\": .execution.input.identityProvider} | toUrlEncoded)",
+              "method": "GET",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_instances?type=user-provided&space_guids=$(.resolveIds.output.spaceId | toUrlEncoded)&names=$(.execution.input.upsName | toUrlEncoded)",
+              "timeout": "20"
+            },
+            "alias": "listUps",
+            "description": "Check whether the user-provided service already exists in the space",
+            "progressMessage": "Looking up UPS '$(.execution.input.upsName)' in $(.execution.input.region)...",
+            "initialDelay": null,
+            "pause": null,
+            "when": null,
+            "validate": null,
+            "autoRetry": {
+              "maxCount": 3,
+              "delay": "5s",
+              "logic": "INCREMENTAL",
+              "applyOnValidation": false,
+              "when": {
+                "semantic": "OR",
+                "conditions": [
+                  {
+                    "semantic": "OR",
+                    "cases": [
+                      {
+                        "expression": "$(.listUps.output.status | valueIn([408, 429, 500, 502, 503, 504, -1]))",
+                        "operator": "EQUALS",
+                        "semantic": "OR",
+                        "values": [
+                          "true"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"Accept\":\"application/json\",\"Content-Type\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({\"origin\": .execution.input.identityProvider} | toUrlEncoded)",
+              "method": "POST",
+              "body": "$({type: \"user-provided\", name: .execution.input.upsName, credentials: (.execution.input.credentials | toObject), relationships: {space: {data: {guid: .resolveIds.output.spaceId}}}} | toMinifiedJsonString)",
+              "omitBodyInErrorMessage": "true",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_instances",
+              "timeout": "30"
+            },
+            "alias": "createUps",
+            "description": "Create the user-provided service when it does not yet exist",
+            "progressMessage": "Creating UPS '$(.execution.input.upsName)' in $(.execution.input.region)...",
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.listUps.output.body | toObject.resources | length)",
+                      "operator": "EQUALS",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          },
+          {
+            "execute": "http-sapcp:HttpRequest:1",
+            "input": {
+              "headers": "{\"Accept\":\"application/json\",\"Content-Type\":\"application/json\"}",
+              "password": "$(.execution.input.password)",
+              "clientId": "cf",
+              "tokenUrl": "$(.regionData.uaaTokenUrl)?login_hint=$({\"origin\": .execution.input.identityProvider} | toUrlEncoded)",
+              "method": "PATCH",
+              "body": "$({credentials: (.execution.input.credentials | toObject)} | toMinifiedJsonString)",
+              "omitBodyInErrorMessage": "true",
+              "user": "$(.execution.input.user)",
+              "url": "$(.regionData.cfApiUrl)/v3/service_instances/$(.listUps.output.body | toObject.resources[0].guid | toUrlEncoded)",
+              "timeout": "30"
+            },
+            "alias": "patchUps",
+            "description": "Update the credentials of the existing user-provided service",
+            "progressMessage": "Updating UPS '$(.execution.input.upsName)' in $(.execution.input.region)...",
+            "initialDelay": null,
+            "pause": null,
+            "when": {
+              "semantic": "OR",
+              "conditions": [
+                {
+                  "semantic": "OR",
+                  "cases": [
+                    {
+                      "expression": "$(.listUps.output.body | toObject.resources | length)",
+                      "operator": "GREATER_THAN",
+                      "semantic": "OR",
+                      "values": [
+                        "0"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "validate": null,
+            "autoRetry": null,
+            "repeat": null,
+            "errorMessages": [],
+            "dryRun": null
+          }
+        ],
+        "listeners": []
+      },
+      "id": "skrepl-<<<TENANT_ID>>>:UpsertUserProvidedService:1",
+      "name": "UpsertUserProvidedService",
+      "description": "Creates or updates a user-provided service (UPS) instance in one Cloud Foundry space so it holds the supplied credentials. If a UPS with the given name already exists in the space, its credentials are replaced; otherwise a new one is created. Used as the per-landscape worker when replicating service-key credentials across Cloud Foundry regions.",
+      "catalog": "skrepl-<<<TENANT_ID>>>",
+      "version": 1,
+      "inputKeys": {
+        "upsName": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name of the user-provided service instance to create or update. Keep this consistent across all landscapes so consumers reference one stable name."
+        },
+        "password": {
+          "type": "string",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The password of the provided user"
+        },
+        "org": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the Cloud Foundry organization. Examples: my-org-name-1, 0ffeb410-5f78-0000-af5c-5b26baf46623"
+        },
+        "credentials": {
+          "type": "object",
+          "sensitive": true,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The credentials object to store in the user-provided service, typically the credentials read from a source service key. The entire object is written verbatim as the UPS credentials."
+        },
+        "region": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": [
+            "metadata-sapcp:CfRegionData:1"
+          ],
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The technical name of the Cloud Foundry region. Example: cf-eu10, cf-eu10-002"
+        },
+        "user": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The user ID or the email of a Cloud Foundry user to be used for authentication"
+        },
+        "space": {
+          "type": "string",
+          "sensitive": false,
+          "required": true,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": null,
+          "defaultValueFromInput": null,
+          "description": "The name or the ID of the Cloud Foundry space in which the user-provided service is created or updated."
+        },
+        "identityProvider": {
+          "type": "string",
+          "sensitive": false,
+          "required": false,
+          "minSize": null,
+          "maxSize": null,
+          "minValue": null,
+          "maxValue": null,
+          "allowedValues": null,
+          "allowedValuesFromInputKeys": null,
+          "suggestedValues": null,
+          "suggestedValuesFromInputKeys": null,
+          "defaultValue": "sap.ids",
+          "defaultValueFromInput": null,
+          "description": "Identity provider origin key used for authentication. By default it is SAP ID Service (sap.ids). To use a custom IdP, enter the origin key from the CF Org/Space members section."
+        }
+      },
+      "outputKeys": {
+        "upsId": {
+          "type": "string",
+          "sensitive": false,
+          "description": "The GUID of the created or updated user-provided service instance."
+        },
+        "action": {
+          "type": "string",
+          "sensitive": false,
+          "description": "Whether the user-provided service was created or updated. Examples: created, updated"
+        }
+      },
+      "tags": {}
+    }
+  ]
+}
